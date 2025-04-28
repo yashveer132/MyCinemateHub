@@ -1,0 +1,380 @@
+@import "../../mixins.scss";
+
+.aiSearch {
+  width: 100%;
+  height: 60px;
+  position: relative;
+  margin-bottom: 30px;
+
+  .searchInput {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    input {
+      width: calc(100% - 100px);
+      height: 50px;
+      background-color: white;
+      outline: 0;
+      border: 3px solid var(--gradient);
+      border-radius: 30px 0 0 30px;
+      padding: 0 15px;
+      font-size: 14px;
+      color: black;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+      @include md {
+        width: calc(100% - 150px);
+        height: 60px;
+        font-size: 20px;
+        padding: 0 30px;
+      }
+    }
+    button {
+      width: 100px;
+      height: 50px;
+      background: var(--gradient);
+      color: white;
+      outline: 0;
+      border: 0;
+      border-radius: 0 30px 30px 0;
+      font-size: 16px;
+      cursor: pointer;
+      @include md {
+        width: 150px;
+        height: 60px;
+        font-size: 18px;
+      }
+    }
+  }
+}
+
+.aiSearchPage {
+  min-height: 300px;
+  padding-top: 30px;
+
+  .searchInput {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-direction: column;
+    @include md {
+      flex-direction: row;
+    }
+
+    input {
+      flex-grow: 1;
+      height: 50px;
+      padding: 0 15px;
+      border-radius: 30px;
+      border: 0;
+      outline: 0;
+      font-size: 16px;
+      color: white;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+    }
+    button {
+      width: 100px;
+      height: 50px;
+      background: var(--gradient);
+      color: white;
+      border: 0;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+  }
+
+  .searchResults {
+    margin-top: 20px;
+  }
+
+  .fallbackMessage {
+    color: var(--pink);
+    font-size: 18px;
+    margin: 20px 0;
+    text-align: center;
+  }
+}
+
+.smartSearchSection {
+  position: relative;
+  padding: 0;
+  background: transparent;
+  min-height: auto;
+  .searchBackground {
+    display: none;
+  }
+
+  .searchContainer {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+    .headerSection {
+      text-align: center;
+      margin-bottom: 25px;
+      margin-top: -20px;
+    }
+    .headerSection {
+      .iconWrapper {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 15px;
+        background: rgba(218, 47, 104, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(218, 47, 104, 0.2);
+        .aiIcon {
+          font-size: 32px;
+          color: var(--pink);
+          animation: pulse 2s infinite;
+        }
+      }
+    }
+
+    .sectionHeading {
+      color: #fff;
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 15px;
+      color: #fff;
+      .highlight {
+        background: rgba(218, 47, 104, 0.1);
+        color: var(--pink);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        margin-left: 10px;
+        border: 1px solid rgba(218, 47, 104, 0.2);
+      }
+    }
+
+    .searchDescription {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.6;
+      margin: 0 auto;
+      max-width: 600px;
+    }
+
+    .searchInput {
+      position: relative;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 100px;
+      padding: 8px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      input {
+        flex: 1;
+        height: 50px;
+        background: white;
+        border: none;
+        outline: none;
+        padding: 0 20px 0 50px;
+        font-size: 16px;
+        color: black;
+        border-radius: 30px;
+        &::placeholder {
+          color: rgba(0, 0, 0, 0.5);
+        }
+      }
+      .searchIcon {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--pink);
+        font-size: 20px;
+      }
+      .searchButton {
+        position: static;
+        right: auto;
+        top: auto;
+        height: 50px;
+        min-width: 120px;
+        padding: 0 25px;
+        background: var(--gradient);
+        border: none;
+        border-radius: 25px;
+        color: #fff;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        align-items: center;
+        &:hover {
+          transform: scale(1.02);
+        }
+
+        .buttonIcon {
+          font-size: 20px;
+        }
+      }
+      &.loading {
+        opacity: 0.7;
+        pointer-events: none;
+      }
+    }
+
+    .loadingMessage {
+      text-align: center;
+      color: var(--pink);
+      font-size: 20px;
+      margin: 30px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 25px;
+      .spinnerWrapper {
+        width: 50px;
+        height: 50px;
+        margin-top: 10px;
+      }
+    }
+
+    .noResults {
+      text-align: center;
+      padding: 40px 20px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin: 30px 0;
+      .icon {
+        font-size: 40px;
+        color: var(--pink);
+        margin-bottom: 15px;
+      }
+      .message {
+        font-size: 18px;
+        color: #fff;
+        margin-bottom: 10px;
+      }
+      .suggestion {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.6);
+      }
+    }
+  }
+
+  .exampleSection {
+    text-align: center;
+    margin-top: 40px;
+    margin-bottom: 50px;
+    .exampleLabel {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 14px;
+      margin-bottom: 30px;
+      display: block;
+    }
+    .exampleQueries {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      .queryTag {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 8px 16px;
+        border-radius: 20px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        &:hover {
+          background: var(--pink);
+          border-color: var(--pink);
+          color: #fff;
+          transform: translateY(-2px);
+        }
+      }
+    }
+  }
+
+  .searchResults {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    margin-top: 40px;
+    max-width: 100%;
+    .resultsHeader {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      gap: 10px;
+      flex-direction: column;
+      @include md {
+        flex-direction: row;
+      }
+
+      .resultIcon {
+        font-size: 28px;
+        color: var(--pink);
+      }
+
+      h3 {
+        font-size: 28px;
+        color: white;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        &::after {
+          content: "🎬";
+          font-size: 24px;
+        }
+      }
+    }
+
+    .carouselItems {
+      margin-left: -20px;
+      margin-right: -20px;
+      padding: 0 20px;
+      @include md {
+        margin: 0;
+        padding: 0;
+      }
+    }
+  }
+
+  .centerSpinner {
+    display: flex;
+    justify-content: center;
+    margin: 40px 0;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

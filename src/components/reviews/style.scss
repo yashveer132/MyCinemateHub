@@ -1,0 +1,74 @@
+.reviews {
+  position: relative;
+  margin-bottom: 50px;
+
+  .sectionHeading {
+    font-size: 24px;
+    color: white;
+    margin-bottom: 25px;
+  }
+
+  .reviewsList {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .reviewItem {
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+
+      .reviewHeader {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+
+        .avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          overflow: hidden;
+        }
+
+        .info {
+          .name {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+          }
+
+          .rating {
+            color: var(--pink);
+            font-size: 14px;
+          }
+        }
+      }
+
+      .content {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+    }
+  }
+
+  .showMore {
+    text-align: center;
+    margin-top: 20px;
+
+    button {
+      background: var(--gradient);
+      border: none;
+      padding: 8px 20px;
+      color: white;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+}

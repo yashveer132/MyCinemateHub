@@ -1,0 +1,49 @@
+.collections {
+  position: relative;
+  margin-bottom: 50px;
+
+  .sectionHeading {
+    font-size: 24px;
+    color: white;
+    margin-bottom: 25px;
+  }
+
+  .collectionsList {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    margin: 0 -20px;
+    padding: 0 20px;
+
+    .collectionItem {
+      min-width: 300px;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+
+      .backdrop {
+        width: 100%;
+        aspect-ratio: 16/9;
+        background-size: cover;
+        background-position: center;
+        margin-bottom: 10px;
+      }
+
+      .title {
+        color: white;
+        font-size: 16px;
+        margin-bottom: 5px;
+      }
+
+      .partCount {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 14px;
+      }
+    }
+  }
+}

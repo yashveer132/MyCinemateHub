@@ -1,0 +1,244 @@
+@import "../../mixins.scss";
+
+.header {
+  position: fixed;
+  transform: translateY(0);
+  width: 100%;
+  height: 60px;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(3.5px);
+  display: flex;
+  align-items: center;
+  transition: all ease 0.5s;
+  z-index: 2;
+  &.top {
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(3.5px);
+    -webkit-backdrop-filter: blur(3.5px);
+  }
+  &.show {
+    background-color: var(--black3);
+  }
+  &.hide {
+    transform: translateY(-60px);
+  }
+
+  .contentWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logoWrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: -15px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.02);
+
+      .headerTitle {
+        .brand {
+          background-position: 0%;
+        }
+        .ai {
+          animation: glow 1s ease-in-out infinite alternate;
+        }
+      }
+    }
+  }
+
+  .logo {
+    img {
+      height: 50px;
+      border-radius: 50%;
+      border: 2px solid var(--pink);
+      transition: all 0.3s ease;
+      
+      &:hover {
+        box-shadow: 0 0 15px rgba(218, 47, 104, 0.3);
+      }
+    }
+  }
+
+  .headerTitle {
+    display: none;
+    @include md {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      
+      .brand {
+        font-size: 28px;
+        font-weight: 800;
+        background: linear-gradient(to right, var(--pink), #FFD700);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        transition: background-position 0.3s ease;
+      }
+      
+      .subtitle {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        
+        .ai {
+          color: var(--pink);
+          font-weight: 800;
+          font-size: 16px;
+          letter-spacing: 1px;
+        }
+        
+        .platform {
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 14px;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  @keyframes glow {
+    from {
+      text-shadow: 0 0 5px var(--pink), 0 0 10px var(--pink);
+    }
+    to {
+      text-shadow: 0 0 10px var(--pink), 0 0 20px var(--pink);
+    }
+  }
+
+  .menuItems {
+    list-style-type: none;
+    display: none;
+    align-items: center;
+    @include md {
+      display: flex;
+    }
+    .menuItem {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      margin: 0 15px;
+      color: white;
+      font-weight: 500;
+      position: relative;
+      &.searchIcon {
+        margin-right: 0;
+      }
+      &.active {
+        color: var(--pink);
+        &:after {
+          content: "";
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 100%;
+          height: 2px;
+          background: var(--gradient);
+        }
+      }
+      svg {
+        font-size: 18px;
+      }
+      cursor: pointer;
+      &:hover {
+        color: var(--pink);
+      }
+    }
+  }
+
+  .mobileMenuItems {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    @include md {
+      display: none;
+    }
+    svg {
+      font-size: 18px;
+      color: white;
+    }
+  }
+
+  &.mobileView {
+    background: var(--black3);
+    .menuItems {
+      display: flex;
+      position: absolute;
+      top: 60px;
+      left: 0;
+      background: var(--black3);
+      flex-direction: column;
+      width: 100%;
+      padding: 20px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      animation: mobileMenu 0.3s ease forwards;
+      .menuItem {
+        font-size: 18px;
+        width: 100%;
+        height: auto;
+        padding: 12px 20px;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center; 
+        justify-content: center;
+        &:hover {
+          background: rgba(255, 255, 255, 0.05);
+        }
+      }
+    }
+  }
+
+  .searchBar {
+    width: 100%;
+    height: 60px;
+    background-color: white;
+    position: absolute;
+    top: 60px;
+    animation: mobileMenu 0.3s ease forwards;
+    .searchInput {
+      display: flex;
+      align-items: center;
+      height: 40px;
+      margin-top: 10px;
+      width: 100%;
+      svg {
+        font-size: 20px;
+        flex-shrink: 0;
+        margin-left: 10px;
+        cursor: pointer;
+      }
+      input {
+        width: 100%;
+        height: 50px;
+        background-color: white;
+        outline: 0;
+        border: 0;
+        border-radius: 30px 0 0 30px;
+        padding: 0 15px;
+        font-size: 14px;
+        @include md {
+          height: 60px;
+          font-size: 20px;
+          padding: 0 30px;
+        }
+      }
+    }
+  }
+}
+
+@keyframes mobileMenu {
+  0% {
+    transform: translateY(-130%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}

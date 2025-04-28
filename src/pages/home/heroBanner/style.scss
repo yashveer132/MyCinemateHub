@@ -1,0 +1,229 @@
+@import "../../../mixins.scss";
+
+.heroBanner {
+  width: 100%;
+  height: 450px;
+  background-color: var(--black);
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-top: 60px;
+  margin-bottom: 50px;
+  z-index: 1;
+  @include md {
+    height: 700px;
+  }
+  .backdrop-img {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0.5;
+    overflow: hidden;
+    .lazy-load-image-background {
+      width: 100%;
+      height: 100%;
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+    }
+  }
+  .opacity-layer {
+    width: 100%;
+    height: 250px;
+    background: linear-gradient(180deg, rgba(4, 21, 45, 0) 0%, #04152d 79.17%);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+  }
+  .heroBannerContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    margin: 0 auto;
+    padding-top: 0;
+
+    .title,
+    .subTitle {
+      position: relative;
+      z-index: 3;
+    }
+
+    .title {
+      font-size: 50px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      margin-top: 0;
+      @include md {
+        margin-bottom: 0;
+        font-size: 90px;
+      }
+    }
+    .subTitle {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      @include md {
+        font-size: 24px;
+      }
+    }
+    .searchContainer {
+      width: 100%;
+      position: relative;
+      margin-top: 0;
+      z-index: 2;
+
+      .searchTabs {
+        position: relative;
+        display: flex;
+        gap: 30px;
+        justify-content: center;
+        margin-bottom: 30px;
+        animation: none;
+        transition: margin 0.3s ease;
+
+        &.aiActive {
+          margin-top: 100px;
+        }
+
+        .tab {
+          cursor: pointer;
+          color: rgba(255, 255, 255, 0.9);
+          transition: all 0.3s ease;
+          font-size: 18px;
+          padding: 8px 20px;
+          border-radius: 30px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+          backdrop-filter: blur(8px);
+          background: rgba(255, 255, 255, 0.1);
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+          }
+
+          &.active {
+            background: var(--gradient);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(218, 47, 104, 0.3);
+          }
+
+          &:first-child {
+            animation: floatLeft 3s ease-in-out infinite;
+          }
+
+          &:last-child {
+            animation: floatRight 3s ease-in-out infinite;
+          }
+        }
+      }
+
+      @keyframes float {
+        0%,
+        50%,
+        100% {
+          transform: translateX(-50%);
+        }
+      }
+
+      @keyframes floatLeft {
+        0%,
+        50%,
+        100% {
+          transform: translateX(0px);
+        }
+      }
+
+      @keyframes floatRight {
+        0%,
+        50%,
+        100% {
+          transform: translateX(0px);
+        }
+      }
+
+      .searchContent {
+        width: 100%;
+        position: relative;
+        z-index: 1;
+        margin-top: 30px;
+
+        .aiSearchWrapper {
+          width: 100%;
+          margin-top: 40px;
+          .smartSearchSection {
+            margin-top: 0;
+            padding: 0;
+            background: transparent;
+            position: relative;
+            z-index: 1;
+            .searchContainer {
+              margin-top: 0;
+              .headerSection {
+                display: none;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .searchInput {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      input {
+        width: calc(100% - 100px);
+        height: 50px;
+        background-color: white;
+        outline: 0;
+        border: 0;
+        border-radius: 30px 0 0 30px;
+        padding: 0 15px;
+        font-size: 14px;
+        @include md {
+          width: calc(100% - 150px);
+          height: 60px;
+          font-size: 20px;
+          padding: 0 30px;
+        }
+      }
+      button {
+        width: 100px;
+        height: 50px;
+        background: var(--gradient);
+        color: white;
+        outline: 0;
+        border: 0;
+        border-radius: 0 30px 30px 0;
+        font-size: 16px;
+        cursor: pointer;
+        @include md {
+          width: 150px;
+          height: 60px;
+          font-size: 18px;
+        }
+      }
+    }
+
+    .aiSearchWrapper {
+      width: 100%;
+      margin-bottom: 50px;
+      .smartSearchSection {
+        margin-top: 0;
+        padding: 0;
+        background: transparent;
+      }
+    }
+  }
+}
