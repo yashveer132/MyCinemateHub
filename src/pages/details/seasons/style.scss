@@ -1,0 +1,169 @@
+@import "../../../mixins.scss";
+
+.seasonsSection {
+  position: relative;
+  margin-bottom: 50px;
+
+  .sectionHeading {
+    font-size: 24px;
+    color: white;
+    margin-bottom: 25px;
+  }
+
+  .seasonsList {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 16px;
+
+    .seasonItem {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      &.active {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--pink);
+        box-shadow: 0 8px 30px rgba(255, 107, 107, 0.2);
+      }
+
+      .seasonPoster {
+        width: 140px;
+        height: 210px;
+        flex-shrink: 0;
+        position: relative;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        &::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(45deg, rgba(255, 107, 107, 0.1), transparent);
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+      }
+
+      &:hover .seasonPoster::after {
+        opacity: 1;
+      }
+
+      .seasonInfo {
+        flex: 1;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: left;
+
+        .seasonName {
+          font-size: 22px;
+          font-weight: 700;
+          color: white;
+          margin-bottom: 10px;
+          text-align: center;
+        }
+
+        .seasonDetails {
+          font-size: 15px;
+          color: var(--pink);
+          margin-bottom: 16px;
+          text-align: center;
+          font-weight: 500;
+        }
+
+        .seasonOverview {
+          font-size: 15px;
+          color: rgba(255, 255, 255, 0.85);
+          line-height: 1.6;
+          text-align: center;
+          display: -webkit-box;
+          -webkit-line-clamp: 4;
+          line-clamp: 4;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          margin-bottom: 16px;
+        }
+      }
+
+      .expandIcon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        font-size: 28px;
+        font-weight: bold;
+        color: var(--pink);
+        transition: all 0.3s ease;
+        background: rgba(255, 107, 107, 0.1);
+
+        &.active {
+          transform: rotate(180deg);
+          background: var(--pink);
+          color: white;
+        }
+      }
+    }
+  }
+
+  .seasonsSkeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    .skItem {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px;
+
+      .posterBlock {
+        width: 120px;
+        height: 180px;
+        border-radius: 8px;
+        flex-shrink: 0;
+      }
+
+      .textBlock {
+        flex: 1;
+        margin-left: 20px;
+
+        .title {
+          height: 24px;
+          border-radius: 4px;
+          margin-bottom: 12px;
+          width: 60%;
+        }
+
+        .date {
+          height: 16px;
+          border-radius: 4px;
+          width: 40%;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,215 @@
+@import "../../../mixins.scss";
+
+.episodesSection {
+  margin-top: 30px;
+  padding: 40px 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+
+  .episodesHeader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-direction: column;
+    gap: 10px;
+
+    h3 {
+      font-size: 24px;
+      color: white;
+      margin: 0;
+      text-align: center;
+    }
+
+    .episodeCount {
+      font-size: 14px;
+      color: var(--pink);
+      background: rgba(255, 255, 255, 0.1);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+  }
+
+  .episodesList {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+
+      .episodeItem {
+        display: flex;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        cursor: pointer;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.09);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+          border-color: var(--pink);
+        }      .episodeNumber {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 70px;
+        background: linear-gradient(135deg, var(--pink), #ff6b9d);
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+        flex-shrink: 0;
+        position: relative;
+
+        &::after {
+          content: "";
+          position: absolute;
+          right: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 2px;
+          height: 60%;
+          background: rgba(255, 255, 255, 0.3);
+        }
+      }
+
+      .episodePoster {
+        width: 220px;
+        height: 130px;
+        flex-shrink: 0;
+        position: relative;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        &::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(45deg, rgba(255, 107, 107, 0.1), transparent);
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+      }
+
+      &:hover .episodePoster::after {
+        opacity: 1;
+      }
+
+      .episodeInfo {
+        flex: 1;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        .episodeTitle {
+          font-size: 20px;
+          font-weight: 700;
+          color: white;
+          margin-bottom: 10px;
+          text-align: left;
+        }
+
+        .episodeMeta {
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+          gap: 12px;
+          font-size: 15px;
+          color: rgba(255, 255, 255, 0.75);
+          margin-bottom: 16px;
+          flex-wrap: wrap;
+
+          .separator {
+            color: var(--pink);
+            font-weight: bold;
+          }
+
+          .rating {
+            color: #ffd700;
+            font-weight: 600;
+          }
+        }
+
+        .episodeOverview {
+          font-size: 15px;
+          color: rgba(255, 255, 255, 0.85);
+          line-height: 1.6;
+          text-align: left;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      }
+    }
+  }
+
+  .episodesSkeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .skItem {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px;
+
+      .episodeNumber {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        flex-shrink: 0;
+      }
+
+      .episodePoster {
+        width: 200px;
+        height: 120px;
+        border-radius: 8px;
+        flex-shrink: 0;
+        margin-left: 20px;
+      }
+
+      .episodeInfo {
+        flex: 1;
+        margin-left: 20px;
+
+        .title {
+          height: 20px;
+          border-radius: 4px;
+          margin-bottom: 10px;
+          width: 70%;
+        }
+
+        .overview {
+          height: 40px;
+          border-radius: 4px;
+          margin-bottom: 8px;
+          width: 100%;
+        }
+
+        .date {
+          height: 14px;
+          border-radius: 4px;
+          width: 40%;
+        }
+      }
+    }
+  }
+}

@@ -21,41 +21,70 @@
     .listItem {
       text-align: center;
       color: white;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+      }
+
       .profileImg {
         width: 125px;
         height: 125px;
         border-radius: 50%;
         overflow: hidden;
         margin-bottom: 15px;
+        transition: transform 0.3s ease;
+
         @include md {
           width: 175px;
           height: 175px;
           margin-bottom: 25px;
         }
+
         img {
           width: 100%;
           height: 100%;
           object-fit: cover;
           object-position: center top;
           display: block;
+          transition: transform 0.3s ease;
+        }
+
+        &:hover img {
+          transform: scale(1.1);
         }
       }
+
       .name {
         font-size: 14px;
         line-height: 20px;
         font-weight: 600;
+        transition: color 0.3s ease;
+
         @include md {
           font-size: 18px;
           line-height: 24px;
         }
+
+        &:hover {
+          color: var(--pink);
+        }
       }
+
       .character {
         font-size: 14px;
         line-height: 20px;
         opacity: 0.5;
+        transition: opacity 0.3s ease;
+
         @include md {
           font-size: 16px;
           line-height: 24px;
+        }
+
+        &:hover {
+          opacity: 0.8;
         }
       }
     }

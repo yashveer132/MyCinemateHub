@@ -1,17 +1,11 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import ContentWrapper from "../contentWrapper/ContentWrapper";
 import Img from "../lazyLoadImage/Img";
 import "./style.scss";
 
 const Collections = ({ data, loading }) => {
   const { url } = useSelector((state) => state.home);
-  const navigate = useNavigate();
-
-  const handleClick = (collectionId) => {
-    navigate(`/collection/${collectionId}`);
-  };
 
   return (
     <div className="collections">
@@ -19,11 +13,7 @@ const Collections = ({ data, loading }) => {
         <div className="sectionHeading">Collections</div>
         <div className="collectionsList">
           {data?.map((item) => (
-            <div
-              key={item.id}
-              className="collectionItem"
-              onClick={() => handleClick(item.id)}
-            >
+            <div key={item.id} className="collectionItem">
               <div className="backdrop">
                 <Img src={url.backdrop + item.backdrop_path} />
               </div>

@@ -7,13 +7,14 @@ import Header from "./components/header/Header";
 import Footer from "./components/footer/Footer";
 import Home from "./pages/home/Home";
 import Details from "./pages/details/Details";
+import Person from "./pages/person/Person";
 import Explore from "./pages/explore/Explore";
 import SearchResult from "./pages/searchResult/SearchResult";
 import PageNotFound from "./pages/404/pageNotFound";
 import Playlist from "./pages/playlist/Playlist";
 import WatchParty from "./components/watchParty/WatchParty";
 import WatchPartyLoader from "./components/watchParty/WatchPartyLoader";
-
+import EpisodeDetails from "./pages/details/episodes/EpisodeDetails";
 function App() {
   const dispatch = useDispatch();
   const { url } = useSelector((state) => state.home);
@@ -54,6 +55,11 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/:mediaType/:id" element={<Details />} />
+        <Route
+          path="/tv/:tvId/season/:seasonNumber/episode/:episodeNumber"
+          element={<EpisodeDetails />}
+        />
+        <Route path="/person/:id" element={<Person />} />
         <Route path="/search/:query" element={<SearchResult />} />
         <Route path="/explore/:mediaType" element={<Explore />} />
         <Route path="/playlist" element={<Playlist />} />

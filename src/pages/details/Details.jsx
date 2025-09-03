@@ -8,8 +8,8 @@ import VideosSection from "./videosSection/VideosSection";
 import Similar from "./carousels/Similar";
 import Recommendation from "./carousels/Recommendation";
 import WatchProviders from "./watchProviders/WatchProviders";
-import Collections from "../../components/collections/Collections";
-import Reviews from "../../components/reviews/Reviews";
+import Reviews from "../../components/reviews/EnhancedReviews";
+import Seasons from "./seasons/Seasons";
 
 const Details = () => {
   const { mediaType, id } = useParams();
@@ -21,10 +21,8 @@ const Details = () => {
     `/${mediaType}/${id}/watch/providers`
   );
   const { data: reviews } = useFetch(`/${mediaType}/${id}/reviews`);
-  const { data: collection } = useFetch(
-    data?.belongs_to_collection?.id
-      ? `/collection/${data.belongs_to_collection.id}`
-      : null
+  const { data: details, loading: detailsLoading } = useFetch(
+    `/${mediaType}/${id}`
   );
   const recommendationsRef = useRef(null);
 
@@ -38,8 +36,15 @@ const Details = () => {
       <WatchProviders data={watchProviders?.results?.IN} />
       <Cast data={credits?.cast} loading={creditsLoading} />
       <VideosSection data={data} loading={loading} />
-      {collection && <Collections data={[collection]} loading={loading} />}
-      <Reviews data={reviews} />
+      {mediaType === "tv" && (
+        <Seasons data={details} loading={detailsLoading} />
+      )}
+      <Reviews
+        data={reviews}
+        mediaType={mediaType}
+        mediaId={id}
+        mediaTitle={details?.title || details?.name}
+      />
       <Similar mediaType={mediaType} id={id} />
       <div ref={recommendationsRef}>
         <Recommendation mediaType={mediaType} id={id} />

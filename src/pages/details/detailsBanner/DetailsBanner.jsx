@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { FaRobot } from "react-icons/fa";
@@ -20,8 +20,8 @@ const DetailsBanner = ({ video, crew, recommendationsRef }) => {
   const [videoId, setVideoId] = useState(null);
 
   const { mediaType, id } = useParams();
+  const navigate = useNavigate();
   const { data, loading } = useFetch(`/${mediaType}/${id}`);
-
   const { url } = useSelector((state) => state.home);
 
   const _genres = data?.genres?.map((g) => g.id);
@@ -42,6 +42,10 @@ const DetailsBanner = ({ video, crew, recommendationsRef }) => {
       behavior: "smooth",
       block: "start",
     });
+  };
+
+  const handlePersonClick = (personId) => {
+    navigate(`/person/${personId}`);
   };
 
   return (
@@ -69,7 +73,7 @@ const DetailsBanner = ({ video, crew, recommendationsRef }) => {
                   <div className="right">
                     <div className="title">
                       {`${data.name || data.title} (${dayjs(
-                        data?.release_date
+                        data?.first_air_date || data?.release_date
                       ).format("YYYY")})`}
                     </div>
                     <div className="subtitle">{data.tagline}</div>
@@ -77,7 +81,13 @@ const DetailsBanner = ({ video, crew, recommendationsRef }) => {
                     <Genres data={_genres} />
 
                     <div className="row">
-                      <CircleRating rating={data.vote_average.toFixed(1)} />
+                      <CircleRating
+                        rating={
+                          data.vote_average
+                            ? data.vote_average.toFixed(1)
+                            : "0.0"
+                        }
+                      />
                       <div
                         className="playbtn"
                         onClick={() => {
@@ -109,7 +119,7 @@ const DetailsBanner = ({ video, crew, recommendationsRef }) => {
                           <span className="text">{data.status}</span>
                         </div>
                       )}
-                      {data.release_date && (
+                      {data.release_date && mediaType === "movie" && (
                         <div className="infoItem">
                           <span className="text bold">Release Date: </span>
                           <span className="text">
@@ -117,7 +127,15 @@ const DetailsBanner = ({ video, crew, recommendationsRef }) => {
                           </span>
                         </div>
                       )}
-                      {data.runtime && (
+                      {data.first_air_date && mediaType === "tv" && (
+                        <div className="infoItem">
+                          <span className="text bold">First Air Date: </span>
+                          <span className="text">
+                            {dayjs(data.first_air_date).format("MMM D, YYYY")}
+                          </span>
+                        </div>
+                      )}
+                      {data.runtime && mediaType === "movie" && (
                         <div className="infoItem">
                           <span className="text bold">Runtime: </span>
                           <span className="text">
@@ -125,14 +143,42 @@ const DetailsBanner = ({ video, crew, recommendationsRef }) => {
                           </span>
                         </div>
                       )}
+                      {data.episode_run_time &&
+                        mediaType === "tv" &&
+                        data.episode_run_time.length > 0 && (
+                          <div className="infoItem">
+                            <span className="text bold">Episode Runtime: </span>
+                            <span className="text">
+                              {toHoursAndMinutes(data.episode_run_time[0])}
+                            </span>
+                          </div>
+                        )}
+                      {data.number_of_seasons && mediaType === "tv" && (
+                        <div className="infoItem">
+                          <span className="text bold">Seasons: </span>
+                          <span className="text">{data.number_of_seasons}</span>
+                        </div>
+                      )}
+                      {data.number_of_episodes && mediaType === "tv" && (
+                        <div className="infoItem">
+                          <span className="text bold">Episodes: </span>
+                          <span className="text">
+                            {data.number_of_episodes}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    {director?.length > 0 && (
+                    {mediaType === "movie" && director?.length > 0 && (
                       <div className="info">
                         <span className="text bold">Director: </span>
                         <span className="text">
                           {director?.map((d, i) => (
-                            <span key={i}>
+                            <span
+                              key={i}
+                              className="personLink"
+                              onClick={() => handlePersonClick(d.id)}
+                            >
                               {d.name}
                               {director.length - 1 !== i && ", "}
                             </span>
@@ -141,12 +187,16 @@ const DetailsBanner = ({ video, crew, recommendationsRef }) => {
                       </div>
                     )}
 
-                    {writer?.length > 0 && (
+                    {mediaType === "movie" && writer?.length > 0 && (
                       <div className="info">
                         <span className="text bold">Writer: </span>
                         <span className="text">
                           {writer?.map((d, i) => (
-                            <span key={i}>
+                            <span
+                              key={i}
+                              className="personLink"
+                              onClick={() => handlePersonClick(d.id)}
+                            >
                               {d.name}
                               {writer.length - 1 !== i && ", "}
                             </span>
@@ -155,12 +205,16 @@ const DetailsBanner = ({ video, crew, recommendationsRef }) => {
                       </div>
                     )}
 
-                    {data?.created_by?.length > 0 && (
+                    {mediaType === "tv" && data?.created_by?.length > 0 && (
                       <div className="info">
-                        <span className="text bold">Creator: </span>
+                        <span className="text bold">Created by: </span>
                         <span className="text">
                           {data?.created_by?.map((d, i) => (
-                            <span key={i}>
+                            <span
+                              key={i}
+                              className="personLink"
+                              onClick={() => handlePersonClick(d.id)}
+                            >
                               {d.name}
                               {data?.created_by.length - 1 !== i && ", "}
                             </span>

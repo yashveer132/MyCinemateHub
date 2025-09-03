@@ -1,5 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 import "./style.scss";
 
@@ -9,6 +10,7 @@ import avatar from "../../../assets/avatar.png";
 
 const Cast = ({ data, loading }) => {
   const { url } = useSelector((state) => state.home);
+  const navigate = useNavigate();
 
   const skeleton = () => {
     return (
@@ -18,6 +20,10 @@ const Cast = ({ data, loading }) => {
         <div className="row2 skeleton"></div>
       </div>
     );
+  };
+
+  const handlePersonClick = (personId) => {
+    navigate(`/person/${personId}`);
   };
   return (
     <div className="castSection">
@@ -30,7 +36,11 @@ const Cast = ({ data, loading }) => {
                 ? url.profile + item.profile_path
                 : avatar;
               return (
-                <div key={item.id} className="listItem">
+                <div
+                  key={item.id}
+                  className="listItem"
+                  onClick={() => handlePersonClick(item.id)}
+                >
                   <div className="profileImg">
                     <Img src={imgUrl} />
                   </div>

@@ -1,3 +1,5 @@
+@import "../../mixins.scss";
+
 .reviews {
   position: relative;
   margin-bottom: 50px;
@@ -6,69 +8,288 @@
     font-size: 24px;
     color: white;
     margin-bottom: 25px;
+    font-weight: 600;
+  }
+
+  .reviewTabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 15px;
+
+    .tabButton {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.7);
+      padding: 10px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+      font-weight: 500;
+      position: relative;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+      }
+
+      &.active {
+        background: var(--pink);
+        border-color: var(--pink);
+        color: white;
+      }
+
+      .loading {
+        margin-left: 8px;
+        animation: pulse 1.5s infinite;
+      }
+    }
   }
 
   .reviewsList {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 25px;
 
     .reviewItem {
-      padding: 20px;
       background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+
+      &.clickable {
+        cursor: pointer;
+
+        &:hover {
+          background: rgba(255, 107, 107, 0.1);
+          border-color: rgba(255, 107, 107, 0.3);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(255, 107, 107, 0.2);
+        }
+      }
 
       .reviewHeader {
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin-bottom: 15px;
+        gap: 15px;
+        margin-bottom: 16px;
 
         .avatar {
-          width: 40px;
-          height: 40px;
+          width: 50px;
+          height: 50px;
           border-radius: 50%;
           overflow: hidden;
+          flex-shrink: 0;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          &.redditAvatar {
+            background: #ff4500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            .redditIcon {
+              font-size: 24px;
+            }
+          }
         }
 
         .info {
+          flex: 1;
+
           .name {
-            color: white;
             font-size: 16px;
             font-weight: 600;
+            color: white;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            .subreddit {
+              font-size: 12px;
+              color: var(--pink);
+              font-weight: 500;
+              background: rgba(255, 107, 107, 0.1);
+              padding: 2px 8px;
+              border-radius: 10px;
+            }
           }
 
-          .rating {
-            color: var(--pink);
-            font-size: 14px;
+          .meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+
+            .rating {
+              color: #ffd700;
+              font-weight: 600;
+            }
+
+            .score {
+              color: #ff4500;
+              font-weight: 600;
+            }
+
+            .comments {
+              color: #0079d3;
+              font-weight: 600;
+            }
+
+            .source {
+              background: rgba(3, 168, 124, 0.2);
+              color: #03a87c;
+              padding: 2px 8px;
+              border-radius: 10px;
+              font-size: 11px;
+              font-weight: 600;
+            }
+
+            .reviewType {
+              background: rgba(255, 107, 107, 0.1);
+              color: var(--pink);
+              padding: 2px 8px;
+              border-radius: 10px;
+              font-size: 11px;
+              font-weight: 500;
+            }
           }
         }
       }
 
       .content {
+        color: rgba(255, 255, 255, 0.85);
+        line-height: 1.6;
+        margin-bottom: 12px;
+
+        .redditTitle {
+          font-size: 16px;
+          font-weight: 600;
+          color: white;
+          margin-bottom: 12px;
+          line-height: 1.4;
+        }
+
+        .redditText {
+          font-size: 14px;
+          line-height: 1.5;
+        }
+      }
+
+      .reviewDate {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 8px;
+      }
+
+      .reviewFooter {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+        .reviewDate {
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.5);
+          margin: 0;
+        }
+
+        .redditLink {
+          color: #ff4500;
+          text-decoration: none;
+          font-size: 12px;
+          font-weight: 500;
+          transition: all 0.3s ease;
+
+          &:hover {
+            color: #ff6a3d;
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+
+    .noReviews {
+      text-align: center;
+      padding: 40px 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+
+      p {
         color: rgba(255, 255, 255, 0.7);
-        font-size: 14px;
-        line-height: 1.5;
+        font-size: 16px;
+        margin-bottom: 20px;
+      }
+
+      .retryButton {
+        background: var(--pink);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: #ff6b9d;
+          transform: translateY(-2px);
+        }
+      }
+    }
+
+    .loadingReviews {
+      text-align: center;
+      padding: 40px 20px;
+
+      p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 16px;
       }
     }
   }
 
   .showMore {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 30px;
 
     button {
-      background: var(--gradient);
-      border: none;
-      padding: 8px 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       color: white;
-      border-radius: 20px;
+      padding: 12px 30px;
+      border-radius: 25px;
       cursor: pointer;
-      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
 
       &:hover {
-        opacity: 0.8;
+        background: var(--pink);
+        border-color: var(--pink);
+        transform: translateY(-2px);
       }
     }
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
   }
 }
