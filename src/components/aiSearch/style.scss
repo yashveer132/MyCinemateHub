@@ -179,7 +179,8 @@
           }
         }
         .sectionHeading {
-          font-size: 22px;
+          font-size: 28px;
+          text-align: center;
         }
         .searchDescription {
           font-size: 13px;
@@ -189,10 +190,10 @@
 
     .sectionHeading {
       color: #fff;
-      font-size: 32px;
-      font-weight: 800;
+      font-size: 28px;
+      font-weight: 600;
       margin-bottom: 15px;
-      color: #fff;
+      text-align: center;
       .highlight {
         background: rgba(218, 47, 104, 0.1);
         color: var(--pink);

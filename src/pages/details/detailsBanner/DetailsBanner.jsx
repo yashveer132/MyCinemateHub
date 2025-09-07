@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import dayjs from "dayjs";
-import { FaRobot } from "react-icons/fa";
 
 import "./style.scss";
 
@@ -15,7 +14,7 @@ import PosterFallback from "../../../assets/no-poster.png";
 import { PlayIcon } from "../Playbtn";
 import VideoPopup from "../../../components/videoPopup/VideoPopup";
 
-const DetailsBanner = ({ video, crew, recommendationsRef }) => {
+const DetailsBanner = ({ video, crew }) => {
   const [show, setShow] = useState(false);
   const [videoId, setVideoId] = useState(null);
 
@@ -35,13 +34,6 @@ const DetailsBanner = ({ video, crew, recommendationsRef }) => {
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
     return `${hours}h${minutes > 0 ? ` ${minutes}m` : ""}`;
-  };
-
-  const scrollToRecommendations = () => {
-    recommendationsRef?.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
   };
 
   const handlePersonClick = (personId) => {
@@ -97,13 +89,6 @@ const DetailsBanner = ({ video, crew, recommendationsRef }) => {
                       >
                         <PlayIcon />
                         <span className="text">Watch Trailer</span>
-                      </div>
-                      <div
-                        className="aiRecommendBtn"
-                        onClick={scrollToRecommendations}
-                      >
-                        <FaRobot />
-                        <span>AI Recommendations</span>
                       </div>
                     </div>
 

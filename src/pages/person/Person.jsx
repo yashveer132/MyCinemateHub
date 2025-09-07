@@ -173,7 +173,6 @@ const Person = () => {
             </div>
           )}
 
-          {/* Filmography Section */}
           {credits && (
             <div className="filmography">
               <ContentWrapper>
@@ -231,7 +230,6 @@ const Person = () => {
             </div>
           )}
 
-          {/* Images Section */}
           {images && images.profiles && images.profiles.length > 0 && (
             <div className="imagesSection">
               <ContentWrapper>

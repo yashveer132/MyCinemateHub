@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import { useParams } from "react-router-dom";
 
 import useFetch from "../../hooks/useFetch";
@@ -24,14 +24,12 @@ const Details = () => {
   const { data: details, loading: detailsLoading } = useFetch(
     `/${mediaType}/${id}`
   );
-  const recommendationsRef = useRef(null);
 
   return (
     <div>
       <DetailsBanner
         video={data?.results?.[0]}
         crew={credits?.crew}
-        recommendationsRef={recommendationsRef}
       />
       <WatchProviders data={watchProviders?.results?.IN} />
       <Cast data={credits?.cast} loading={creditsLoading} />
@@ -46,7 +44,7 @@ const Details = () => {
         mediaTitle={details?.title || details?.name}
       />
       <Similar mediaType={mediaType} id={id} />
-      <div ref={recommendationsRef}>
+      <div>
         <Recommendation mediaType={mediaType} id={id} />
       </div>
     </div>

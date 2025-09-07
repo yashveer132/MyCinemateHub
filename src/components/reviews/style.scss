@@ -5,10 +5,11 @@
   margin-bottom: 50px;
 
   .sectionHeading {
-    font-size: 24px;
+    font-size: 28px;
     color: white;
     margin-bottom: 25px;
     font-weight: 600;
+    text-align: center;
   }
 
   .reviewTabs {
@@ -17,6 +18,7 @@
     margin-bottom: 30px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 15px;
+    justify-content: center;
 
     .tabButton {
       background: rgba(255, 255, 255, 0.05);
@@ -73,9 +75,11 @@
 
       .reviewHeader {
         display: flex;
+        flex-direction: column;
         align-items: center;
         gap: 15px;
         margin-bottom: 16px;
+        text-align: center;
 
         .avatar {
           width: 50px;
@@ -171,6 +175,7 @@
         color: rgba(255, 255, 255, 0.85);
         line-height: 1.6;
         margin-bottom: 12px;
+        text-align: center;
 
         .redditTitle {
           font-size: 16px;
@@ -178,11 +183,13 @@
           color: white;
           margin-bottom: 12px;
           line-height: 1.4;
+          text-align: center;
         }
 
         .redditText {
           font-size: 14px;
           line-height: 1.5;
+          text-align: center;
         }
       }
 
@@ -190,19 +197,23 @@
         font-size: 12px;
         color: rgba(255, 255, 255, 0.5);
         margin-bottom: 8px;
+        text-align: center;
       }
 
       .reviewFooter {
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
         padding-top: 12px;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
+        flex-direction: column;
+        gap: 8px;
 
         .reviewDate {
           font-size: 12px;
           color: rgba(255, 255, 255, 0.5);
           margin: 0;
+          text-align: center;
         }
 
         .redditLink {
@@ -211,6 +222,7 @@
           font-size: 12px;
           font-weight: 500;
           transition: all 0.3s ease;
+          text-align: center;
 
           &:hover {
             color: #ff6a3d;

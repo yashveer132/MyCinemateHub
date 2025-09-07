@@ -76,7 +76,18 @@ const SearchResult = () => {
               </InfiniteScroll>
             </>
           ) : (
-            <span className="resultNotFound">Sorry, Results not found!</span>
+            <div className="noResultsCard">
+              <img
+                src={noResults}
+                alt="No Results"
+                className="noResultsImage"
+              />
+              <h2 className="noResultsTitle">Oops! No Results Found</h2>
+              <p className="noResultsMessage">
+                We couldn't find any movies or TV shows matching "{query}". Try
+                adjusting your search terms or check for typos.
+              </p>
+            </div>
           )}
         </ContentWrapper>
       )}

@@ -14,7 +14,7 @@ const Header = () => {
   const [mobileMenu, setMobileMenu] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const isActive = (path) => {
     if (path === "/" && location.pathname === "/") return true;
     if (path !== "/" && location.pathname.includes(path)) return true;
@@ -93,26 +93,29 @@ const Header = () => {
         </div>
 
         <ul className="menuItems">
-          <li className={`menuItem ${location.pathname === "/" ? "active" : ""}`} onClick={() => navigate("/")}>
+          <li
+            className={`menuItem ${location.pathname === "/" ? "active" : ""}`}
+            onClick={() => navigate("/")}
+          >
             Home
           </li>
-          <li className={`menuItem ${isActive("movie") ? "active" : ""}`} onClick={() => navigationHandler("movie")}>
+          <li
+            className={`menuItem ${isActive("movie") ? "active" : ""}`}
+            onClick={() => navigationHandler("movie")}
+          >
             Movies
           </li>
-          <li className={`menuItem ${isActive("tv") ? "active" : ""}`} onClick={() => navigationHandler("tv")}>
+          <li
+            className={`menuItem ${isActive("tv") ? "active" : ""}`}
+            onClick={() => navigationHandler("tv")}
+          >
             TV Shows
           </li>
-          <li className={`menuItem ${isActive("playlist") ? "active" : ""}`} onClick={() => navigate("/playlist")}>
+          <li
+            className={`menuItem ${isActive("playlist") ? "active" : ""}`}
+            onClick={() => navigate("/playlist")}
+          >
             AI Playlists
-          </li>
-          <li className={`menuItem ${isActive("trending") ? "active" : ""}`} onClick={() => navigationHandler("trending")}>
-            Trending
-          </li>
-          <li className={`menuItem ${isActive("popular") ? "active" : ""}`} onClick={() => navigationHandler("popular")}>
-            Popular
-          </li>
-          <li className={`menuItem ${isActive("topRated") ? "active" : ""}`} onClick={() => navigationHandler("topRated")}>
-            Top Rated
           </li>
         </ul>
 

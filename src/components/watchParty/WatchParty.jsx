@@ -28,9 +28,7 @@ const WatchParty = ({ videoId: initialVideoId, movieData, onClose }) => {
   const [isHost, setIsHost] = useState(false);
 
   useEffect(() => {
-    const peer = new Peer(
-      `party-${movieData?.id}-${currentVideoId}-${Date.now()}`
-    );
+    const peer = new Peer(`party-${movieData?.id}-${Date.now()}`);
     peerRef.current = peer;
 
     peer.on("open", (id) => {
@@ -51,7 +49,7 @@ const WatchParty = ({ videoId: initialVideoId, movieData, onClose }) => {
       connectionsRef.current.forEach((conn) => conn.close());
       peer.destroy();
     };
-  }, [movieData?.id, currentVideoId]);
+  }, [movieData?.id]);
 
   const handleNewConnection = useCallback(
     (conn) => {
@@ -76,11 +74,41 @@ const WatchParty = ({ videoId: initialVideoId, movieData, onClose }) => {
           setCurrentVideoId(data.data.videoId);
           setPlaying(data.data.playing);
           playerRef.current?.seekTo(data.data.currentTime);
+          setTimeout(() => {
+            const internalPlayer = playerRef.current?.getInternalPlayer();
+            if (internalPlayer) {
+              if (data.data.playing) {
+                internalPlayer.playVideo();
+              } else {
+                internalPlayer.pauseVideo();
+              }
+            }
+          }, 100);
         } else if (data.type === "sync") {
           setSyncingPlayback(true);
           setPlaying(data.data.playing);
           playerRef.current?.seekTo(data.data.currentTime);
-          setTimeout(() => setSyncingPlayback(false), 500);
+          setTimeout(() => {
+            const internalPlayer = playerRef.current?.getInternalPlayer();
+            if (internalPlayer) {
+              if (data.data.playing) {
+                internalPlayer.playVideo();
+              } else {
+                internalPlayer.pauseVideo();
+              }
+            }
+            setTimeout(() => setSyncingPlayback(false), 500);
+          }, 100);
+        } else if (data.type === "video-change") {
+          setCurrentVideoId(data.data.videoId);
+          setPlaying(true);
+          playerRef.current?.seekTo(0);
+          setTimeout(() => {
+            const internalPlayer = playerRef.current?.getInternalPlayer();
+            if (internalPlayer) {
+              internalPlayer.playVideo();
+            }
+          }, 100);
         }
       });
 
@@ -120,6 +148,16 @@ const WatchParty = ({ videoId: initialVideoId, movieData, onClose }) => {
           playing: isPlaying,
           currentTime: playerRef.current?.getCurrentTime() || 0,
         });
+        setTimeout(() => {
+          const internalPlayer = playerRef.current?.getInternalPlayer();
+          if (internalPlayer) {
+            if (isPlaying) {
+              internalPlayer.playVideo();
+            } else {
+              internalPlayer.pauseVideo();
+            }
+          }
+        }, 100);
       }
     },
     [syncingPlayback, isHost, broadcastState]
@@ -142,8 +180,7 @@ const WatchParty = ({ videoId: initialVideoId, movieData, onClose }) => {
           .filter((t) => t);
 
         setSimilarTrailers(validTrailers);
-      } catch (error) {
-      }
+      } catch (error) {}
     };
 
     fetchSimilarTrailers();
@@ -156,11 +193,36 @@ const WatchParty = ({ videoId: initialVideoId, movieData, onClose }) => {
     setTimeout(() => setShowCopied(false), 2000);
   }, [movieData?.id, currentVideoId]);
 
-  const handleTrailerClick = useCallback((trailer) => {
-    setCurrentVideoId(trailer.key);
-    setPlaying(true);
-    broadcastState("video-change", { videoId: trailer.key });
-  }, []);
+  const handleTrailerClick = useCallback(
+    (trailer) => {
+      setCurrentVideoId(trailer.key);
+      setPlaying(true);
+      broadcastState("video-change", { videoId: trailer.key });
+      setTimeout(() => {
+        const internalPlayer = playerRef.current?.getInternalPlayer();
+        if (internalPlayer) {
+          internalPlayer.playVideo();
+        }
+      }, 100);
+    },
+    [broadcastState]
+  );
+
+  useEffect(() => {
+    if (!isHost) return;
+
+    const interval = setInterval(() => {
+      if (playerRef.current) {
+        const currentTime = playerRef.current.getCurrentTime();
+        broadcastState("sync", {
+          playing,
+          currentTime,
+        });
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [isHost, playing, broadcastState]);
 
   if (!movieData || !currentVideoId) {
     return (
@@ -234,7 +296,7 @@ const WatchParty = ({ videoId: initialVideoId, movieData, onClose }) => {
             {similarTrailers.length > 0 && (
               <div className="recommendationsSection">
                 <h3>
-                  <FaRobot /> AI Recommended Trailers
+                  <FaRobot /> Recommended Trailers
                 </h3>
                 <div className="trailerGrid">
                   {similarTrailers.map((trailer) => (
