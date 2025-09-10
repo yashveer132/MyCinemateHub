@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
@@ -29,16 +29,26 @@ const Seasons = ({ data, loading }) => {
   const handleSeasonClick = (season) => {
     const newSelectedSeason = selectedSeason?.id === season.id ? null : season;
     setSelectedSeason(newSelectedSeason);
-
-    if (newSelectedSeason && episodesRef.current) {
-      setTimeout(() => {
-        episodesRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }, 100);
-    }
   };
+
+  useEffect(() => {
+    if (selectedSeason && episodesRef.current) {
+      const scrollToEpisodes = () => {
+        if (episodesRef.current) {
+          episodesRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }
+      };
+
+      scrollToEpisodes();
+
+      const timeoutId = setTimeout(scrollToEpisodes, 100);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [selectedSeason]);
 
   return (
     <div className="seasonsSection">
@@ -48,8 +58,8 @@ const Seasons = ({ data, loading }) => {
           <>
             <div className="seasonsList">
               {data?.seasons
-                ?.filter((season) => season.season_number > 0) 
-                ?.sort((a, b) => b.season_number - a.season_number) 
+                ?.filter((season) => season.season_number > 0)
+                ?.sort((a, b) => b.season_number - a.season_number)
                 ?.map((season) => (
                   <div
                     key={season.id}

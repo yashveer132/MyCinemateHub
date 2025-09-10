@@ -1,0 +1,142 @@
+.screenedTheatricallySection {
+  margin-bottom: 50px;
+
+  .sectionHeading {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: white;
+    text-align: center;
+  }
+
+  .noData {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.7);
+
+    p {
+      font-size: 16px;
+      margin: 0;
+    }
+  }
+
+  .screeningsList {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .screeningItem {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-2px);
+      }
+
+      .episodePoster {
+        margin-right: 20px;
+        flex-shrink: 0;
+
+        img {
+          width: 120px;
+          height: 80px;
+          object-fit: cover;
+          border-radius: 8px;
+        }
+
+        .noPoster {
+          width: 120px;
+          height: 80px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: rgba(255, 255, 255, 0.5);
+          font-size: 12px;
+        }
+      }
+
+      .episodeInfo {
+        flex: 1;
+
+        .episodeNumber {
+          font-size: 14px;
+          color: #4ecdc4;
+          background: rgba(78, 205, 196, 0.1);
+          padding: 4px 8px;
+          border-radius: 4px;
+          display: inline-block;
+          margin-bottom: 8px;
+        }
+
+        .episodeTitle {
+          font-size: 18px;
+          font-weight: 600;
+          color: white;
+          margin-bottom: 8px;
+        }
+
+        .screeningDate {
+          font-size: 14px;
+          color: #ffe66d;
+          margin-bottom: 12px;
+          font-weight: 500;
+        }
+
+        .episodeOverview {
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.8);
+          line-height: 1.4;
+        }
+      }
+    }
+  }
+
+  .screeningsSkeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .skItem {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+
+      .episodeInfo {
+        flex: 1;
+        margin-left: 20px;
+
+        .episodeNumber {
+          height: 14px;
+          background: rgba(78, 205, 196, 0.1);
+          border-radius: 4px;
+          margin-bottom: 12px;
+          width: 120px;
+        }
+
+        .episodeTitle {
+          height: 18px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 4px;
+          margin-bottom: 12px;
+          width: 60%;
+        }
+
+        .screeningDate {
+          height: 14px;
+          background: rgba(255, 230, 109, 0.1);
+          border-radius: 4px;
+          width: 150px;
+        }
+      }
+    }
+  }
+}

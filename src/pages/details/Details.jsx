@@ -10,6 +10,9 @@ import Recommendation from "./carousels/Recommendation";
 import WatchProviders from "./watchProviders/WatchProviders";
 import Reviews from "../../components/reviews/EnhancedReviews";
 import Seasons from "./seasons/Seasons";
+import TranslationsSection from "./translationsSection/TranslationsSection";
+import ReleaseDatesSection from "./releaseDatesSection/ReleaseDatesSection";
+import ScreenedTheatricallySection from "./screenedTheatricallySection/ScreenedTheatricallySection";
 
 const Details = () => {
   const { mediaType, id } = useParams();
@@ -27,16 +30,16 @@ const Details = () => {
 
   return (
     <div>
-      <DetailsBanner
-        video={data?.results?.[0]}
-        crew={credits?.crew}
-      />
+      <DetailsBanner video={data?.results?.[0]} crew={credits?.crew} />
       <WatchProviders data={watchProviders?.results?.IN} />
       <Cast data={credits?.cast} loading={creditsLoading} />
       <VideosSection data={data} loading={loading} />
       {mediaType === "tv" && (
         <Seasons data={details} loading={detailsLoading} />
       )}
+      <TranslationsSection mediaType={mediaType} id={id} />
+      {mediaType === "movie" && <ReleaseDatesSection id={id} />}
+      {mediaType === "tv" && <ScreenedTheatricallySection id={id} />}
       <Reviews
         data={reviews}
         mediaType={mediaType}
