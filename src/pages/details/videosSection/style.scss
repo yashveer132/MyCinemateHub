@@ -123,4 +123,57 @@
       }
     }
   }
+
+  .videosEmpty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .noVideos {
+    width: 150px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    margin: 0;
+
+    @include md {
+      width: 25%;
+    }
+
+    .noVideosIcon {
+      font-size: 48px;
+      margin-bottom: 15px;
+      opacity: 0.7;
+    }
+
+    .noVideosText {
+      font-size: 16px;
+      color: white;
+      font-weight: 600;
+      margin-bottom: 8px;
+      line-height: 1.3;
+
+      @include md {
+        font-size: 18px;
+      }
+    }
+
+    .noVideosSubtext {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.4;
+
+      @include md {
+        font-size: 16px;
+      }
+    }
+  }
 }

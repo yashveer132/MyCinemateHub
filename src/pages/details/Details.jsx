@@ -13,6 +13,7 @@ import Seasons from "./seasons/Seasons";
 import TranslationsSection from "./translationsSection/TranslationsSection";
 import ReleaseDatesSection from "./releaseDatesSection/ReleaseDatesSection";
 import ScreenedTheatricallySection from "./screenedTheatricallySection/ScreenedTheatricallySection";
+import SongsSection from "./songsSection/SongsSection";
 
 const Details = () => {
   const { mediaType, id } = useParams();
@@ -34,6 +35,7 @@ const Details = () => {
       <WatchProviders data={watchProviders?.results?.IN} />
       <Cast data={credits?.cast} loading={creditsLoading} />
       <VideosSection data={data} loading={loading} />
+      <SongsSection mediaTitle={details?.title || details?.name} />
       {mediaType === "tv" && (
         <Seasons data={details} loading={detailsLoading} />
       )}

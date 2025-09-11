@@ -26,26 +26,38 @@ const VideosSection = ({ data, loading }) => {
       <ContentWrapper>
         <div className="sectionHeading">Official Videos</div>
         {!loading ? (
-          <div className="videos">
-            {data?.results?.map((video) => (
-              <div
-                key={video.id}
-                className="videoItem"
-                onClick={() => {
-                  setVideoId(video.key);
-                  setShow(true);
-                }}
-              >
-                <div className="videoThumbnail">
-                  <Img
-                    src={`https://img.youtube.com/vi/${video.key}/mqdefault.jpg`}
-                  />
-                  <PlayIcon />
+          data?.results?.length > 0 ? (
+            <div className="videos">
+              {data.results.map((video) => (
+                <div
+                  key={video.id}
+                  className="videoItem"
+                  onClick={() => {
+                    setVideoId(video.key);
+                    setShow(true);
+                  }}
+                >
+                  <div className="videoThumbnail">
+                    <Img
+                      src={`https://img.youtube.com/vi/${video.key}/mqdefault.jpg`}
+                    />
+                    <PlayIcon />
+                  </div>
+                  <div className="videoTitle">{video.name}</div>
                 </div>
-                <div className="videoTitle">{video.name}</div>
+              ))}
+            </div>
+          ) : (
+            <div className="videosEmpty">
+              <div className="noVideos">
+                <div className="noVideosIcon">🎥</div>
+                <div className="noVideosText">No official videos available</div>
+                <div className="noVideosSubtext">
+                  Check back later for trailers and behind-the-scenes content
+                </div>
               </div>
-            ))}
-          </div>
+            </div>
+          )
         ) : (
           <div className="videoSkeleton">
             {loadingSkeleton()}

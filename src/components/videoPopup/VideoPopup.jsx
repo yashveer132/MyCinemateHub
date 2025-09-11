@@ -28,19 +28,31 @@ const VideoPopup = ({ show, setShow, videoId, setVideoId, movieData }) => {
             <span className="closeBtn" onClick={hidePopup}>
               Close
             </span>
-            <ReactPlayer
-              url={`https://www.youtube.com/watch?v=${videoId}`}
-              controls
-              width="100%"
-              height="100%"
-              playing={true}
-            />
-            <button
-              className="watchPartyBtn"
-              onClick={() => setIsWatchParty(true)}
-            >
-              <FaUsers /> Start Watch Party
-            </button>
+            {videoId ? (
+              <>
+                <ReactPlayer
+                  url={`https://www.youtube.com/watch?v=${videoId}`}
+                  controls
+                  width="100%"
+                  height="100%"
+                  playing={true}
+                />
+                <button
+                  className="watchPartyBtn"
+                  onClick={() => setIsWatchParty(true)}
+                >
+                  <FaUsers /> Start Watch Party
+                </button>
+              </>
+            ) : (
+              <div className="noVideo">
+                <div className="noVideoIcon">🎥</div>
+                <div className="noVideoText">No video available</div>
+                <div className="noVideoSubtext">
+                  This trailer or video is not available at the moment
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>

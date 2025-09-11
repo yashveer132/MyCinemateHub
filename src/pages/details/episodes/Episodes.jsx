@@ -55,60 +55,70 @@ const Episodes = ({ tvId, seasonNumber, seasonData }) => {
         </div>
 
         {!loading ? (
-          <div className="episodesList">
-            {data?.episodes?.map((episode) => (
-              <div
-                key={episode.id}
-                className="episodeItem"
-                onClick={() => handleEpisodeClick(episode.episode_number)}
-                style={{ cursor: "pointer" }}
-              >
-                <div className="episodeNumber">{episode.episode_number}</div>
-                <div className="episodePoster">
-                  <Img
-                    src={
-                      episode.still_path
-                        ? url.backdrop + episode.still_path
-                        : "/placeholder-episode.jpg"
-                    }
-                  />
-                </div>
-                <div className="episodeInfo">
-                  <div className="episodeTitle">
-                    {episode.name || `Episode ${episode.episode_number}`}
+          data?.episodes?.length > 0 ? (
+            <div className="episodesList">
+              {data.episodes.map((episode) => (
+                <div
+                  key={episode.id}
+                  className="episodeItem"
+                  onClick={() => handleEpisodeClick(episode.episode_number)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <div className="episodeNumber">{episode.episode_number}</div>
+                  <div className="episodePoster">
+                    <Img
+                      src={
+                        episode.still_path
+                          ? url.backdrop + episode.still_path
+                          : "/placeholder-episode.jpg"
+                      }
+                    />
                   </div>
-                  <div className="episodeMeta">
-                    <span className="airDate">
-                      {formatDate(episode.air_date)}
-                    </span>
-                    {episode.runtime && (
-                      <>
-                        <span className="separator">•</span>
-                        <span className="runtime">
-                          {formatRuntime(episode.runtime)}
-                        </span>
-                      </>
-                    )}
-                    {episode.vote_average > 0 && (
-                      <>
-                        <span className="separator">•</span>
-                        <span className="rating">
-                          ⭐ {episode.vote_average.toFixed(1)}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  {episode.overview && (
-                    <div className="episodeOverview">
-                      {episode.overview.length > 200
-                        ? `${episode.overview.substring(0, 200)}...`
-                        : episode.overview}
+                  <div className="episodeInfo">
+                    <div className="episodeTitle">
+                      {episode.name || `Episode ${episode.episode_number}`}
                     </div>
-                  )}
+                    <div className="episodeMeta">
+                      <span className="airDate">
+                        {formatDate(episode.air_date)}
+                      </span>
+                      {episode.runtime && (
+                        <>
+                          <span className="separator">•</span>
+                          <span className="runtime">
+                            {formatRuntime(episode.runtime)}
+                          </span>
+                        </>
+                      )}
+                      {episode.vote_average > 0 && (
+                        <>
+                          <span className="separator">•</span>
+                          <span className="rating">
+                            ⭐ {episode.vote_average.toFixed(1)}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    {episode.overview && (
+                      <div className="episodeOverview">
+                        {episode.overview.length > 200
+                          ? `${episode.overview.substring(0, 200)}...`
+                          : episode.overview}
+                      </div>
+                    )}
+                  </div>
                 </div>
+              ))}
+            </div>
+          ) : (
+            <div className="noEpisodes">
+              <div className="noEpisodesIcon">📺</div>
+              <div className="noEpisodesText">No episodes available</div>
+              <div className="noEpisodesSubtext">
+                Episode information will be updated when available
               </div>
-            ))}
-          </div>
+            </div>
+          )
         ) : (
           <div className="episodesSkeleton">
             {skeleton()}

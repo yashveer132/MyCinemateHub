@@ -56,51 +56,62 @@ const Seasons = ({ data, loading }) => {
         <div className="sectionHeading">Seasons</div>
         {!loading ? (
           <>
-            <div className="seasonsList">
-              {data?.seasons
-                ?.filter((season) => season.season_number > 0)
-                ?.sort((a, b) => b.season_number - a.season_number)
-                ?.map((season) => (
-                  <div
-                    key={season.id}
-                    className={`seasonItem ${
-                      selectedSeason?.id === season.id ? "active" : ""
-                    }`}
-                    onClick={() => handleSeasonClick(season)}
-                  >
-                    <div className="seasonPoster">
-                      <Img
-                        src={
-                          season.poster_path
-                            ? url.poster + season.poster_path
-                            : "/placeholder-season.jpg"
-                        }
-                      />
-                    </div>
-                    <div className="seasonInfo">
-                      <div className="seasonName">
-                        Season {season.season_number}
+            {data?.seasons?.filter((season) => season.season_number > 0)
+              ?.length > 0 ? (
+              <div className="seasonsList">
+                {data.seasons
+                  ?.filter((season) => season.season_number > 0)
+                  ?.sort((a, b) => b.season_number - a.season_number)
+                  ?.map((season) => (
+                    <div
+                      key={season.id}
+                      className={`seasonItem ${
+                        selectedSeason?.id === season.id ? "active" : ""
+                      }`}
+                      onClick={() => handleSeasonClick(season)}
+                    >
+                      <div className="seasonPoster">
+                        <Img
+                          src={
+                            season.poster_path
+                              ? url.poster + season.poster_path
+                              : "/placeholder-season.jpg"
+                          }
+                        />
                       </div>
-                      <div className="seasonDetails">
-                        {season.episode_count} Episodes •{" "}
-                        {season.air_date
-                          ? new Date(season.air_date).getFullYear()
-                          : "TBA"}
-                      </div>
-                      {season.overview && (
-                        <div className="seasonOverview">
-                          {season.overview.length > 150
-                            ? `${season.overview.substring(0, 150)}...`
-                            : season.overview}
+                      <div className="seasonInfo">
+                        <div className="seasonName">
+                          Season {season.season_number}
                         </div>
-                      )}
+                        <div className="seasonDetails">
+                          {season.episode_count} Episodes •{" "}
+                          {season.air_date
+                            ? new Date(season.air_date).getFullYear()
+                            : "TBA"}
+                        </div>
+                        {season.overview && (
+                          <div className="seasonOverview">
+                            {season.overview.length > 150
+                              ? `${season.overview.substring(0, 150)}...`
+                              : season.overview}
+                          </div>
+                        )}
+                      </div>
+                      <div className="expandIcon">
+                        {selectedSeason?.id === season.id ? "−" : "+"}
+                      </div>
                     </div>
-                    <div className="expandIcon">
-                      {selectedSeason?.id === season.id ? "−" : "+"}
-                    </div>
-                  </div>
-                ))}
-            </div>
+                  ))}
+              </div>
+            ) : (
+              <div className="noSeasons">
+                <div className="noSeasonsIcon">📺</div>
+                <div className="noSeasonsText">No seasons available</div>
+                <div className="noSeasonsSubtext">
+                  Season information will be updated when available
+                </div>
+              </div>
+            )}
 
             {selectedSeason && (
               <div ref={episodesRef}>
