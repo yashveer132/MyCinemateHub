@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 import useFetch from "../../hooks/useFetch";
 import ContentWrapper from "../../components/contentWrapper/ContentWrapper";
+import SwitchTabs from "../../components/switchTabs/SwitchTabs";
 import Img from "../../components/lazyLoadImage/Img";
 import avatar from "../../assets/avatar.png";
 import "./style.scss";
@@ -19,6 +20,13 @@ const Person = () => {
   const { data: externalIds } = useFetch(`/person/${id}/external_ids`);
 
   const { url } = useSelector((state) => state.home);
+  const [activeTab, setActiveTab] = useState("Movies");
+
+  const tabData = ["Movies", "TV Shows"];
+
+  const onTabChange = (tab, index) => {
+    setActiveTab(tab);
+  };
 
   const skeleton = () => {
     return (
@@ -59,6 +67,16 @@ const Person = () => {
       );
       return dateB - dateA;
     });
+  };
+
+  const filterMovies = (credits) => {
+    if (!credits || !credits.cast) return [];
+    return credits.cast.filter((item) => item.media_type === "movie");
+  };
+
+  const filterTVShows = (credits) => {
+    if (!credits || !credits.cast) return [];
+    return credits.cast.filter((item) => item.media_type === "tv");
   };
 
   const handleCreditClick = (credit) => {
@@ -177,45 +195,65 @@ const Person = () => {
             <div className="filmography">
               <ContentWrapper>
                 <div className="sectionHeading">Filmography</div>
+                <SwitchTabs data={tabData} onTabChange={onTabChange} />
                 {!creditsLoading ? (
-                  <div className="credits">
-                    {sortCredits(credits.cast || [])
-                      ?.slice(0, 20)
-                      .map((item) => (
-                        <div
-                          key={item.id}
-                          className="creditItem"
-                          onClick={() => handleCreditClick(item)}
-                        >
-                          <div className="posterImg">
-                            <Img
-                              src={
-                                item.poster_path
-                                  ? url.poster + item.poster_path
-                                  : item.backdrop_path
-                                  ? url.backdrop + item.backdrop_path
-                                  : avatar
-                              }
-                            />
+                  (() => {
+                    const filteredCredits = sortCredits(
+                      activeTab === "Movies"
+                        ? filterMovies(credits)
+                        : filterTVShows(credits)
+                    );
+
+                    return filteredCredits && filteredCredits.length > 0 ? (
+                      <div className="credits">
+                        {filteredCredits.slice(0, 20).map((item) => (
+                          <div
+                            key={item.id}
+                            className="creditItem"
+                            onClick={() => handleCreditClick(item)}
+                          >
+                            <div className="posterImg">
+                              <Img
+                                src={
+                                  item.poster_path
+                                    ? url.poster + item.poster_path
+                                    : item.backdrop_path
+                                    ? url.backdrop + item.backdrop_path
+                                    : avatar
+                                }
+                              />
+                            </div>
+                            <div className="details">
+                              <div className="title">
+                                {item.title || item.name}
+                              </div>
+                              <div className="character">
+                                {item.character && `as ${item.character}`}
+                              </div>
+                              <div className="year">
+                                {item.release_date || item.first_air_date
+                                  ? new Date(
+                                      item.release_date || item.first_air_date
+                                    ).getFullYear()
+                                  : "N/A"}
+                              </div>
+                            </div>
                           </div>
-                          <div className="details">
-                            <div className="title">
-                              {item.title || item.name}
-                            </div>
-                            <div className="character">
-                              {item.character && `as ${item.character}`}
-                            </div>
-                            <div className="year">
-                              {item.release_date || item.first_air_date
-                                ? new Date(
-                                    item.release_date || item.first_air_date
-                                  ).getFullYear()
-                                : "N/A"}
-                            </div>
-                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="noCreditsCard">
+                        <div className="noCreditsIcon">🎬</div>
+                        <div className="noCreditsText">
+                          No {activeTab.toLowerCase()} found
                         </div>
-                      ))}
-                  </div>
+                        <div className="noCreditsSubtext">
+                          {data?.name} doesn't have any{" "}
+                          {activeTab.toLowerCase()} credits in our database yet.
+                        </div>
+                      </div>
+                    );
+                  })()
                 ) : (
                   <div className="creditsSkeleton">
                     {skeleton()}

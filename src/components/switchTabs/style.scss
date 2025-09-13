@@ -3,17 +3,27 @@
   background-color: white;
   border-radius: 20px;
   padding: 2px;
+  @media only screen and (max-width: 767px) {
+    height: 30px;
+    border-radius: 16px;
+    padding: 2px;
+  }
   .tabItems {
     display: flex;
     align-items: center;
     height: 30px;
     position: relative;
+    @media only screen and (max-width: 767px) {
+      height: 26px;
+    }
     .tabItem {
       height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 100px;
+      width: auto;
+      min-width: 80px;
+      padding: 0 14px;
       color: var(--black);
       font-size: 14px;
       position: relative;
@@ -23,15 +33,24 @@
       &.active {
         color: white;
       }
+      @media only screen and (max-width: 767px) {
+        min-width: 70px;
+        padding: 0 10px;
+        font-size: 12px;
+      }
     }
     .movingBg {
       height: 30px;
-      width: 100px;
       border-radius: 15px;
       background-image: var(--gradient);
       position: absolute;
       left: 0;
-      transition: left cubic-bezier(0.88, -0.35, 0.565, 1.35) 0.4s;
+      transition: left cubic-bezier(0.88, -0.35, 0.565, 1.35) 0.4s,
+        width 0.3s ease;
+      @media only screen and (max-width: 767px) {
+        height: 26px;
+        border-radius: 13px;
+      }
     }
   }
 }

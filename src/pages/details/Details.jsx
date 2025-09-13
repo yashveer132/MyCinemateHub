@@ -14,6 +14,8 @@ import TranslationsSection from "./translationsSection/TranslationsSection";
 import ReleaseDatesSection from "./releaseDatesSection/ReleaseDatesSection";
 import ScreenedTheatricallySection from "./screenedTheatricallySection/ScreenedTheatricallySection";
 import SongsSection from "./songsSection/SongsSection";
+import ProductionInsights from "./productionInsights/ProductionInsights";
+import TriviaSection from "./triviaSection/TriviaSection";
 
 const Details = () => {
   const { mediaType, id } = useParams();
@@ -48,6 +50,8 @@ const Details = () => {
         mediaId={id}
         mediaTitle={details?.title || details?.name}
       />
+      <TriviaSection movieDetails={details} />
+      <ProductionInsights data={details} loading={detailsLoading} />
       <Similar mediaType={mediaType} id={id} />
       <div>
         <Recommendation mediaType={mediaType} id={id} />

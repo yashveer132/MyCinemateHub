@@ -42,7 +42,7 @@ const validateModel = async (model) => {
 };
 
 const cleanJsonResponse = (text) => {
-  const jsonMatch = text.match(/({[\s\S]*})/);
+  const jsonMatch = text.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
   return jsonMatch ? jsonMatch[0] : text;
 };
 
@@ -139,4 +139,87 @@ const extractSearchParams = async (query) => {
   }
 };
 
-export { extractSearchParams };
+const generateTrivia = async (movieTitle, movieOverview) => {
+  const model = genAI.getGenerativeModel({
+    model: "models/gemini-2.0-flash",
+    safetySettings: [
+      {
+        category: "HARM_CATEGORY_HARASSMENT",
+        threshold: "BLOCK_NONE",
+      },
+    ],
+  });
+
+  try {
+    const isValid = await validateModel(model);
+    if (!isValid) {
+      throw new Error(
+        "Model validation failed - Check if you're using Gemini 2.0 Flash API key"
+      );
+    }
+  } catch (error) {
+    return null;
+  }
+
+  const prompt = `
+    Generate 3-5 interesting trivia facts or fun facts about the movie "${movieTitle}".
+    Movie overview: "${movieOverview}"
+    
+    Return ONLY a JSON array with this exact structure, no additional text:
+    [
+      {
+        "id": "unique_id_1",
+        "text": "The trivia fact text here",
+        "spoiler": false,
+        "type": "trivia"
+      },
+      {
+        "id": "unique_id_2", 
+        "text": "Another interesting fact",
+        "spoiler": false,
+        "type": "fun_fact"
+      }
+    ]
+    
+    Make sure the facts are accurate, interesting, and not spoilers.
+    Use "trivia" or "fun_fact" for the type.
+    Generate unique IDs for each fact.
+    Return only the JSON array, nothing else.
+  `;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    let text = response.text().trim();
+
+    const cleanedResponse = cleanJsonResponse(text);
+
+    let parsedResponse;
+    try {
+      parsedResponse = JSON.parse(cleanedResponse);
+    } catch (parseError) {
+      const jsonStart = text.indexOf("[");
+      const jsonEnd = text.lastIndexOf("]") + 1;
+      if (jsonStart !== -1 && jsonEnd > jsonStart) {
+        const jsonText = text.substring(jsonStart, jsonEnd);
+        parsedResponse = JSON.parse(jsonText);
+      } else {
+        throw parseError;
+      }
+    }
+
+    if (!Array.isArray(parsedResponse)) {
+      throw new Error("Invalid response structure");
+    }
+
+    return {
+      id: Date.now(),
+      results: parsedResponse,
+    };
+  } catch (error) {
+    console.error("Error generating trivia:", error);
+    return null;
+  }
+};
+
+export { extractSearchParams, generateTrivia };

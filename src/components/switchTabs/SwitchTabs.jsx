@@ -1,13 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useLayoutEffect } from "react";
 
 import "./style.scss";
 
 const SwitchTabs = ({ data, onTabChange }) => {
   const [selectedTab, setSelectedTab] = useState(0);
-  const [left, setLeft] = useState(0);
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const tabsRef = useRef([]);
+  const containerRef = useRef(null);
+
+  const updateIndicator = (index) => {
+    const el = tabsRef.current[index];
+    if (el && containerRef.current) {
+      const parentRect = containerRef.current.getBoundingClientRect();
+      const rect = el.getBoundingClientRect();
+      setIndicatorStyle({
+        left: rect.left - parentRect.left,
+        width: rect.width,
+      });
+    }
+  };
+
+  useLayoutEffect(() => {
+    updateIndicator(selectedTab);
+    const handleResize = () => updateIndicator(selectedTab);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [selectedTab]);
 
   const activeTab = (tab, index) => {
-    setLeft(index * 100);
+    updateIndicator(index);
     setTimeout(() => {
       setSelectedTab(index);
     }, 300);
@@ -15,18 +36,22 @@ const SwitchTabs = ({ data, onTabChange }) => {
   };
 
   return (
-    <div className="switchingTabs">
+    <div className="switchingTabs" ref={containerRef}>
       <div className="tabItems">
         {data.map((tab, index) => (
           <span
             key={index}
             className={`tabItem ${selectedTab === index ? "active" : ""}`}
             onClick={() => activeTab(tab, index)}
+            ref={(el) => (tabsRef.current[index] = el)}
           >
             {tab}
           </span>
         ))}
-        <span className="movingBg" style={{ left }} />
+        <span
+          className="movingBg"
+          style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
+        />
       </div>
     </div>
   );

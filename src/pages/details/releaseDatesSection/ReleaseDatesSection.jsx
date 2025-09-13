@@ -7,6 +7,7 @@ import "./style.scss";
 const ReleaseDatesSection = ({ id }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
   const itemsPerPage = 3;
   const { data, loading } = useFetch(`/movie/${id}/release_dates`);
 
@@ -14,6 +15,7 @@ const ReleaseDatesSection = ({ id }) => {
     setIsExpanded(!isExpanded);
     if (!isExpanded) {
       setCurrentPage(1);
+      setSearchTerm("");
     }
   };
 
@@ -44,13 +46,23 @@ const ReleaseDatesSection = ({ id }) => {
 
   const allCountries = useMemo(() => {
     if (!data?.results) return [];
-    return data.results.sort(
+    let filtered = data.results;
+
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase().trim();
+      filtered = data.results.filter((country) => {
+        const countryName = country.iso_3166_1?.toLowerCase() || "";
+        return countryName.includes(term);
+      });
+    }
+
+    return filtered.sort(
       (a, b) =>
         a.release_dates?.[0]?.release_date?.localeCompare(
           b.release_dates?.[0]?.release_date
         ) || 0
     );
-  }, [data?.results]);
+  }, [data?.results, searchTerm]);
 
   const totalPages = Math.ceil(allCountries.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -87,6 +99,18 @@ const ReleaseDatesSection = ({ id }) => {
 
         {isExpanded && (
           <div className="releaseContent">
+            <div className="searchContainer">
+              <input
+                type="text"
+                placeholder="Search countries (e.g., US, GB, IN, FR)..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="countrySearch"
+              />
+            </div>
             {!loading ? (
               <>
                 {currentCountries.length > 0 ? (

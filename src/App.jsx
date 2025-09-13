@@ -10,11 +10,12 @@ import Details from "./pages/details/Details";
 import Person from "./pages/person/Person";
 import Explore from "./pages/explore/Explore";
 import SearchResult from "./pages/searchResult/SearchResult";
-import PageNotFound from "./pages/404/pageNotFound";
+import PageNotFound from "./pages/404/PageNotFound";
 import Playlist from "./pages/playlist/Playlist";
 import WatchParty from "./components/watchParty/WatchParty";
 import WatchPartyLoader from "./components/watchParty/WatchPartyLoader";
 import EpisodeDetails from "./pages/details/episodes/EpisodeDetails";
+import SearchPeople from "./pages/searchPeople/SearchPeople";
 function App() {
   const dispatch = useDispatch();
   const { url } = useSelector((state) => state.home);
@@ -61,6 +62,8 @@ function App() {
         />
         <Route path="/person/:id" element={<Person />} />
         <Route path="/search/:query" element={<SearchResult />} />
+        <Route path="/searchPeople" element={<SearchPeople />} />
+        <Route path="/searchPeople/:query" element={<SearchPeople />} />
         <Route path="/explore/:mediaType" element={<Explore />} />
         <Route path="/playlist" element={<Playlist />} />
         <Route path="/watch/:roomId" element={<WatchPartyLoader />} />

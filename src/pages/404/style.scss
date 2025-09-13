@@ -1,0 +1,87 @@
+@import "../../mixins.scss";
+
+.pageNotFound {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--black) 0%, var(--black2) 100%);
+  padding: 20px;
+
+  .contentWrapper {
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+  }
+
+  .errorCard {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+    .errorIcon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    .errorTitle {
+      font-size: 6rem;
+      font-weight: 700;
+      color: var(--pink);
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      @include md {
+        font-size: 8rem;
+      }
+    }
+
+    .errorSubtitle {
+      font-size: 2rem;
+      font-weight: 600;
+      color: white;
+      margin: 10px 0 20px 0;
+      @include md {
+        font-size: 2.5rem;
+      }
+    }
+
+    .errorMessage {
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.6;
+      margin-bottom: 30px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      @include md {
+        font-size: 1.2rem;
+      }
+    }
+
+    .homeButton {
+      background: var(--gradient);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(218, 47, 104, 0.4);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+}

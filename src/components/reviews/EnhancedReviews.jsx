@@ -196,7 +196,11 @@ const Reviews = ({ data, mediaType, mediaId, mediaTitle }) => {
               ))
             ) : (
               <div className="noReviews">
-                <p>No Reddit reviews found for "{mediaTitle}".</p>
+                <p>No relevant Reddit reviews found for "{mediaTitle}".</p>
+                <p className="noReviewsHint">
+                  We only show posts that are specifically about this{" "}
+                  {mediaType} to ensure quality and relevance.
+                </p>
                 <button onClick={fetchRedditReviews} className="retryButton">
                   🔄 Try Again
                 </button>

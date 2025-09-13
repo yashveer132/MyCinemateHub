@@ -42,7 +42,7 @@ export const searchMovieSubreddits = async (query) => {
     );
 
     return response.data.data.children
-      .filter((sub) => sub.data.subscribers > 100) 
+      .filter((sub) => sub.data.subscribers > 100)
       .map((sub) => ({
         id: sub.data.id,
         name: sub.data.display_name,
@@ -75,7 +75,6 @@ export const fetchSubredditPosts = async (
     const response = await axios.get(endpoint, {
       headers: {
         Authorization: `Bearer ${token}`,
-        "User-Agent": "Cinemate-App/1.0",
       },
       params: {
         q: searchQuery,
@@ -149,14 +148,36 @@ const isReviewPost = (post) => {
     "themes",
     "message",
     "entertainment",
+    "spoiler",
+    "final thoughts",
+    "first impression",
   ];
 
   const title = post.title.toLowerCase();
   const text = post.selftext.toLowerCase();
+  const combined = `${title} ${text}`;
 
-  return reviewKeywords.some(
-    (keyword) => title.includes(keyword) || text.includes(keyword)
+  const hasReviewKeyword = reviewKeywords.some((keyword) =>
+    combined.includes(keyword)
   );
+
+  const hasMediaContext = [
+    "movie",
+    "film",
+    "tv",
+    "show",
+    "series",
+    "episode",
+    "season",
+    "cinema",
+  ].some((media) => combined.includes(media));
+
+  const isGeneric =
+    title.includes("recommend") &&
+    !title.includes("review") &&
+    text.length < 100;
+
+  return hasReviewKeyword && hasMediaContext && !isGeneric;
 };
 
 const getReviewType = (post) => {
@@ -185,17 +206,19 @@ export const searchRelatedPosts = async (title, mediaType = "movie") => {
     const searchTerms = cleanTitle.split(" ").filter((word) => word.length > 2);
 
     const exactTitleQuery = `"${cleanTitle}"`;
-    const partialQueries = searchTerms.map((term) => `"${term}"`).join(" OR ");
-    const combinedQuery = `${exactTitleQuery} OR (${partialQueries})`;
-
+    const partialQueries = searchTerms
+      .slice(0, 2)
+      .map((term) => `"${term}"`)
+      .join(" AND ");
     const mediaKeywords =
-      mediaType === "movie"
-        ? ["movie", "film", "cinema"]
-        : ["tv", "show", "series", "episode"];
-    const keywordQuery = mediaKeywords
-      .map((keyword) => `"${keyword}"`)
-      .join(" OR ");
-    const finalQuery = `${combinedQuery} (${keywordQuery})`;
+      mediaType === "movie" ? ["movie", "film"] : ["tv", "show", "series"];
+
+    const titleAndMediaQuery = `${exactTitleQuery} (${mediaKeywords.join(
+      " OR "
+    )})`;
+    const finalQuery = partialQueries
+      ? `${titleAndMediaQuery} OR (${exactTitleQuery} ${partialQueries})`
+      : titleAndMediaQuery;
 
     const allPosts = [];
 
@@ -205,10 +228,13 @@ export const searchRelatedPosts = async (title, mediaType = "movie") => {
             "movies",
             "MovieSuggestions",
             "TrueFilm",
-            "Criterion",
             "horror",
             "scifi",
             "Letterboxd",
+            "moviescirclejerk",
+            "criterion",
+            "Itunes",
+            "netflix",
           ]
         : [
             "television",
@@ -219,6 +245,8 @@ export const searchRelatedPosts = async (title, mediaType = "movie") => {
             "hulu",
             "tv",
             "Series",
+            "anime",
+            "breakingbad",
           ];
 
     for (const subreddit of primarySubreddits.slice(0, 3)) {
@@ -228,7 +256,6 @@ export const searchRelatedPosts = async (title, mediaType = "movie") => {
           {
             headers: {
               Authorization: `Bearer ${token}`,
-              "User-Agent": "Cinemate-App/1.0",
             },
             params: {
               q: finalQuery,
@@ -244,20 +271,33 @@ export const searchRelatedPosts = async (title, mediaType = "movie") => {
           .filter((post) => {
             const postTitle = post.data.title.toLowerCase();
             const postText = post.data.selftext.toLowerCase();
+            const fullContent = `${postTitle} ${postText}`;
 
-            const hasTitleMatch = searchTerms.some(
-              (term) =>
-                postTitle.includes(term.toLowerCase()) ||
-                postText.includes(term.toLowerCase())
+            const hasTitleMatch = searchTerms.some((term) =>
+              fullContent.includes(term.toLowerCase())
             );
 
-            const isRelevantPost =
-              isReviewPost(post.data) ||
-              postTitle.includes("review") ||
-              postTitle.includes("discussion") ||
-              postTitle.includes(cleanTitle.toLowerCase());
+            const isReviewType = isReviewPost(post.data);
+            const mentionsTitle =
+              postTitle.includes(cleanTitle.toLowerCase()) ||
+              postText.includes(cleanTitle.toLowerCase());
 
-            return hasTitleMatch && isRelevantPost && post.data.score > 0;
+            const hasMediaContext = mediaKeywords.some((keyword) =>
+              fullContent.includes(keyword)
+            );
+
+            const isTooGeneric =
+              postTitle.includes("recommend") &&
+              !postTitle.includes(cleanTitle.toLowerCase().split(" ")[0]);
+
+            return (
+              hasTitleMatch &&
+              (isReviewType || mentionsTitle) &&
+              hasMediaContext &&
+              !isTooGeneric &&
+              post.data.score > 0 &&
+              post.data.num_comments >= 0
+            );
           })
           .map((post) => ({
             id: post.data.id,
@@ -289,6 +329,7 @@ export const searchRelatedPosts = async (title, mediaType = "movie") => {
     }
 
     const sortedPosts = allPosts
+      .filter((post) => post.relevanceScore >= 10)
       .sort((a, b) => {
         if (b.relevanceScore !== a.relevanceScore) {
           return b.relevanceScore - a.relevanceScore;
@@ -298,7 +339,7 @@ export const searchRelatedPosts = async (title, mediaType = "movie") => {
 
         return b.created_utc - a.created_utc;
       })
-      .slice(0, 15);
+      .slice(0, 12);
 
     return { posts: sortedPosts, error: null };
   } catch (error) {
@@ -311,31 +352,53 @@ const calculateRelevanceScore = (post, searchTitle, searchTerms) => {
   const title = post.title.toLowerCase();
   const text = post.selftext.toLowerCase();
   const search = searchTitle.toLowerCase();
+  const fullContent = `${title} ${text}`;
 
   let score = 0;
 
-  if (title.includes(search)) score += 15;
+  if (title.includes(search) || text.includes(search)) score += 20;
 
   searchTerms.forEach((word) => {
     if (word.length > 2) {
-      if (title.includes(word)) score += 3;
-      if (text.includes(word)) score += 2;
+      const wordLower = word.toLowerCase();
+      if (title.includes(wordLower)) score += 5;
+      if (text.includes(wordLower)) score += 3;
     }
   });
 
-  if (isReviewPost(post)) score += 5;
+  if (isReviewPost(post)) score += 8;
+
+  if (
+    (title.includes("review") || text.includes("review")) &&
+    (title.includes(search.split(" ")[0]) ||
+      text.includes(search.split(" ")[0]))
+  ) {
+    score += 10;
+  }
 
   const daysSincePost = (Date.now() / 1000 - post.created_utc) / (60 * 60 * 24);
-  if (daysSincePost < 30) score += 4;
-  else if (daysSincePost < 90) score += 3;
-  else if (daysSincePost < 180) score += 2;
-  else if (daysSincePost < 365) score += 1;
+  if (daysSincePost < 7) score += 6;
+  else if (daysSincePost < 30) score += 4;
+  else if (daysSincePost < 90) score += 2;
 
-  if (post.score > 100) score += 2;
-  else if (post.score > 50) score += 1;
+  if (post.score > 100) score += 4;
+  else if (post.score > 50) score += 2;
+  else if (post.score > 10) score += 1;
 
-  if (post.num_comments > 50) score += 2;
-  else if (post.num_comments > 20) score += 1;
+  if (post.num_comments > 50) score += 3;
+  else if (post.num_comments > 20) score += 2;
+  else if (post.num_comments > 5) score += 1;
+
+  const movieSubs = [
+    "movies",
+    "MovieSuggestions",
+    "TrueFilm",
+    "Criterion",
+    "horror",
+    "scifi",
+    "Letterboxd",
+  ];
+  if (movieSubs.includes(post.subreddit)) score += 3;
 
   return score;
 };
@@ -351,7 +414,6 @@ export const getPostDetails = async (subreddit, postId) => {
       {
         headers: {
           Authorization: `Bearer ${token}`,
-          "User-Agent": "Cinemate-App/1.0",
         },
         params: {
           depth: 5,
