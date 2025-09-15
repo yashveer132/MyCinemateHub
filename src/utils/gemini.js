@@ -222,4 +222,78 @@ const generateTrivia = async (movieTitle, movieOverview) => {
   }
 };
 
-export { extractSearchParams, generateTrivia };
+const generateMemorableQuotes = async (
+  movieTitle,
+  movieOverview,
+  genres = []
+) => {
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+  });
+
+  try {
+    const isValid = await validateModel(model);
+    if (!isValid) {
+      throw new Error("Model validation failed");
+    }
+
+    const genreNames = genres.map((g) => g.name).join(", ");
+
+    const prompt = `
+Generate 5-8 memorable and iconic quotes from the movie "${movieTitle}".
+Consider the movie's overview: "${movieOverview}"
+Genres: ${genreNames}
+
+For each quote, provide:
+1. The exact quote text
+2. The character who said it (if known/applicable)
+3. Brief context about when/why it's memorable
+4. Why it's significant to the movie's themes or plot
+
+Format the response as a JSON array of objects with this structure:
+[
+  {
+    "quote": "Exact quote text here",
+    "character": "Character name or 'Unknown'",
+    "context": "Brief explanation of the scene and significance",
+    "significance": "Why this quote is important to the movie"
+  }
+]
+
+Ensure quotes are authentic and actually memorable from the movie. If you're not certain about specific quotes, generate plausible but contextually appropriate ones based on the movie's themes and overview. Focus on quotes that capture the essence of the movie's message, character development, or key plot moments.
+
+Response must be valid JSON array only.`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text().trim();
+
+    let parsedResponse;
+    try {
+      parsedResponse = JSON.parse(text);
+    } catch (parseError) {
+      const jsonStart = text.indexOf("[");
+      const jsonEnd = text.lastIndexOf("]") + 1;
+      if (jsonStart !== -1 && jsonEnd > jsonStart) {
+        const jsonText = text.substring(jsonStart, jsonEnd);
+        parsedResponse = JSON.parse(jsonText);
+      } else {
+        throw parseError;
+      }
+    }
+
+    if (!Array.isArray(parsedResponse)) {
+      throw new Error("Invalid response structure");
+    }
+
+    return {
+      id: Date.now(),
+      results: parsedResponse,
+    };
+  } catch (error) {
+    console.error("Error generating memorable quotes:", error);
+    return null;
+  }
+};
+
+export { extractSearchParams, generateTrivia, generateMemorableQuotes };

@@ -118,8 +118,8 @@ const Header = () => {
             People
           </li>
           <li
-            className={`menuItem ${isActive("playlist") ? "active" : ""}`}
-            onClick={() => navigate("/playlist")}
+            className={`menuItem ${isActive("ai-playlists") ? "active" : ""}`}
+            onClick={() => navigate("/ai-playlists")}
           >
             AI Playlists
           </li>

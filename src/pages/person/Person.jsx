@@ -12,12 +12,13 @@ import "./style.scss";
 const Person = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data, loading } = useFetch(`/person/${id}`);
+  const { data: person, loading } = useFetch(`/person/${id}`);
   const { data: credits, loading: creditsLoading } = useFetch(
     `/person/${id}/combined_credits`
   );
   const { data: images } = useFetch(`/person/${id}/images`);
   const { data: externalIds } = useFetch(`/person/${id}/external_ids`);
+  const { data: changes } = useFetch(`/person/${id}/changes`);
 
   const { url } = useSelector((state) => state.home);
   const [activeTab, setActiveTab] = useState("Movies");
@@ -56,6 +57,149 @@ const Person = () => {
     return age;
   };
 
+  const calculateCareerAnalytics = (credits) => {
+    if (!credits || !credits.cast) return null;
+
+    const movies = credits.cast.filter((item) => item.media_type === "movie");
+    const sortedMovies = movies.sort(
+      (a, b) => (b.popularity || 0) - (a.popularity || 0)
+    );
+
+    const years = movies
+      .map((movie) =>
+        movie.release_date ? new Date(movie.release_date).getFullYear() : null
+      )
+      .filter((year) => year)
+      .sort((a, b) => a - b);
+
+    const careerStart = years.length > 0 ? years[0] : null;
+    const careerEnd = years.length > 0 ? years[years.length - 1] : null;
+
+    const yearCount = {};
+    years.forEach((year) => {
+      yearCount[year] = (yearCount[year] || 0) + 1;
+    });
+    const peakYear = Object.entries(yearCount).sort(([, a], [, b]) => b - a)[0];
+
+    const avgMoviesPerYear =
+      careerStart && careerEnd && careerEnd > careerStart
+        ? (movies.length / (careerEnd - careerStart + 1)).toFixed(1)
+        : movies.length;
+
+    const genreCount = {};
+    const genreRatings = {};
+    movies.forEach((movie) => {
+      if (movie.genre_ids && movie.vote_average) {
+        movie.genre_ids.forEach((genreId) => {
+          genreCount[genreId] = (genreCount[genreId] || 0) + 1;
+          if (!genreRatings[genreId]) genreRatings[genreId] = [];
+          genreRatings[genreId].push(movie.vote_average);
+        });
+      }
+    });
+
+    const genreAvgRatings = Object.entries(genreRatings).map(
+      ([genreId, ratings]) => ({
+        id: genreId,
+        avgRating:
+          ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length,
+        count: genreCount[genreId],
+      })
+    );
+    const mostSuccessfulGenre = genreAvgRatings.sort(
+      (a, b) => b.avgRating - a.avgRating
+    )[0];
+
+    const decadeCount = {};
+    years.forEach((year) => {
+      const decade = Math.floor(year / 10) * 10;
+      decadeCount[decade] = (decadeCount[decade] || 0) + 1;
+    });
+    const mostActiveDecade = Object.entries(decadeCount).sort(
+      ([, a], [, b]) => b - a
+    )[0];
+
+    const ratedMovies = movies.filter(
+      (movie) => movie.vote_average && movie.vote_average > 0
+    );
+    const highestRated = ratedMovies.sort(
+      (a, b) => b.vote_average - a.vote_average
+    )[0];
+    const lowestRated = ratedMovies.sort(
+      (a, b) => a.vote_average - b.vote_average
+    )[0];
+
+    const successfulMovies = ratedMovies.filter(
+      (movie) => movie.vote_average >= 7.0
+    );
+    const successRate =
+      ratedMovies.length > 0
+        ? ((successfulMovies.length / ratedMovies.length) * 100).toFixed(1)
+        : 0;
+
+    const characterTypes = {};
+    movies.forEach((movie) => {
+      if (movie.character) {
+        const charLower = movie.character.toLowerCase();
+        if (charLower.includes("himself") || charLower.includes("herself")) {
+          characterTypes["Self"] = (characterTypes["Self"] || 0) + 1;
+        } else if (
+          charLower.includes("lead") ||
+          charLower.includes("protagonist")
+        ) {
+          characterTypes["Lead"] = (characterTypes["Lead"] || 0) + 1;
+        } else if (
+          charLower.includes("support") ||
+          charLower.includes("friend")
+        ) {
+          characterTypes["Supporting"] =
+            (characterTypes["Supporting"] || 0) + 1;
+        } else {
+          characterTypes["Other"] = (characterTypes["Other"] || 0) + 1;
+        }
+      }
+    });
+    const mostCommonRole = Object.entries(characterTypes).sort(
+      ([, a], [, b]) => b - a
+    )[0];
+
+    const topGenres = Object.entries(genreCount)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 3)
+      .map(([genreId, count]) => ({ id: genreId, count }));
+
+    return {
+      totalMovies: movies.length,
+      careerStart,
+      careerEnd,
+      careerSpan: careerStart && careerEnd ? careerEnd - careerStart : null,
+      averageRating:
+        ratedMovies.length > 0
+          ? (
+              ratedMovies.reduce((sum, movie) => sum + movie.vote_average, 0) /
+              ratedMovies.length
+            ).toFixed(1)
+          : 0,
+
+      peakYear: peakYear ? { year: peakYear[0], count: peakYear[1] } : null,
+      avgMoviesPerYear,
+      mostSuccessfulGenre,
+      mostActiveDecade: mostActiveDecade
+        ? { decade: mostActiveDecade[0], count: mostActiveDecade[1] }
+        : null,
+      highestRated,
+      lowestRated,
+      successRate,
+      mostCommonRole: mostCommonRole
+        ? { type: mostCommonRole[0], count: mostCommonRole[1] }
+        : null,
+
+      topMovies: sortedMovies.slice(0, 5),
+      topGenres,
+      decadeBreakdown: decadeCount,
+    };
+  };
+
   const sortCredits = (credits) => {
     if (!credits) return [];
     return credits.sort((a, b) => {
@@ -88,53 +232,58 @@ const Person = () => {
     <div className="personPage">
       {!loading ? (
         <>
-          {data && (
+          {person && (
             <div className="personBanner">
               <ContentWrapper>
                 <div className="content">
                   <div className="left">
-                    {data.profile_path ? (
+                    {person.profile_path ? (
                       <Img
                         className="profileImg"
-                        src={url.profile + data.profile_path}
+                        src={url.profile + person.profile_path}
                       />
                     ) : (
                       <Img className="profileImg" src={avatar} />
                     )}
                   </div>
                   <div className="right">
-                    <div className="name">{data.name}</div>
-                    {data.birthday && (
+                    <div className="name">{person.name}</div>
+                    {person.birthday && (
                       <div className="info">
                         <span className="bold">Born: </span>
                         <span>
-                          {formatDate(data.birthday)}
-                          {data.place_of_birth && ` in ${data.place_of_birth}`}
+                          {formatDate(person.birthday)}
+                          {person.place_of_birth &&
+                            ` in ${person.place_of_birth}`}
                           {(() => {
-                            const age = getAge(data.birthday, data.deathday);
+                            const age = getAge(
+                              person.birthday,
+                              person.deathday
+                            );
                             return age ? ` (Age ${age})` : "";
                           })()}
                         </span>
                       </div>
                     )}
-                    {data.deathday && (
+                    {person.deathday && (
                       <div className="info">
                         <span className="bold">Died: </span>
-                        <span>{formatDate(data.deathday)}</span>
+                        <span>{formatDate(person.deathday)}</span>
                       </div>
                     )}
-                    {data.known_for_department && (
+                    {person.known_for_department && (
                       <div className="info">
                         <span className="bold">Known for: </span>
-                        <span>{data.known_for_department}</span>
+                        <span>{person.known_for_department}</span>
                       </div>
                     )}
-                    {data.also_known_as && data.also_known_as.length > 0 && (
-                      <div className="info">
-                        <span className="bold">Also known as: </span>
-                        <span>{data.also_known_as.join(", ")}</span>
-                      </div>
-                    )}
+                    {person.also_known_as &&
+                      person.also_known_as.length > 0 && (
+                        <div className="info">
+                          <span className="bold">Also known as: </span>
+                          <span>{person.also_known_as.join(", ")}</span>
+                        </div>
+                      )}
                     {externalIds && (
                       <div className="socialLinks">
                         {externalIds.imdb_id && (
@@ -181,10 +330,10 @@ const Person = () => {
                     )}
                   </div>
                 </div>
-                {data.biography && (
+                {person.biography && (
                   <div className="biography">
                     <div className="heading">Biography</div>
-                    <div className="description">{data.biography}</div>
+                    <div className="description">{person.biography}</div>
                   </div>
                 )}
               </ContentWrapper>
@@ -248,7 +397,7 @@ const Person = () => {
                           No {activeTab.toLowerCase()} found
                         </div>
                         <div className="noCreditsSubtext">
-                          {data?.name} doesn't have any{" "}
+                          {person?.name} doesn't have any{" "}
                           {activeTab.toLowerCase()} credits in our database yet.
                         </div>
                       </div>
@@ -268,6 +417,162 @@ const Person = () => {
             </div>
           )}
 
+          {credits &&
+            (() => {
+              const analytics = calculateCareerAnalytics(credits);
+              return (
+                analytics &&
+                analytics.totalMovies > 0 && (
+                  <div className="careerAnalytics">
+                    <ContentWrapper>
+                      <div className="sectionHeading">Career Analytics</div>
+
+                      <div className="analyticsGrid">
+                        <div className="statCard">
+                          <div className="statValue">
+                            {analytics.totalMovies}
+                          </div>
+                          <div className="statLabel">Total Movies</div>
+                        </div>
+
+                        {analytics.careerSpan && (
+                          <div className="statCard">
+                            <div className="statValue">
+                              {analytics.careerSpan}
+                            </div>
+                            <div className="statLabel">Years Active</div>
+                          </div>
+                        )}
+
+                        {analytics.careerStart && (
+                          <div className="statCard">
+                            <div className="statValue">
+                              {analytics.careerStart}
+                            </div>
+                            <div className="statLabel">Career Start</div>
+                          </div>
+                        )}
+
+                        <div className="statCard">
+                          <div className="statValue">
+                            {analytics.averageRating}
+                          </div>
+                          <div className="statLabel">Avg Movie Rating</div>
+                        </div>
+
+                        {analytics.peakYear && (
+                          <div className="statCard">
+                            <div className="statValue">
+                              {analytics.peakYear.year}
+                            </div>
+                            <div className="statLabel">
+                              Peak Year ({analytics.peakYear.count} movies)
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="statCard">
+                          <div className="statValue">
+                            {analytics.avgMoviesPerYear}
+                          </div>
+                          <div className="statLabel">Avg Movies/Year</div>
+                        </div>
+
+                        {analytics.mostSuccessfulGenre && (
+                          <div className="statCard">
+                            <div className="statValue">
+                              {analytics.mostSuccessfulGenre.avgRating.toFixed(
+                                1
+                              )}
+                            </div>
+                            <div className="statLabel">Best Genre Rating</div>
+                          </div>
+                        )}
+
+                        {analytics.mostActiveDecade && (
+                          <div className="statCard">
+                            <div className="statValue">
+                              {analytics.mostActiveDecade.decade}s
+                            </div>
+                            <div className="statLabel">Most Active Decade</div>
+                          </div>
+                        )}
+
+                        {analytics.successRate && analytics.successRate > 0 && (
+                          <div className="statCard">
+                            <div className="statValue">
+                              {analytics.successRate}%
+                            </div>
+                            <div className="statLabel">Success Rate (≥7.0)</div>
+                          </div>
+                        )}
+
+                        {analytics.highestRated && (
+                          <div className="statCard">
+                            <div className="statValue">
+                              {analytics.highestRated.vote_average.toFixed(1)}
+                            </div>
+                            <div className="statLabel">Highest Rated Movie</div>
+                          </div>
+                        )}
+                      </div>
+
+                      {analytics.topMovies &&
+                        analytics.topMovies.length > 0 && (
+                          <div className="topMoviesSection">
+                            <div className="subsectionHeading">
+                              Most Popular Movies
+                            </div>
+                            <div className="topMoviesGrid">
+                              {analytics.topMovies.map((movie, index) => (
+                                <div
+                                  key={movie.id}
+                                  className="topMovieCard"
+                                  onClick={() => handleCreditClick(movie)}
+                                >
+                                  <div className="movieRank">#{index + 1}</div>
+                                  <div className="moviePoster">
+                                    <Img
+                                      src={
+                                        movie.poster_path
+                                          ? url.poster + movie.poster_path
+                                          : avatar
+                                      }
+                                      alt={movie.title}
+                                    />
+                                  </div>
+                                  <div className="movieInfo">
+                                    <div className="movieTitle">
+                                      {movie.title}
+                                    </div>
+                                    <div className="movieYear">
+                                      {movie.release_date
+                                        ? new Date(
+                                            movie.release_date
+                                          ).getFullYear()
+                                        : "N/A"}
+                                    </div>
+                                    <div className="movieRating">
+                                      ⭐{" "}
+                                      {movie.vote_average?.toFixed(1) || "N/A"}
+                                    </div>
+                                    {movie.character && (
+                                      <div className="movieRole">
+                                        as {movie.character}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                    </ContentWrapper>
+                  </div>
+                )
+              );
+            })()}
+
           {images && images.profiles && images.profiles.length > 0 && (
             <div className="imagesSection">
               <ContentWrapper>
@@ -277,8 +582,39 @@ const Person = () => {
                     <div key={index} className="imageItem">
                       <Img
                         src={url.profile + image.file_path}
-                        alt={`${data?.name} photo ${index + 1}`}
+                        alt={`${person?.name} photo ${index + 1}`}
                       />
+                    </div>
+                  ))}
+                </div>
+              </ContentWrapper>
+            </div>
+          )}
+
+          {changes && changes.changes && changes.changes.length > 0 && (
+            <div className="changesSection">
+              <ContentWrapper>
+                <div className="sectionHeading">Recent Updates</div>
+                <div className="changesList">
+                  {changes.changes.slice(0, 5).map((change, index) => (
+                    <div key={index} className="changeItem">
+                      <div className="changeHeader">
+                        <div className="changeField">{change.key}</div>
+                        <div className="changeDate">
+                          {formatDate(change.time)}
+                        </div>
+                      </div>
+                      <div className="changeDetails">
+                        {change.items && change.items.length > 0 && (
+                          <div className="changeValues">
+                            {change.items.map((item, itemIndex) => (
+                              <div key={itemIndex} className="changeValue">
+                                {item.value || "Updated"}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

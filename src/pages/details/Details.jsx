@@ -15,7 +15,9 @@ import ReleaseDatesSection from "./releaseDatesSection/ReleaseDatesSection";
 import ScreenedTheatricallySection from "./screenedTheatricallySection/ScreenedTheatricallySection";
 import SongsSection from "./songsSection/SongsSection";
 import ProductionInsights from "./productionInsights/ProductionInsights";
+import ChartsSection from "./chartsSection/ChartsSection";
 import TriviaSection from "./triviaSection/TriviaSection";
+import MemorableQuotesSection from "./memorableQuotesSection/MemorableQuotesSection";
 
 const Details = () => {
   const { mediaType, id } = useParams();
@@ -36,6 +38,7 @@ const Details = () => {
       <DetailsBanner video={data?.results?.[0]} crew={credits?.crew} />
       <WatchProviders data={watchProviders?.results?.IN} />
       <Cast data={credits?.cast} loading={creditsLoading} />
+      <ChartsSection data={details} mediaType={mediaType} />
       <VideosSection data={data} loading={loading} />
       <SongsSection mediaTitle={details?.title || details?.name} />
       {mediaType === "tv" && (
@@ -52,6 +55,7 @@ const Details = () => {
       />
       <TriviaSection movieDetails={details} />
       <ProductionInsights data={details} loading={detailsLoading} />
+      <MemorableQuotesSection movieDetails={details} />
       <Similar mediaType={mediaType} id={id} />
       <div>
         <Recommendation mediaType={mediaType} id={id} />
