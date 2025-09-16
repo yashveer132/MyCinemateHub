@@ -16,20 +16,20 @@ const VideoPopup = ({ show, setShow, videoId, setVideoId, movieData }) => {
   return (
     <div className={`videoPopup ${show ? "visible" : ""}`}>
       <div className="opacityLayer" onClick={hidePopup}></div>
-      <div className="videoPlayer">
-        {isWatchParty ? (
-          <WatchParty
-            videoId={videoId}
-            movieData={movieData}
-            onClose={() => setIsWatchParty(false)}
-          />
-        ) : (
-          <>
-            <span className="closeBtn" onClick={hidePopup}>
-              Close
-            </span>
-            {videoId ? (
-              <>
+      <div className="videoContainer">
+        <div className="videoPlayer">
+          {isWatchParty ? (
+            <WatchParty
+              videoId={videoId}
+              movieData={movieData}
+              onClose={() => setIsWatchParty(false)}
+            />
+          ) : (
+            <>
+              <span className="closeBtn" onClick={hidePopup}>
+                Close
+              </span>
+              {videoId ? (
                 <ReactPlayer
                   url={`https://www.youtube.com/watch?v=${videoId}`}
                   controls
@@ -37,23 +37,27 @@ const VideoPopup = ({ show, setShow, videoId, setVideoId, movieData }) => {
                   height="100%"
                   playing={true}
                 />
-                <button
-                  className="watchPartyBtn"
-                  onClick={() => setIsWatchParty(true)}
-                >
-                  <FaUsers /> Start Watch Party
-                </button>
-              </>
-            ) : (
-              <div className="noVideo">
-                <div className="noVideoIcon">🎥</div>
-                <div className="noVideoText">No video available</div>
-                <div className="noVideoSubtext">
-                  This trailer or video is not available at the moment
+              ) : (
+                <div className="noVideo">
+                  <div className="noVideoIcon">🎥</div>
+                  <div className="noVideoText">No video available</div>
+                  <div className="noVideoSubtext">
+                    This trailer or video is not available at the moment
+                  </div>
                 </div>
-              </div>
-            )}
-          </>
+              )}
+            </>
+          )}
+        </div>
+        {!isWatchParty && videoId && (
+          <div className="videoActions">
+            <button
+              className="watchPartyBtn"
+              onClick={() => setIsWatchParty(true)}
+            >
+              <FaUsers /> Start Watch Party
+            </button>
+          </div>
         )}
       </div>
     </div>

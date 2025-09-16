@@ -5,6 +5,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import "./style.scss";
 
 import { fetchDataFromApi } from "../../utils/api";
+import { correctSpelling } from "../../utils/gemini";
 import ContentWrapper from "../../components/contentWrapper/ContentWrapper";
 import MovieCard from "../../components/movieCard/MovieCard";
 import Spinner from "../../components/spinner/Spinner";
@@ -14,11 +15,16 @@ const SearchResult = () => {
   const [data, setData] = useState(null);
   const [pageNum, setPageNum] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [correctedQuery, setCorrectedQuery] = useState("");
   const { query } = useParams();
 
-  const fetchInitialData = () => {
+  const fetchInitialData = async () => {
     setLoading(true);
-    fetchDataFromApi(`/search/multi?query=${query}&page=${pageNum}`).then(
+
+    const corrected = await correctSpelling(query);
+    setCorrectedQuery(corrected);
+
+    fetchDataFromApi(`/search/multi?query=${corrected}&page=${pageNum}`).then(
       (res) => {
         setData(res);
         setPageNum((prev) => prev + 1);
@@ -28,23 +34,25 @@ const SearchResult = () => {
   };
 
   const fetchNextPageData = () => {
-    fetchDataFromApi(`/search/multi?query=${query}&page=${pageNum}`).then(
-      (res) => {
-        if (data?.results) {
-          setData({
-            ...data,
-            results: [...data?.results, ...res.results],
-          });
-        } else {
-          setData(res);
-        }
-        setPageNum((prev) => prev + 1);
+    if (!correctedQuery) return;
+    fetchDataFromApi(
+      `/search/multi?query=${correctedQuery}&page=${pageNum}`
+    ).then((res) => {
+      if (data?.results) {
+        setData({
+          ...data,
+          results: [...data?.results, ...res.results],
+        });
+      } else {
+        setData(res);
       }
-    );
+      setPageNum((prev) => prev + 1);
+    });
   };
 
   useEffect(() => {
     setPageNum(1);
+    setCorrectedQuery("");
     fetchInitialData();
   }, [query]);
 
@@ -58,7 +66,7 @@ const SearchResult = () => {
               <div className="pageTitle">
                 {`Search ${
                   data?.total_results > 1 ? "results" : "result"
-                } of '${query}'`}
+                } of '${correctedQuery || query}'`}
               </div>
               <InfiniteScroll
                 className="content"
@@ -84,8 +92,9 @@ const SearchResult = () => {
               />
               <h2 className="noResultsTitle">Oops! No Results Found</h2>
               <p className="noResultsMessage">
-                We couldn't find any movies or TV shows matching "{query}". Try
-                adjusting your search terms or check for typos.
+                We couldn't find any movies or TV shows matching "
+                {correctedQuery || query}". Try adjusting your search terms or
+                check for typos.
               </p>
             </div>
           )}

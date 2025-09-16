@@ -2,7 +2,7 @@
 
 .aiPlaylistsPage {
   color: #fff;
-  padding-top: 100px; // match other pages top spacing under header
+  padding-top: 100px;
 
   .pageHeader {
     text-align: center;
@@ -12,7 +12,7 @@
       font-size: 28px;
       color: white;
       font-weight: 700;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
     }
 
     .pageSub {
@@ -48,7 +48,209 @@
         color: #fff;
         font-weight: 600;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
       }
+
+      .save-btn {
+        background: #10b981;
+        &:hover:not(:disabled) {
+          background: #059669;
+        }
+      }
+
+      .saved-btn {
+        background: #6366f1;
+        &:hover {
+          background: #4f46e5;
+        }
+      }
+    }
+
+    .save-dialog-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+
+      .save-dialog {
+        background: #1a1a1a;
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 400px;
+        width: 90%;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+
+        h3 {
+          color: #fff;
+          margin: 0 0 16px 0;
+          font-size: 20px;
+        }
+
+        input {
+          width: 100%;
+          padding: 12px;
+          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          background: #2a2a2a;
+          color: #fff;
+          font-size: 16px;
+          margin-bottom: 16px;
+
+          &:focus {
+            outline: none;
+            border-color: #6366f1;
+          }
+        }
+
+        .dialog-buttons {
+          display: flex;
+          gap: 12px;
+          justify-content: center;
+
+          button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s ease;
+
+            &:first-child {
+              background: #6b7280;
+              color: #fff;
+              &:hover {
+                background: #4b5563;
+              }
+            }
+
+            &:last-child {
+              background: #6366f1;
+              color: #fff;
+              &:hover:not(:disabled) {
+                background: #4f46e5;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .saved-playlists-section {
+      margin-top: 30px;
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+
+      h3 {
+        color: #fff;
+        font-size: 24px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      p {
+        color: #94a3b8;
+        text-align: center;
+        margin: 40px 0;
+      }
+
+      .saved-playlists-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+
+        .saved-playlist-card {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 12px;
+          padding: 24px;
+          transition: background 0.2s ease, border 0.2s ease;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+          }
+
+          .playlist-info {
+            margin-bottom: 20px;
+
+            h4 {
+              color: #fff;
+              font-size: 20px;
+              margin: 0 0 6px 0;
+              font-weight: 600;
+            }
+
+            p {
+              color: #cbd5e1;
+              font-size: 16px;
+              margin: 0 0 10px 0;
+            }
+
+            small {
+              color: #94a3b8;
+              font-size: 14px;
+            }
+          }
+
+          .playlist-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+
+            button {
+              padding: 10px 16px;
+              border-radius: 6px;
+              border: none;
+              font-size: 14px;
+              font-weight: 500;
+              cursor: pointer;
+              transition: background 0.2s ease;
+
+              &.load-btn {
+                background: #6366f1;
+                color: #fff;
+                &:hover {
+                  background: #4f46e5;
+                }
+              }
+
+              &.delete-btn {
+                background: #ef4444;
+                color: #fff;
+                padding: 10px 12px;
+                &:hover {
+                  background: #dc2626;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .error-message {
+      color: #f87171;
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 16px;
+      text-align: center;
     }
 
     .chips {
@@ -74,14 +276,33 @@
         }
       }
     }
-
-    
   }
 
   .center {
     display: flex;
     justify-content: center;
     padding: 40px 0;
+  }
+
+  .carouselSection {
+    margin-top: 40px;
+
+    .carouselTitle {
+      margin-top: 20px;
+    }
+  }
+
+  .button-spinner {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 
   .error {

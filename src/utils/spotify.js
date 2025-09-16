@@ -27,7 +27,7 @@ const getSpotifyAccessToken = async () => {
     );
 
     accessToken = response.data.access_token;
-    tokenExpiry = Date.now() + (response.data.expires_in - 60) * 1000; // Refresh 1 min early
+    tokenExpiry = Date.now() + (response.data.expires_in - 60) * 1000;
 
     return accessToken;
   } catch (error) {

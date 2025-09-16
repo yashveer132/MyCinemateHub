@@ -65,7 +65,7 @@ const TMDB_GENRES = {
   western: { id: 37, keywords: ["western", "cowboy", "wild west"] },
 };
 
-export const getFallbackResults = async (query) => {
+export const getFallbackResults = async (query, mediaType = "movie") => {
   try {
     const words = query.toLowerCase().split(" ");
 
@@ -81,12 +81,20 @@ export const getFallbackResults = async (query) => {
       ? parseInt(yearMatch[0])
       : new Date().getFullYear();
 
+    const discoverEndpoint =
+      mediaType === "tv" ? "/discover/tv" : "/discover/movie";
+    const searchEndpoint = mediaType === "tv" ? "/search/tv" : "/search/movie";
+    const popularEndpoint =
+      mediaType === "tv" ? "/tv/popular" : "/movie/popular";
+
     const searchStrategies = [
       async () => {
         if (matchedGenres.length > 0) {
-          return fetchDataFromApi("/discover/movie", {
+          return fetchDataFromApi(discoverEndpoint, {
             with_genres: matchedGenres.join(","),
-            primary_release_year: searchYear,
+            ...(mediaType === "tv"
+              ? { first_air_date_year: searchYear }
+              : { primary_release_year: searchYear }),
             sort_by: "popularity.desc",
           });
         }
@@ -95,9 +103,11 @@ export const getFallbackResults = async (query) => {
 
       async () => {
         if (matchedGenres.length > 0) {
-          return fetchDataFromApi("/discover/movie", {
+          return fetchDataFromApi(discoverEndpoint, {
             with_genres: matchedGenres.join(","),
-            primary_release_year: searchYear - 1,
+            ...(mediaType === "tv"
+              ? { first_air_date_year: searchYear - 1 }
+              : { primary_release_year: searchYear - 1 }),
             sort_by: "popularity.desc",
           });
         }
@@ -106,9 +116,11 @@ export const getFallbackResults = async (query) => {
 
       async () => {
         for (const genreId of matchedGenres) {
-          const result = await fetchDataFromApi("/discover/movie", {
+          const result = await fetchDataFromApi(discoverEndpoint, {
             with_genres: genreId,
-            primary_release_year: searchYear,
+            ...(mediaType === "tv"
+              ? { first_air_date_year: searchYear }
+              : { primary_release_year: searchYear }),
             sort_by: "popularity.desc",
           });
           if (result?.results?.length > 0) return result;
@@ -117,7 +129,7 @@ export const getFallbackResults = async (query) => {
       },
 
       async () => {
-        return fetchDataFromApi("/search/movie", { query });
+        return fetchDataFromApi(searchEndpoint, { query });
       },
     ];
 
@@ -135,31 +147,96 @@ export const getFallbackResults = async (query) => {
       }
     }
 
-    const result = await fetchDataFromApi("/movie/popular");
+    const result = await fetchDataFromApi(popularEndpoint);
     result.fallbackMessage =
-      "No specific matches found. Here are some popular movies:";
+      "No specific matches found. Here are some popular " +
+      (mediaType === "tv" ? "TV shows" : "movies") +
+      ":";
     return result;
   } catch (error) {
     return null;
   }
 };
 
-export const getAIDiscoverResults = async (query, searchParams) => {
+export const getSimilarityResults = async (titles, mediaType) => {
   try {
-    const endpoint = "/discover/movie";
-    const data = await fetchDataFromApi(endpoint, {
-      ...searchParams.tmdbParams,
+    const allResults = [];
+    for (const title of titles) {
+      let item = null;
+      let searchEndpoint = mediaType === "tv" ? "/search/tv" : "/search/movie";
+      let searchData = await fetchDataFromApi(searchEndpoint, {
+        query: title,
+        page: 1,
+      });
+      if (searchData?.results?.length > 0) {
+        item = searchData.results[0];
+      } else {
+        searchEndpoint = mediaType === "tv" ? "/search/movie" : "/search/tv";
+        searchData = await fetchDataFromApi(searchEndpoint, {
+          query: title,
+          page: 1,
+        });
+        if (searchData?.results?.length > 0) {
+          item = searchData.results[0];
+        }
+      }
+      if (item) {
+        const recEndpoint =
+          item.media_type === "tv"
+            ? `/tv/${item.id}/recommendations`
+            : `/movie/${item.id}/recommendations`;
+        const recData = await fetchDataFromApi(recEndpoint, { page: 1 });
+        if (recData?.results) {
+          const filtered = recData.results.filter(
+            (r) =>
+              r.media_type === mediaType ||
+              (!r.media_type && mediaType === "movie")
+          );
+          allResults.push(...filtered);
+        }
+      }
+    }
+    const unique = allResults
+      .filter(
+        (item, index, self) => self.findIndex((i) => i.id === item.id) === index
+      )
+      .slice(0, 20);
+    return { results: unique, total_results: unique.length };
+  } catch (error) {
+    return null;
+  }
+};
+
+export const getMoviesByPerson = async (personName, mediaType, sort, role) => {
+  try {
+    const personSearch = await fetchDataFromApi("/search/person", {
+      query: personName,
       page: 1,
-      sort_by: "vote_average.desc",
-      vote_count: { gte: 100 },
     });
+    if (!personSearch?.results?.length) return null;
 
-    const queryTitle = query
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
+    const person = personSearch.results[0];
+    const personId = person.id;
 
-    data.fallbackMessage = `AI-Curated: ${queryTitle}`;
+    const endpoint = mediaType === "tv" ? "/discover/tv" : "/discover/movie";
+    const sortBy =
+      sort === "rating"
+        ? "vote_average.desc"
+        : sort === "date"
+        ? "primary_release_date.desc"
+        : "popularity.desc";
+    const params = {
+      sort_by: sortBy,
+      page: 1,
+    };
+    if (role === "actor") {
+      params.with_cast = personId;
+    } else {
+      params.with_crew = personId;
+    }
+    if (sort === "rating") params["vote_count.gte"] = 100;
+
+    const data = await fetchDataFromApi(endpoint, params);
     return data;
   } catch (error) {
     return null;

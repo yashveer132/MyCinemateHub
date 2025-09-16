@@ -441,6 +441,55 @@
         }
       }
     }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+
+      .pageBtn {
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.06);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s ease;
+
+        &.number {
+          min-width: 36px;
+          text-align: center;
+        }
+
+        &:hover:not(.active):not(.disabled) {
+          background: rgba(255, 255, 255, 0.1);
+          transform: translateY(-2px);
+          border-color: var(--pink);
+        }
+
+        &.active {
+          background: var(--pink);
+          border-color: var(--pink);
+          color: white;
+        }
+
+        &.disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+
+      .pageInfo {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 14px;
+        margin-left: 8px;
+      }
+    }
   }
 
   .imagesSection {
@@ -731,6 +780,100 @@
             }
 
             .movieRole {
+              font-size: 13px;
+              color: white;
+              font-style: italic;
+            }
+          }
+        }
+      }
+    }
+
+    .topTVShowsSection {
+      margin-top: 40px;
+
+      .subsectionHeading {
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 25px;
+        color: white;
+        text-align: center;
+      }
+
+      .topTVShowsGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+
+        @media only screen and (max-width: 767px) {
+          grid-template-columns: 1fr;
+          gap: 15px;
+        }
+
+        .topTVShowCard {
+          background: var(--black);
+          border-radius: 12px;
+          padding: 20px;
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          transition: all 0.3s ease;
+          cursor: pointer;
+
+          &:hover {
+            transform: translateY(-3px);
+            border-color: var(--pink);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+          }
+
+          .tvShowRank {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--pink);
+            min-width: 40px;
+            text-align: center;
+          }
+
+          .tvShowPoster {
+            flex-shrink: 0;
+            width: 60px;
+            height: 90px;
+            border-radius: 8px;
+            overflow: hidden;
+
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+
+          .tvShowInfo {
+            flex: 1;
+
+            .tvShowTitle {
+              font-size: 16px;
+              font-weight: 600;
+              color: white;
+              margin-bottom: 4px;
+              line-height: 1.3;
+            }
+
+            .tvShowYear {
+              font-size: 14px;
+              color: white;
+              margin-bottom: 4px;
+            }
+
+            .tvShowRating {
+              font-size: 14px;
+              color: #ffd700;
+              margin-bottom: 4px;
+              font-weight: 500;
+            }
+
+            .tvShowRole {
               font-size: 13px;
               color: white;
               font-style: italic;

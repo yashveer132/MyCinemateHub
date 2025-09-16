@@ -18,10 +18,11 @@ const Person = () => {
   );
   const { data: images } = useFetch(`/person/${id}/images`);
   const { data: externalIds } = useFetch(`/person/${id}/external_ids`);
-  const { data: changes } = useFetch(`/person/${id}/changes`);
 
   const { url } = useSelector((state) => state.home);
   const [activeTab, setActiveTab] = useState("Movies");
+  const [moviePage, setMoviePage] = useState(1);
+  const [tvPage, setTvPage] = useState(1);
 
   const tabData = ["Movies", "TV Shows"];
 
@@ -62,6 +63,11 @@ const Person = () => {
 
     const movies = credits.cast.filter((item) => item.media_type === "movie");
     const sortedMovies = movies.sort(
+      (a, b) => (b.popularity || 0) - (a.popularity || 0)
+    );
+
+    const tvShows = credits.cast.filter((item) => item.media_type === "tv");
+    const sortedTVShows = tvShows.sort(
       (a, b) => (b.popularity || 0) - (a.popularity || 0)
     );
 
@@ -194,9 +200,10 @@ const Person = () => {
         ? { type: mostCommonRole[0], count: mostCommonRole[1] }
         : null,
 
-      topMovies: sortedMovies.slice(0, 5),
+      topMovies: sortedMovies.slice(0, 6),
       topGenres,
       decadeBreakdown: decadeCount,
+      topTVShows: sortedTVShows.slice(0, 6),
     };
   };
 
@@ -347,60 +354,151 @@ const Person = () => {
                 <SwitchTabs data={tabData} onTabChange={onTabChange} />
                 {!creditsLoading ? (
                   (() => {
+                    const ITEMS_PER_PAGE = 8;
+                    const isMovies = activeTab === "Movies";
                     const filteredCredits = sortCredits(
-                      activeTab === "Movies"
-                        ? filterMovies(credits)
-                        : filterTVShows(credits)
+                      isMovies ? filterMovies(credits) : filterTVShows(credits)
                     );
 
-                    return filteredCredits && filteredCredits.length > 0 ? (
-                      <div className="credits">
-                        {filteredCredits.slice(0, 20).map((item) => (
-                          <div
-                            key={item.id}
-                            className="creditItem"
-                            onClick={() => handleCreditClick(item)}
-                          >
-                            <div className="posterImg">
-                              <Img
-                                src={
-                                  item.poster_path
-                                    ? url.poster + item.poster_path
-                                    : item.backdrop_path
-                                    ? url.backdrop + item.backdrop_path
-                                    : avatar
-                                }
-                              />
-                            </div>
-                            <div className="details">
-                              <div className="title">
-                                {item.title || item.name}
-                              </div>
-                              <div className="character">
-                                {item.character && `as ${item.character}`}
-                              </div>
-                              <div className="year">
-                                {item.release_date || item.first_air_date
-                                  ? new Date(
-                                      item.release_date || item.first_air_date
-                                    ).getFullYear()
-                                  : "N/A"}
-                              </div>
-                            </div>
+                    if (!filteredCredits || filteredCredits.length === 0) {
+                      return (
+                        <div className="noCreditsCard">
+                          <div className="noCreditsIcon">🎬</div>
+                          <div className="noCreditsText">
+                            No {activeTab.toLowerCase()} found
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="noCreditsCard">
-                        <div className="noCreditsIcon">🎬</div>
-                        <div className="noCreditsText">
-                          No {activeTab.toLowerCase()} found
+                          <div className="noCreditsSubtext">
+                            {person?.name} doesn't have any{" "}
+                            {activeTab.toLowerCase()} credits in our database
+                            yet.
+                          </div>
                         </div>
-                        <div className="noCreditsSubtext">
-                          {person?.name} doesn't have any{" "}
-                          {activeTab.toLowerCase()} credits in our database yet.
+                      );
+                    }
+
+                    const totalPages = Math.max(
+                      1,
+                      Math.ceil(filteredCredits.length / ITEMS_PER_PAGE)
+                    );
+                    const currentPageRaw = isMovies ? moviePage : tvPage;
+                    const currentPage = Math.min(
+                      Math.max(1, currentPageRaw || 1),
+                      totalPages
+                    );
+                    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+                    const endIndex = startIndex + ITEMS_PER_PAGE;
+                    const pageItems = filteredCredits.slice(
+                      startIndex,
+                      endIndex
+                    );
+
+                    const goToPage = (p) => {
+                      const clamped = Math.min(Math.max(1, p), totalPages);
+                      if (isMovies) setMoviePage(clamped);
+                      else setTvPage(clamped);
+                    };
+
+                    const getPageNumbers = () => {
+                      const maxButtons = 5;
+                      if (totalPages <= maxButtons) {
+                        return Array.from(
+                          { length: totalPages },
+                          (_, i) => i + 1
+                        );
+                      }
+                      const half = Math.floor(maxButtons / 2);
+                      let start = Math.max(1, currentPage - half);
+                      let end = start + maxButtons - 1;
+                      if (end > totalPages) {
+                        end = totalPages;
+                        start = end - maxButtons + 1;
+                      }
+                      return Array.from(
+                        { length: end - start + 1 },
+                        (_, i) => start + i
+                      );
+                    };
+
+                    return (
+                      <>
+                        <div className="credits">
+                          {pageItems.map((item) => (
+                            <div
+                              key={`${item.media_type}-${item.id}-${
+                                item.credit_id || item.cast_id || startIndex
+                              }`}
+                              className="creditItem"
+                              onClick={() => handleCreditClick(item)}
+                            >
+                              <div className="posterImg">
+                                <Img
+                                  src={
+                                    item.poster_path
+                                      ? url.poster + item.poster_path
+                                      : item.backdrop_path
+                                      ? url.backdrop + item.backdrop_path
+                                      : avatar
+                                  }
+                                />
+                              </div>
+                              <div className="details">
+                                <div className="title">
+                                  {item.title || item.name}
+                                </div>
+                                <div className="character">
+                                  {item.character && `as ${item.character}`}
+                                </div>
+                                <div className="year">
+                                  {item.release_date || item.first_air_date
+                                    ? new Date(
+                                        item.release_date || item.first_air_date
+                                      ).getFullYear()
+                                    : "N/A"}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      </div>
+                        <div className="pagination">
+                          <button
+                            className={`pageBtn prev ${
+                              currentPage === 1 ? "disabled" : ""
+                            }`}
+                            onClick={() => goToPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            aria-label="Previous page"
+                          >
+                            Prev
+                          </button>
+                          {getPageNumbers().map((num) => (
+                            <button
+                              key={`page-${num}`}
+                              className={`pageBtn number ${
+                                num === currentPage ? "active" : ""
+                              }`}
+                              onClick={() => goToPage(num)}
+                              aria-current={
+                                num === currentPage ? "page" : undefined
+                              }
+                            >
+                              {num}
+                            </button>
+                          ))}
+                          <button
+                            className={`pageBtn next ${
+                              currentPage === totalPages ? "disabled" : ""
+                            }`}
+                            onClick={() => goToPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            aria-label="Next page"
+                          >
+                            Next
+                          </button>
+                          <div className="pageInfo">
+                            Page {currentPage} of {totalPages}
+                          </div>
+                        </div>
+                      </>
                     );
                   })()
                 ) : (
@@ -567,6 +665,56 @@ const Person = () => {
                             </div>
                           </div>
                         )}
+                      {analytics.topTVShows &&
+                        analytics.topTVShows.length > 0 && (
+                          <div className="topTVShowsSection">
+                            <div className="subsectionHeading">
+                              Most Popular TV Shows
+                            </div>
+                            <div className="topTVShowsGrid">
+                              {analytics.topTVShows.map((tvShow, index) => (
+                                <div
+                                  key={tvShow.id}
+                                  className="topTVShowCard"
+                                  onClick={() => handleCreditClick(tvShow)}
+                                >
+                                  <div className="tvShowRank">#{index + 1}</div>
+                                  <div className="tvShowPoster">
+                                    <Img
+                                      src={
+                                        tvShow.poster_path
+                                          ? url.poster + tvShow.poster_path
+                                          : avatar
+                                      }
+                                      alt={tvShow.name}
+                                    />
+                                  </div>
+                                  <div className="tvShowInfo">
+                                    <div className="tvShowTitle">
+                                      {tvShow.name}
+                                    </div>
+                                    <div className="tvShowYear">
+                                      {tvShow.first_air_date
+                                        ? new Date(
+                                            tvShow.first_air_date
+                                          ).getFullYear()
+                                        : "N/A"}
+                                    </div>
+                                    <div className="tvShowRating">
+                                      ⭐{" "}
+                                      {tvShow.vote_average?.toFixed(1) || "N/A"}
+                                    </div>
+                                    {tvShow.character && (
+                                      <div className="tvShowRole">
+                                        as {tvShow.character}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                     </ContentWrapper>
                   </div>
                 )
@@ -584,37 +732,6 @@ const Person = () => {
                         src={url.profile + image.file_path}
                         alt={`${person?.name} photo ${index + 1}`}
                       />
-                    </div>
-                  ))}
-                </div>
-              </ContentWrapper>
-            </div>
-          )}
-
-          {changes && changes.changes && changes.changes.length > 0 && (
-            <div className="changesSection">
-              <ContentWrapper>
-                <div className="sectionHeading">Recent Updates</div>
-                <div className="changesList">
-                  {changes.changes.slice(0, 5).map((change, index) => (
-                    <div key={index} className="changeItem">
-                      <div className="changeHeader">
-                        <div className="changeField">{change.key}</div>
-                        <div className="changeDate">
-                          {formatDate(change.time)}
-                        </div>
-                      </div>
-                      <div className="changeDetails">
-                        {change.items && change.items.length > 0 && (
-                          <div className="changeValues">
-                            {change.items.map((item, itemIndex) => (
-                              <div key={itemIndex} className="changeValue">
-                                {item.value || "Updated"}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
                     </div>
                   ))}
                 </div>

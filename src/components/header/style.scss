@@ -58,7 +58,7 @@
       border-radius: 50%;
       border: 2px solid var(--pink);
       transition: all 0.3s ease;
-      
+
       &:hover {
         box-shadow: 0 0 15px rgba(218, 47, 104, 0.3);
       }
@@ -71,29 +71,30 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
-      
+
       .brand {
         font-size: 28px;
         font-weight: 800;
-        background: linear-gradient(to right, var(--pink), #FFD700);
+        background: linear-gradient(to right, var(--pink), #ffd700);
         background-size: 200% auto;
         -webkit-background-clip: text;
+        background-clip: text;
         -webkit-text-fill-color: transparent;
         transition: background-position 0.3s ease;
       }
-      
+
       .subtitle {
         display: flex;
         align-items: center;
         gap: 6px;
-        
+
         .ai {
           color: var(--pink);
           font-weight: 800;
           font-size: 16px;
           letter-spacing: 1px;
         }
-        
+
         .platform {
           color: rgba(255, 255, 255, 0.7);
           font-size: 14px;
@@ -187,7 +188,7 @@
         margin: 0;
         display: flex;
         flex-direction: column;
-        align-items: center; 
+        align-items: center;
         justify-content: center;
         &:hover {
           background: rgba(255, 255, 255, 0.05);

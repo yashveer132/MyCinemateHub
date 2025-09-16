@@ -18,6 +18,7 @@ import ProductionInsights from "./productionInsights/ProductionInsights";
 import ChartsSection from "./chartsSection/ChartsSection";
 import TriviaSection from "./triviaSection/TriviaSection";
 import MemorableQuotesSection from "./memorableQuotesSection/MemorableQuotesSection";
+import AwardsSection from "./awardsSection/AwardsSection";
 
 const Details = () => {
   const { mediaType, id } = useParams();
@@ -52,8 +53,10 @@ const Details = () => {
         mediaType={mediaType}
         mediaId={id}
         mediaTitle={details?.title || details?.name}
+        overview={details?.overview}
       />
       <TriviaSection movieDetails={details} />
+      <AwardsSection movieDetails={details} mediaType={mediaType} />
       <ProductionInsights data={details} loading={detailsLoading} />
       <MemorableQuotesSection movieDetails={details} />
       <Similar mediaType={mediaType} id={id} />

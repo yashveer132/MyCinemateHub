@@ -5,14 +5,18 @@ import Img from "../lazyLoadImage/Img";
 import avatar from "../../assets/avatar.png";
 import { searchRelatedPosts } from "../../utils/reddit";
 import RedditPostModal from "./RedditPostModal";
+import { generateAIReview } from "../../utils/gemini";
 import "./style.scss";
 
-const Reviews = ({ data, mediaType, mediaId, mediaTitle }) => {
+const Reviews = ({ data, mediaType, mediaId, mediaTitle, overview }) => {
   const [expanded, setExpanded] = useState(false);
   const [redditReviews, setRedditReviews] = useState([]);
   const [redditLoading, setRedditLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("tmdb");
   const [selectedRedditPost, setSelectedRedditPost] = useState(null);
+  const [aiReview, setAiReview] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
   const { url } = useSelector((state) => state.home);
 
   const openRedditModal = (post) => {
@@ -28,6 +32,30 @@ const Reviews = ({ data, mediaType, mediaId, mediaTitle }) => {
       fetchRedditReviews();
     }
   }, [mediaTitle]);
+
+  useEffect(() => {
+    if (!mediaTitle) return;
+    const gen = async () => {
+      setAiLoading(true);
+      setAiError(null);
+      try {
+        const tmdbReviews = data?.results || [];
+        const result = await generateAIReview(
+          mediaTitle,
+          overview || "",
+          tmdbReviews,
+          redditReviews
+        );
+        setAiReview(result);
+      } catch (e) {
+        setAiError("Failed to generate AI review.");
+      } finally {
+        setAiLoading(false);
+      }
+    };
+    gen();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mediaTitle, overview, redditReviews, data]);
 
   const fetchRedditReviews = async () => {
     setRedditLoading(true);
@@ -90,6 +118,12 @@ const Reviews = ({ data, mediaType, mediaId, mediaTitle }) => {
           >
             Reddit Reviews ({redditReviews.length})
             {redditLoading && <span className="loading">...</span>}
+          </button>
+          <button
+            className={`tabButton ${activeTab === "ai" ? "active" : ""}`}
+            onClick={() => setActiveTab("ai")}
+          >
+            AI Review {aiLoading && <span className="loading">...</span>}
           </button>
         </div>
 
@@ -203,6 +237,80 @@ const Reviews = ({ data, mediaType, mediaId, mediaTitle }) => {
                 </p>
                 <button onClick={fetchRedditReviews} className="retryButton">
                   🔄 Try Again
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "ai" && (
+          <div className="reviewsList">
+            {aiLoading ? (
+              <div className="loadingReviews">
+                <p>Generating AI review...</p>
+              </div>
+            ) : aiError ? (
+              <div className="noReviews">
+                <p>{aiError}</p>
+                <button
+                  onClick={() => setActiveTab("tmdb")}
+                  className="retryButton"
+                >
+                  View TMDB Reviews
+                </button>
+              </div>
+            ) : aiReview ? (
+              <div className="reviewItem aiReview">
+                <div className="reviewHeader">
+                  <div className="info">
+                    <div className="meta">
+                      <span className="source">AI</span>
+                      {aiReview?.score && (
+                        <span className="rating">⭐ {aiReview.score}/10</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="content">
+                  {aiReview.headline && (
+                    <h4 className="redditTitle">{aiReview.headline}</h4>
+                  )}
+                  <div className="redditText">{aiReview.summary}</div>
+                  {(aiReview.highlights?.length || 0) > 0 && (
+                    <div style={{ marginTop: 12 }}>
+                      <strong>Highlights:</strong>
+                      <ul style={{ textAlign: "left", marginTop: 8 }}>
+                        {aiReview.highlights.map((h, idx) => (
+                          <li key={idx}>{h}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {(aiReview.lowlights?.length || 0) > 0 && (
+                    <div style={{ marginTop: 12 }}>
+                      <strong>Considerations:</strong>
+                      <ul style={{ textAlign: "left", marginTop: 8 }}>
+                        {aiReview.lowlights.map((h, idx) => (
+                          <li key={idx}>{h}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+                {aiReview.verdict && (
+                  <div className="reviewFooter">
+                    <span className="reviewDate">{aiReview.verdict}</span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="noReviews">
+                <p>No AI review available right now.</p>
+                <button
+                  onClick={() => setActiveTab("tmdb")}
+                  className="retryButton"
+                >
+                  View TMDB Reviews
                 </button>
               </div>
             )}

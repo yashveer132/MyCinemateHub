@@ -73,6 +73,53 @@
         }
       }
 
+      &.aiReview {
+        border-color: rgba(3, 168, 124, 0.3);
+        box-shadow: 0 8px 25px rgba(3, 168, 124, 0.15);
+
+        .name {
+          justify-content: center;
+        }
+
+        .meta {
+          font-size: 16px;
+
+          .rating {
+            font-size: 16px;
+          }
+
+          .source {
+            font-size: 14px;
+            padding: 4px 12px;
+          }
+
+          .reviewType {
+            font-size: 18px;
+            padding: 4px 12px;
+          }
+        }
+
+        .reviewFooter {
+          .reviewDate {
+            font-size: 14px;
+            color: white;
+            font-weight: 500;
+          }
+        }
+
+        .content {
+          .redditTitle {
+            font-size: 20px;
+            line-height: 1.4;
+          }
+
+          .redditText {
+            font-size: 16px;
+            line-height: 1.7;
+          }
+        }
+      }
+
       .reviewHeader {
         display: flex;
         flex-direction: column;
