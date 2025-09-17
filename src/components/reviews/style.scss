@@ -41,11 +41,48 @@
         background: var(--pink);
         border-color: var(--pink);
         color: white;
+        box-shadow: none;
       }
 
       .loading {
         margin-left: 8px;
         animation: pulse 1.5s infinite;
+      }
+
+      &.aiTabButton.glow-flicker {
+        border: 2px solid #ff9800;
+        box-shadow: 0 0 12px 2px #ff9800, 0 0 24px 4px #ff00c8,
+          0 0 18px 6px #00ffe7;
+        animation: flickerGlow 1.2s infinite alternate;
+        z-index: 2;
+      }
+    }
+
+    @keyframes flickerGlow {
+      0% {
+        box-shadow: 0 0 12px 2px #ff9800, 0 0 24px 4px #ff00c8,
+          0 0 18px 6px #00ffe7;
+        border-color: #ff9800;
+      }
+      25% {
+        box-shadow: 0 0 18px 4px #ff00c8, 0 0 30px 6px #ff9800,
+          0 0 24px 8px #00ffe7;
+        border-color: #ff00c8;
+      }
+      50% {
+        box-shadow: 0 0 24px 6px #00ffe7, 0 0 36px 8px #ff9800,
+          0 0 30px 10px #ff00c8;
+        border-color: #00ffe7;
+      }
+      75% {
+        box-shadow: 0 0 18px 4px #ff00c8, 0 0 30px 6px #00ffe7,
+          0 0 24px 8px #ff9800;
+        border-color: #ff00c8;
+      }
+      100% {
+        box-shadow: 0 0 12px 2px #ff9800, 0 0 24px 4px #ff00c8,
+          0 0 18px 6px #00ffe7;
+        border-color: #ff9800;
       }
     }
   }
@@ -108,6 +145,7 @@
         }
 
         .content {
+          text-align: left;
           .redditTitle {
             font-size: 20px;
             line-height: 1.4;
@@ -116,6 +154,236 @@
           .redditText {
             font-size: 16px;
             line-height: 1.7;
+          }
+
+          .verdictWrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 10px;
+          }
+          .verdictBadge {
+            margin: 12px auto 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            &.watch {
+              background: rgba(3, 168, 124, 0.15);
+              border-color: rgba(3, 168, 0, 0.5);
+            }
+            &.skip {
+              background: rgba(255, 71, 87, 0.15);
+              border-color: rgba(255, 71, 87, 0.5);
+            }
+            &.mixed {
+              background: rgba(255, 193, 7, 0.15);
+              border-color: rgba(255, 193, 7, 0.5);
+            }
+            .badgeLabel {
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 0.3px;
+            }
+          }
+          .verdictReason {
+            opacity: 0.9;
+            max-width: 820px;
+          }
+
+          .tldr {
+            margin: 8px 0 10px;
+            font-style: italic;
+          }
+
+          .aiGrid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            margin-top: 14px;
+            @include md {
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+          }
+
+          .aiCard {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: border-color 0.2s ease, background 0.2s ease,
+              transform 0.2s ease;
+            &:hover {
+              background: rgba(255, 255, 255, 0.08);
+              border-color: rgba(255, 255, 255, 0.2);
+              transform: translateY(-1px);
+            }
+            h5 {
+              margin: 0;
+              font-size: 13px;
+              letter-spacing: 0.3px;
+              text-transform: uppercase;
+              opacity: 0.85;
+              text-align: center;
+            }
+            p {
+              margin: 0;
+            }
+          }
+
+          .tldrCard {
+            background: linear-gradient(
+              180deg,
+              rgba(3, 168, 124, 0.12),
+              rgba(3, 168, 124, 0.05)
+            );
+            border-color: rgba(3, 168, 124, 0.35);
+          }
+
+          .aspectsCard .aspectsGrid {
+            margin-top: 6px;
+          }
+
+          .highlightsCard .bullets ul,
+          .lowlightsCard .bullets ul {
+            padding-left: 18px;
+          }
+
+          .audienceCard {
+            text-align: center;
+          }
+          .audienceCard .chips {
+            margin-top: 8px;
+            text-align: center;
+          }
+          .audienceCard .chips > strong {
+            display: block;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 6px;
+          }
+          .audienceCard .chips .chipRow {
+            justify-content: center;
+          }
+
+          .aspectsGrid {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            @include md {
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            .aspectItem {
+              background: rgba(255, 255, 255, 0.06);
+              border: 1px solid rgba(255, 255, 255, 0.08);
+              border-radius: 10px;
+              padding: 10px 12px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 10px;
+              .aspectLabel {
+                text-transform: capitalize;
+                opacity: 0.85;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+              }
+              .aspectValue {
+                font-weight: 700;
+                color: #ffd700;
+                flex-shrink: 0;
+                white-space: nowrap;
+              }
+            }
+          }
+
+          .bullets {
+            text-align: left;
+            margin-top: 12px;
+            ul {
+              margin-top: 6px;
+              padding-left: 18px;
+              li {
+                margin: 4px 0;
+              }
+            }
+          }
+
+          .chips {
+            margin-top: 12px;
+            text-align: left;
+            .chipRow {
+              margin-top: 6px;
+              display: flex;
+              flex-wrap: wrap;
+              gap: 8px;
+            }
+            .chip {
+              background: rgba(255, 255, 255, 0.06);
+              border: 1px solid rgba(255, 255, 255, 0.1);
+              padding: 6px 10px;
+              border-radius: 999px;
+              font-size: 12px;
+              &.warn {
+                border-color: rgba(255, 71, 87, 0.5);
+                background: rgba(255, 71, 87, 0.1);
+              }
+              &.neutral {
+                border-color: rgba(255, 255, 255, 0.2);
+              }
+            }
+          }
+
+          .advisories {
+            margin-top: 12px;
+            text-align: left;
+            .advisoryRow {
+              display: grid;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 8px;
+              @include md {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+              }
+            }
+            .advisory {
+              background: rgba(255, 255, 255, 0.06);
+              border: 1px solid rgba(255, 255, 255, 0.08);
+              border-radius: 10px;
+              padding: 8px 10px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              text-transform: capitalize;
+              &.high {
+                border-color: rgba(255, 71, 87, 0.6);
+              }
+              &.moderate {
+                border-color: rgba(255, 193, 7, 0.6);
+              }
+              &.low {
+                border-color: rgba(3, 168, 124, 0.6);
+              }
+              &.none,
+              &.unknown {
+                opacity: 0.8;
+              }
+              .key {
+                opacity: 0.85;
+              }
+              .val {
+                font-weight: 600;
+              }
+            }
           }
         }
       }
@@ -312,6 +580,20 @@
         &:hover {
           background: #ff6b9d;
           transform: translateY(-2px);
+        }
+      }
+
+      .reviewFallbackButtons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+
+        .retryButton {
+          flex: 1;
+          min-width: 120px;
+          max-width: 140px;
+          padding: 8px 16px;
         }
       }
     }

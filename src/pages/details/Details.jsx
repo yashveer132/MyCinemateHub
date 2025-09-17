@@ -41,13 +41,6 @@ const Details = () => {
       <Cast data={credits?.cast} loading={creditsLoading} />
       <ChartsSection data={details} mediaType={mediaType} />
       <VideosSection data={data} loading={loading} />
-      <SongsSection mediaTitle={details?.title || details?.name} />
-      {mediaType === "tv" && (
-        <Seasons data={details} loading={detailsLoading} />
-      )}
-      <TranslationsSection mediaType={mediaType} id={id} />
-      {mediaType === "movie" && <ReleaseDatesSection id={id} />}
-      {mediaType === "tv" && <ScreenedTheatricallySection id={id} />}
       <Reviews
         data={reviews}
         mediaType={mediaType}
@@ -55,9 +48,16 @@ const Details = () => {
         mediaTitle={details?.title || details?.name}
         overview={details?.overview}
       />
-      <TriviaSection movieDetails={details} />
-      <AwardsSection movieDetails={details} mediaType={mediaType} />
+      <SongsSection mediaTitle={details?.title || details?.name} />
+      {mediaType === "tv" && (
+        <Seasons data={details} loading={detailsLoading} />
+      )}
+      <TranslationsSection mediaType={mediaType} id={id} />
       <ProductionInsights data={details} loading={detailsLoading} />
+      <AwardsSection movieDetails={details} mediaType={mediaType} />
+      <TriviaSection movieDetails={details} />
+      {mediaType === "tv" && <ScreenedTheatricallySection id={id} />}
+      {mediaType === "movie" && <ReleaseDatesSection id={id} />}
       <MemorableQuotesSection movieDetails={details} />
       <Similar mediaType={mediaType} id={id} />
       <div>

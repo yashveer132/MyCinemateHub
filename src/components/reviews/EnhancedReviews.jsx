@@ -13,6 +13,7 @@ const Reviews = ({ data, mediaType, mediaId, mediaTitle, overview }) => {
   const [redditReviews, setRedditReviews] = useState([]);
   const [redditLoading, setRedditLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("tmdb");
+  const [aiGlowActive, setAiGlowActive] = useState(true);
   const [selectedRedditPost, setSelectedRedditPost] = useState(null);
   const [aiReview, setAiReview] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -120,10 +121,15 @@ const Reviews = ({ data, mediaType, mediaId, mediaTitle, overview }) => {
             {redditLoading && <span className="loading">...</span>}
           </button>
           <button
-            className={`tabButton ${activeTab === "ai" ? "active" : ""}`}
-            onClick={() => setActiveTab("ai")}
+            className={`tabButton aiTabButton${
+              activeTab === "ai" ? " active" : ""
+            }${activeTab !== "ai" && aiGlowActive ? " glow-flicker" : ""}`}
+            onClick={() => {
+              setActiveTab("ai");
+              if (aiGlowActive) setAiGlowActive(false);
+            }}
           >
-            AI Review {aiLoading && <span className="loading">...</span>}
+            AI Review
           </button>
         </div>
 
@@ -252,12 +258,20 @@ const Reviews = ({ data, mediaType, mediaId, mediaTitle, overview }) => {
             ) : aiError ? (
               <div className="noReviews">
                 <p>{aiError}</p>
-                <button
-                  onClick={() => setActiveTab("tmdb")}
-                  className="retryButton"
-                >
-                  View TMDB Reviews
-                </button>
+                <div className="reviewFallbackButtons">
+                  <button
+                    onClick={() => setActiveTab("tmdb")}
+                    className="retryButton"
+                  >
+                    View TMDB Reviews
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("reddit")}
+                    className="retryButton"
+                  >
+                    View Reddit Reviews
+                  </button>
+                </div>
               </div>
             ) : aiReview ? (
               <div className="reviewItem aiReview">
@@ -265,7 +279,7 @@ const Reviews = ({ data, mediaType, mediaId, mediaTitle, overview }) => {
                   <div className="info">
                     <div className="meta">
                       <span className="source">AI</span>
-                      {aiReview?.score && (
+                      {Number.isFinite(aiReview?.score) && (
                         <span className="rating">⭐ {aiReview.score}/10</span>
                       )}
                     </div>
@@ -275,43 +289,146 @@ const Reviews = ({ data, mediaType, mediaId, mediaTitle, overview }) => {
                   {aiReview.headline && (
                     <h4 className="redditTitle">{aiReview.headline}</h4>
                   )}
-                  <div className="redditText">{aiReview.summary}</div>
-                  {(aiReview.highlights?.length || 0) > 0 && (
-                    <div style={{ marginTop: 12 }}>
-                      <strong>Highlights:</strong>
-                      <ul style={{ textAlign: "left", marginTop: 8 }}>
-                        {aiReview.highlights.map((h, idx) => (
-                          <li key={idx}>{h}</li>
-                        ))}
-                      </ul>
+
+                  {(aiReview.verdictLabel || aiReview.verdict) && (
+                    <div className="verdictWrap">
+                      <div
+                        className={`verdictBadge ${(
+                          aiReview.verdictLabel || "mixed"
+                        ).toLowerCase()}`}
+                      >
+                        <span className="badgeLabel">
+                          {aiReview.verdictLabel || "Mixed"}
+                        </span>
+                      </div>
+                      {aiReview.verdict && (
+                        <div className="verdictReason">{aiReview.verdict}</div>
+                      )}
                     </div>
                   )}
-                  {(aiReview.lowlights?.length || 0) > 0 && (
-                    <div style={{ marginTop: 12 }}>
-                      <strong>Considerations:</strong>
-                      <ul style={{ textAlign: "left", marginTop: 8 }}>
-                        {aiReview.lowlights.map((h, idx) => (
-                          <li key={idx}>{h}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-                {aiReview.verdict && (
-                  <div className="reviewFooter">
-                    <span className="reviewDate">{aiReview.verdict}</span>
+
+                  <div className="aiGrid">
+                    {aiReview.tldr && (
+                      <div className="aiCard tldrCard">
+                        <h5>TL;DR</h5>
+                        <p>{aiReview.tldr}</p>
+                      </div>
+                    )}
+
+                    {aiReview.summary && (
+                      <div className="aiCard summaryCard">
+                        <h5>Summary</h5>
+                        <div className="redditText">{aiReview.summary}</div>
+                      </div>
+                    )}
+
+                    {aiReview.aspects && (
+                      <div className="aiCard aspectsCard">
+                        <h5>Aspects</h5>
+                        <div className="aspectsGrid">
+                          {Object.entries(aiReview.aspects).map(([key, val]) =>
+                            val ? (
+                              <div key={key} className="aspectItem">
+                                <span className="aspectLabel">{key}</span>
+                                <span className="aspectValue">{val}/10</span>
+                              </div>
+                            ) : null
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {(aiReview.highlights?.length || 0) > 0 && (
+                      <div className="aiCard highlightsCard">
+                        <h5>Highlights</h5>
+                        <div className="bullets">
+                          <ul>
+                            {aiReview.highlights.map((h, idx) => (
+                              <li key={idx}>{h}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+
+                    {((aiReview.bestFor?.length || 0) > 0 ||
+                      (aiReview.avoidIf?.length || 0) > 0) && (
+                      <div className="aiCard audienceCard">
+                        <h5>Audience</h5>
+                        {(aiReview.bestFor?.length || 0) > 0 && (
+                          <div className="chips">
+                            <strong>Best for:</strong>
+                            <div className="chipRow">
+                              {aiReview.bestFor.map((t, i) => (
+                                <span key={i} className="chip">
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {(aiReview.avoidIf?.length || 0) > 0 && (
+                          <div className="chips">
+                            <strong>Avoid if:</strong>
+                            <div className="chipRow">
+                              {aiReview.avoidIf.map((t, i) => (
+                                <span key={i} className="chip warn">
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {(aiReview.lowlights?.length || 0) > 0 && (
+                      <div className="aiCard lowlightsCard">
+                        <h5>Considerations</h5>
+                        <div className="bullets">
+                          <ul>
+                            {aiReview.lowlights.map((h, idx) => (
+                              <li key={idx}>{h}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+
+                    {(aiReview.comparableTitles?.length || 0) > 0 && (
+                      <div className="aiCard comparableCard">
+                        <h5>Comparable</h5>
+                        <div className="chips">
+                          <div className="chipRow">
+                            {aiReview.comparableTitles.map((t, i) => (
+                              <span key={i} className="chip neutral">
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             ) : (
               <div className="noReviews">
                 <p>No AI review available right now.</p>
-                <button
-                  onClick={() => setActiveTab("tmdb")}
-                  className="retryButton"
-                >
-                  View TMDB Reviews
-                </button>
+                <div className="reviewFallbackButtons">
+                  <button
+                    onClick={() => setActiveTab("tmdb")}
+                    className="retryButton"
+                  >
+                    View TMDB Reviews
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("reddit")}
+                    className="retryButton"
+                  >
+                    View Reddit Reviews
+                  </button>
+                </div>
               </div>
             )}
           </div>

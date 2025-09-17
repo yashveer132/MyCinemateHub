@@ -3,6 +3,7 @@
   position: relative;
   margin-bottom: 50px;
   margin-top: 20px;
+
   .sectionHeading {
     font-size: 28px;
     color: white;
@@ -10,18 +11,67 @@
     font-weight: 600;
     text-align: center;
   }
+
+  .arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+    font-size: 24px;
+    color: white;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    &.disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+
+      &:hover {
+        opacity: 0.3;
+      }
+    }
+
+    @include md {
+      font-size: 30px;
+    }
+  }
+
+  .carouselLeftNav {
+    left: 25px;
+  }
+
+  .carouselRighttNav {
+    right: 25px;
+  }
+
   .listItems {
     display: flex;
     gap: 20px;
+    overflow-x: auto;
     overflow-y: hidden;
+    scroll-behavior: smooth;
     margin-right: -20px;
     margin-left: -20px;
     padding: 0 20px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
     @include md {
       margin: 0;
       padding: 0;
     }
+
     .listItem {
+      flex-shrink: 0;
       text-align: center;
       color: white;
       cursor: pointer;
@@ -96,15 +146,27 @@
   .castSkeleton {
     display: flex;
     gap: 20px;
+    overflow-x: auto;
     overflow-y: hidden;
+    scroll-behavior: smooth;
     margin-right: -20px;
     margin-left: -20px;
     padding: 0 20px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
     @include md {
       margin: 0;
       padding: 0;
     }
+
     .skItem {
+      flex-shrink: 0;
+
       .circle {
         width: 125px;
         height: 125px;

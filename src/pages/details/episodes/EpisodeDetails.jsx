@@ -11,10 +11,18 @@ import "./style-details.scss";
 
 const EpisodeDetails = () => {
   const { tvId, seasonNumber, episodeNumber } = useParams();
-  const { data, loading } = useFetch(`/tv/${tvId}/season/${seasonNumber}/episode/${episodeNumber}`);
-  const { data: videosData } = useFetch(`/tv/${tvId}/season/${seasonNumber}/episode/${episodeNumber}/videos`);
-  const { data: imagesData } = useFetch(`/tv/${tvId}/season/${seasonNumber}/episode/${episodeNumber}/images`);
-  const { data: externalIdsData } = useFetch(`/tv/${tvId}/season/${seasonNumber}/episode/${episodeNumber}/external_ids`);
+  const { data, loading } = useFetch(
+    `/tv/${tvId}/season/${seasonNumber}/episode/${episodeNumber}`
+  );
+  const { data: videosData } = useFetch(
+    `/tv/${tvId}/season/${seasonNumber}/episode/${episodeNumber}/videos`
+  );
+  const { data: imagesData } = useFetch(
+    `/tv/${tvId}/season/${seasonNumber}/episode/${episodeNumber}/images`
+  );
+  const { data: externalIdsData } = useFetch(
+    `/tv/${tvId}/season/${seasonNumber}/episode/${episodeNumber}/external_ids`
+  );
   const { url } = useSelector((state) => state.home);
   const [showVideoPopup, setShowVideoPopup] = useState(false);
   const [videoId, setVideoId] = useState(null);
@@ -87,12 +95,14 @@ const EpisodeDetails = () => {
                   <span className="runtime">{formatRuntime(data.runtime)}</span>
                 )}
                 {data.vote_average > 0 && (
-                  <span className="rating">⭐ {data.vote_average.toFixed(1)}</span>
+                  <span className="rating">
+                    ⭐ {data.vote_average.toFixed(1)}
+                  </span>
                 )}
               </div>
               {data.overview && (
                 <div className="episodeOverview">
-                  <h3>Overview</h3>
+                  <h3 className="centeredTitle">Overview</h3>
                   <p>{data.overview}</p>
                 </div>
               )}
@@ -101,7 +111,7 @@ const EpisodeDetails = () => {
 
           {data.guest_stars && data.guest_stars.length > 0 && (
             <div className="guestStarsSection">
-              <h3>Guest Stars</h3>
+              <h3 className="centeredTitle">Guest Stars</h3>
               <div className="guestStarsList">
                 {data.guest_stars.slice(0, 10).map((star) => (
                   <div key={star.id} className="guestStar">
@@ -114,7 +124,11 @@ const EpisodeDetails = () => {
                       alt={star.name}
                     />
                     <div className="starInfo">
-                      <span className="starName">{star.name}</span>
+                      <span className="starName">
+                        <a href={`/person/${star.id}`} className="personLink">
+                          {star.name}
+                        </a>
+                      </span>
                       <span className="starCharacter">{star.character}</span>
                     </div>
                   </div>
@@ -125,11 +139,15 @@ const EpisodeDetails = () => {
 
           {data.crew && data.crew.length > 0 && (
             <div className="crewSection">
-              <h3>Crew</h3>
+              <h3 className="centeredTitle">Crew</h3>
               <div className="crewList">
                 {data.crew.slice(0, 8).map((member, index) => (
                   <div key={index} className="crewMember">
-                    <span className="memberName">{member.name}</span>
+                    <span className="memberName">
+                      <a href={`/person/${member.id}`} className="personLink">
+                        {member.name}
+                      </a>
+                    </span>
                     <span className="memberJob">{member.job}</span>
                   </div>
                 ))}
@@ -139,10 +157,14 @@ const EpisodeDetails = () => {
 
           {videosData?.results && videosData.results.length > 0 && (
             <div className="videosSection">
-              <h3>Videos</h3>
+              <h3 className="centeredTitle">Videos</h3>
               <div className="videosList">
                 {videosData.results.slice(0, 6).map((video) => (
-                  <div key={video.id} className="videoItem" onClick={() => handleVideoPlay(video.key)}>
+                  <div
+                    key={video.id}
+                    className="videoItem"
+                    onClick={() => handleVideoPlay(video.key)}
+                  >
                     <div className="videoThumbnail">
                       <Img
                         src={`https://img.youtube.com/vi/${video.key}/maxresdefault.jpg`}
@@ -164,7 +186,7 @@ const EpisodeDetails = () => {
 
           {imagesData?.stills && imagesData.stills.length > 0 && (
             <div className="imagesSection">
-              <h3>Episode Images</h3>
+              <h3 className="centeredTitle">Episode Images</h3>
               <div className="imagesList">
                 {imagesData.stills.slice(0, 8).map((image, index) => (
                   <div key={index} className="imageItem">
@@ -180,7 +202,7 @@ const EpisodeDetails = () => {
 
           {externalIdsData && (
             <div className="externalIdsSection">
-              <h3>External Links</h3>
+              <h3 className="centeredTitle">External Links</h3>
               <div className="externalLinks">
                 {externalIdsData.imdb_id && (
                   <a
@@ -214,24 +236,6 @@ const EpisodeDetails = () => {
                     <span className="linkIcon">📺</span>
                     <span>TVRage</span>
                   </a>
-                )}
-              </div>
-            </div>
-          )}
-
-          {data.production_code && (
-            <div className="productionInfo">
-              <h3>Production Information</h3>
-              <div className="productionDetails">
-                <div className="detailItem">
-                  <span className="label">Production Code:</span>
-                  <span className="value">{data.production_code}</span>
-                </div>
-                {data.vote_count > 0 && (
-                  <div className="detailItem">
-                    <span className="label">Total Votes:</span>
-                    <span className="value">{data.vote_count.toLocaleString()}</span>
-                  </div>
                 )}
               </div>
             </div>

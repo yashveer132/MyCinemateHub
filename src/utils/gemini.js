@@ -505,34 +505,62 @@ const generateAIReview = async (
   }));
 
   const prompt = `
-You are a seasoned film/TV critic. Synthesize a concise, balanced, and accurate review for the title "${title}" using:
+You are a seasoned film/TV critic. Write a precise, decision-focused, and ACCURATE review for the title "${title}" using ONLY the inputs below. Do NOT invent facts (no unverified cast names, awards, box office, or plot specifics beyond the overview). If something isn't supported by inputs, omit it. Avoid spoilers.
+
+Inputs:
 - Official overview: ${overview ? JSON.stringify(overview) : ""}
-- Up to ${tmdbSnippets.length} TMDB critic/user snippets: ${JSON.stringify(
-    tmdbSnippets
-  )}
-- Up to ${redditSnippets.length} Reddit discussion snippets: ${JSON.stringify(
+- Up to ${tmdbSnippets.length} TMDB snippets: ${JSON.stringify(tmdbSnippets)}
+- Up to ${redditSnippets.length} Reddit snippets: ${JSON.stringify(
     redditSnippets
   )}
 
-Rules:
-- Be neutral and evidence-based; avoid spoilers.
-- If sources conflict, reflect nuance and indicate mixed reception.
-- Prefer widely-agreed themes over isolated opinions.
-- Keep it helpful for someone deciding whether to watch.
+Guidelines:
+- Base conclusions strictly on evident patterns/themes across inputs.
+- If reception is mixed or insufficient, reflect uncertainty and lower confidence.
+- Keep it actionable so a user can decide quickly.
 
 Return ONLY a JSON object with this exact schema:
 {
   "headline": string,
-  "summary": string,
-  "highlights": string[],
-  "lowlights": string[],
-  "verdict": string,
-  "score": number,
+  "tldr": string,                     // one-line takeaway (max 20 words)
+  "summary": string,                  // 3-5 sentences, no spoilers
+  "highlights": string[],             // strengths
+  "lowlights": string[],              // cons/considerations
+  "verdict": {                        // watch decision
+    "label": "Watch" | "Skip" | "Mixed",
+    "reason": string                 // concise rationale
+  },
+  "score": number,                    // 1-10 integer
+  "aspects": {                        // 1-10 integers; omit if unknown
+    "story": number,
+    "direction": number,
+    "acting": number,
+    "visuals": number,
+    "music": number,
+    "pacing": number,
+    "writing": number,
+    "rewatchValue": number,
+    "originality": number
+  },
+  "bestFor": string[],                // who will likely enjoy it
+  "avoidIf": string[],                // who should pass
+  "contentAdvisories": {              // severity from inputs only; use "unknown" if unclear
+    "violence": "none"|"low"|"moderate"|"high"|"unknown",
+    "gore": "none"|"low"|"moderate"|"high"|"unknown",
+    "language": "none"|"low"|"moderate"|"high"|"unknown",
+    "nudity": "none"|"low"|"moderate"|"high"|"unknown",
+    "matureThemes": "none"|"low"|"moderate"|"high"|"unknown",
+    "frighteningScenes": "none"|"low"|"moderate"|"high"|"unknown"
+  },
+  "comparableTitles": string[],       // only if clearly implied by inputs; else []
   "confidence": "low"|"medium"|"high",
   "sourcesUsed": { "tmdbCount": number, "redditCount": number }
 }
 
-Do not include any additional commentary outside the JSON.`;
+Strict rules:
+- Do NOT add properties not listed.
+- If unsure about any field, choose conservative values or "unknown"/empty lists.
+- Output must be valid JSON only.`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -551,13 +579,88 @@ Do not include any additional commentary outside the JSON.`;
       : [];
     const lowlights = Array.isArray(parsed.lowlights) ? parsed.lowlights : [];
 
+    let verdictLabel = "Mixed";
+    let verdictText = "";
+    if (parsed.verdict && typeof parsed.verdict === "object") {
+      verdictLabel = ["Watch", "Skip", "Mixed"].includes(parsed.verdict.label)
+        ? parsed.verdict.label
+        : "Mixed";
+      verdictText = parsed.verdict.reason || "";
+    } else if (typeof parsed.verdict === "string") {
+      verdictText = parsed.verdict;
+      const v = parsed.verdict.toLowerCase();
+      verdictLabel = v.includes("watch")
+        ? "Watch"
+        : v.includes("skip")
+        ? "Skip"
+        : "Mixed";
+    }
+
+    const defaultAspects = {
+      story: null,
+      direction: null,
+      acting: null,
+      visuals: null,
+      music: null,
+      pacing: null,
+      writing: null,
+      rewatchValue: null,
+      originality: null,
+    };
+    const rawAspects =
+      parsed.aspects && typeof parsed.aspects === "object"
+        ? parsed.aspects
+        : {};
+    const aspects = Object.keys(defaultAspects).reduce((acc, key) => {
+      const val = Number(rawAspects[key]);
+      acc[key] = Number.isFinite(val)
+        ? Math.max(1, Math.min(10, Math.round(val)))
+        : null;
+      return acc;
+    }, {});
+
+    const severities = new Set(["none", "low", "moderate", "high", "unknown"]);
+    const defaultAdvisories = {
+      violence: "unknown",
+      gore: "unknown",
+      language: "unknown",
+      nudity: "unknown",
+      matureThemes: "unknown",
+      frighteningScenes: "unknown",
+    };
+    const rawAdvisories =
+      parsed.contentAdvisories && typeof parsed.contentAdvisories === "object"
+        ? parsed.contentAdvisories
+        : {};
+    const contentAdvisories = Object.keys(defaultAdvisories).reduce(
+      (acc, key) => {
+        const val = String(rawAdvisories[key] ?? "unknown").toLowerCase();
+        acc[key] = severities.has(val) ? val : "unknown";
+        return acc;
+      },
+      {}
+    );
+
+    const bestFor = Array.isArray(parsed.bestFor) ? parsed.bestFor : [];
+    const avoidIf = Array.isArray(parsed.avoidIf) ? parsed.avoidIf : [];
+    const comparableTitles = Array.isArray(parsed.comparableTitles)
+      ? parsed.comparableTitles
+      : [];
+
     return {
       headline: parsed.headline || `${title} — Review`,
+      tldr: parsed.tldr || "",
       summary: parsed.summary || "",
       highlights,
       lowlights,
-      verdict: parsed.verdict || "",
+      verdict: verdictText,
+      verdictLabel,
       score,
+      aspects,
+      bestFor,
+      avoidIf,
+      contentAdvisories,
+      comparableTitles,
       confidence: parsed.confidence || "medium",
       sourcesUsed: {
         tmdbCount: parsed.sourcesUsed?.tmdbCount ?? tmdbSnippets.length,
