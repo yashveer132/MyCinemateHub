@@ -17,7 +17,19 @@ const Header = () => {
 
   const isActive = (path) => {
     if (path === "/" && location.pathname === "/") return true;
-    if (path !== "/" && location.pathname.includes(path)) return true;
+    if (path === "movie" && location.pathname === "/explore/movie") return true;
+    if (path === "tv" && location.pathname === "/explore/tv") return true;
+    if (path === "top-movies" && location.pathname === "/top-movies")
+      return true;
+    if (path === "top-shows" && location.pathname === "/top-shows") return true;
+    if (
+      path === "searchPeople" &&
+      (location.pathname === "/searchPeople" ||
+        location.pathname.startsWith("/searchPeople/"))
+    )
+      return true;
+    if (path === "ai-playlists" && location.pathname === "/ai-playlists")
+      return true;
     return false;
   };
 
@@ -110,6 +122,18 @@ const Header = () => {
             onClick={() => navigationHandler("tv")}
           >
             TV Shows
+          </li>
+          <li
+            className={`menuItem ${isActive("top-movies") ? "active" : ""}`}
+            onClick={() => navigate("/top-movies")}
+          >
+            Top Movies
+          </li>
+          <li
+            className={`menuItem ${isActive("top-shows") ? "active" : ""}`}
+            onClick={() => navigate("/top-shows")}
+          >
+            Top Shows
           </li>
           <li
             className={`menuItem ${isActive("searchPeople") ? "active" : ""}`}

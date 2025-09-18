@@ -13,14 +13,14 @@
   .posterBlock {
     position: relative;
     width: 100%;
-    aspect-ratio: 1 / 1.5;
+    aspect-ratio: 1 / 1.7;
     background-size: cover;
     background-position: center;
     margin-bottom: 30px;
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    padding: 10px;
+    padding: 16px 10px 18px 10px;
     transition: all ease 0.5s;
     .lazy-load-image-background {
       position: absolute;

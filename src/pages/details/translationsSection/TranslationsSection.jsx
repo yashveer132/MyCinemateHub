@@ -8,7 +8,23 @@ const TranslationsSection = ({ mediaType, id }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 8;
+  const getItemsPerPage = () => {
+    if (typeof window !== "undefined" && window.matchMedia) {
+      return window.matchMedia("(max-width: 600px)").matches ? 4 : 8;
+    }
+    return 8;
+  };
+  const [itemsPerPage, setItemsPerPage] = useState(getItemsPerPage());
+
+  useEffect(() => {
+    const handleResize = () => {
+      setItemsPerPage(getItemsPerPage());
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
   const { data, loading } = useFetch(`/${mediaType}/${id}/translations`);
   const { url } = useSelector((state) => state.home);
 

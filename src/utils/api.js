@@ -242,3 +242,25 @@ export const getMoviesByPerson = async (personName, mediaType, sort, role) => {
     return null;
   }
 };
+
+export const getTopRatedMovies = async (page = 1) => {
+  try {
+    const data = await fetchDataFromApi("/movie/top_rated", {
+      page,
+    });
+    return data;
+  } catch (error) {
+    return null;
+  }
+};
+
+export const getTopRatedTVShows = async (page = 1) => {
+  try {
+    const data = await fetchDataFromApi("/tv/top_rated", {
+      page,
+    });
+    return data;
+  } catch (error) {
+    return null;
+  }
+};

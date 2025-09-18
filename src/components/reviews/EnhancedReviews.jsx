@@ -9,6 +9,22 @@ import { generateAIReview } from "../../utils/gemini";
 import "./style.scss";
 
 const Reviews = ({ data, mediaType, mediaId, mediaTitle, overview }) => {
+  const TMDB_WORD_LIMIT = 80;
+  const [expandedReviewIds, setExpandedReviewIds] = useState([]);
+
+  const toggleReviewExpand = (id) => {
+    setExpandedReviewIds((prev) =>
+      prev.includes(id) ? prev.filter((rid) => rid !== id) : [...prev, id]
+    );
+  };
+
+  const getLimitedContent = (content, id) => {
+    const words = content.split(" ");
+    if (words.length <= TMDB_WORD_LIMIT || expandedReviewIds.includes(id)) {
+      return content;
+    }
+    return words.slice(0, TMDB_WORD_LIMIT).join(" ") + "...";
+  };
   const [expanded, setExpanded] = useState(false);
   const [redditReviews, setRedditReviews] = useState([]);
   const [redditLoading, setRedditLoading] = useState(false);
@@ -136,38 +152,64 @@ const Reviews = ({ data, mediaType, mediaId, mediaTitle, overview }) => {
         {activeTab === "tmdb" && (
           <div className="reviewsList">
             {displayTmdbReviews.length > 0 ? (
-              displayTmdbReviews.map((review) => (
-                <div key={review.id} className="reviewItem tmdbReview">
-                  <div className="reviewHeader">
-                    <div className="avatar">
-                      <Img
-                        src={
-                          review.author_details.avatar_path
-                            ? url.profile + review.author_details.avatar_path
-                            : avatar
-                        }
-                      />
-                    </div>
-                    <div className="info">
-                      <div className="name">{review.author}</div>
-                      <div className="meta">
-                        {review.author_details.rating && (
-                          <span className="rating">
-                            ⭐ {review.author_details.rating}/10
-                          </span>
-                        )}
-                        <span className="source">TMDB</span>
+              displayTmdbReviews.map((review) => {
+                const isExpanded = expandedReviewIds.includes(review.id);
+                const limitedContent = getLimitedContent(
+                  review.content,
+                  review.id
+                );
+                return (
+                  <div key={review.id} className="reviewItem tmdbReview">
+                    <div className="reviewHeader">
+                      <div className="avatar">
+                        <Img
+                          src={
+                            review.author_details.avatar_path
+                              ? url.profile + review.author_details.avatar_path
+                              : avatar
+                          }
+                        />
+                      </div>
+                      <div className="info">
+                        <div className="name">{review.author}</div>
+                        <div className="meta">
+                          {review.author_details.rating && (
+                            <span className="rating">
+                              ⭐ {review.author_details.rating}/10
+                            </span>
+                          )}
+                          <span className="source">TMDB</span>
+                        </div>
                       </div>
                     </div>
+                    <div className="content">{limitedContent}</div>
+                    {review.content.split(" ").length > TMDB_WORD_LIMIT && (
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "center",
+                          marginTop: "12px",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        <button
+                          className="showMoreReviewBtn"
+                          onClick={() => toggleReviewExpand(review.id)}
+                        >
+                          {isExpanded ? "Show Less" : "Show More"}
+                        </button>
+                      </div>
+                    )}
+                    {review.created_at && (
+                      <div className="reviewDate" style={{ marginTop: "6px" }}>
+                        {formatDate(
+                          new Date(review.created_at).getTime() / 1000
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <div className="content">{review.content}</div>
-                  {review.created_at && (
-                    <div className="reviewDate">
-                      {formatDate(new Date(review.created_at).getTime() / 1000)}
-                    </div>
-                  )}
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="noReviews">
                 <p>No TMDB reviews available for this {mediaType}.</p>

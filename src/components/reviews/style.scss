@@ -1,3 +1,22 @@
+.showMoreReviewBtn {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+  border-radius: 20px;
+  padding: 7px 22px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+  margin: 0 auto;
+  display: inline-block;
+
+  &:hover {
+    background: #ff6b6b;
+    color: white;
+    border-color: #ff6b6b;
+  }
+}
 @import "../../mixins.scss";
 
 .reviews {

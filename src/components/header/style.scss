@@ -124,10 +124,17 @@
       height: 60px;
       display: flex;
       align-items: center;
-      margin: 0 15px;
+      margin: 0 12px;
       color: white;
       font-weight: 500;
       position: relative;
+      font-size: 14px;
+
+      @include lg {
+        margin: 0 15px;
+        font-size: 16px;
+      }
+
       &.searchIcon {
         margin-right: 0;
       }

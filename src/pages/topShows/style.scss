@@ -1,0 +1,137 @@
+@import "../../mixins.scss";
+
+.topShowsPage {
+  min-height: 700px;
+  padding-top: 100px;
+  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+
+  .resultNotFound {
+    font-size: 24px;
+    color: var(--black-light);
+    text-align: center;
+    margin-top: 50px;
+  }
+
+  .pageHeader {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 40px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+    border-radius: 20px;
+    padding: 40px 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  .pageTitle {
+    font-size: 36px;
+    line-height: 44px;
+    color: #ffffff;
+    margin-bottom: 15px;
+    font-weight: 700;
+    text-align: center;
+    background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcf7f);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+
+    @include md {
+      font-size: 48px;
+      line-height: 56px;
+    }
+  }
+
+  .pageSubtitle {
+    font-size: 16px;
+    line-height: 24px;
+    color: rgba(255, 255, 255, 0.8);
+    max-width: 600px;
+    text-align: center;
+    margin: 0 auto;
+
+    @include md {
+      font-size: 18px;
+      line-height: 28px;
+    }
+  }
+
+  .content {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 25px;
+    margin-bottom: 50px;
+
+    @include md {
+      gap: 20px;
+    }
+
+    .movieCard {
+      width: calc(50% - 12.5px);
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+
+      @include md {
+        width: calc(25% - 15px);
+      }
+
+      @include lg {
+        width: calc(20% - 16px);
+      }
+
+      @include xl {
+        width: calc(16.66% - 17px);
+      }
+
+      &:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      }
+    }
+  }
+}
+
+.topShowsPage .movieCard {
+  .posterBlock {
+    border-radius: 16px;
+    overflow: hidden;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    min-height: 270px;
+
+    .lazy-load-image-background {
+      border-radius: 16px;
+    }
+
+    .circleRating {
+      background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  .textBlock {
+    .title {
+      color: #ffffff;
+      font-weight: 600;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .date {
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+}

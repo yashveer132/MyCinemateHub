@@ -16,6 +16,8 @@ import WatchPartyLoader from "./components/watchParty/WatchPartyLoader";
 import EpisodeDetails from "./pages/details/episodes/EpisodeDetails";
 import SearchPeople from "./pages/searchPeople/SearchPeople";
 import AIPlaylists from "./pages/aiPlaylists/AIPlaylists";
+import TopMovies from "./pages/topMovies/TopMovies";
+import TopShows from "./pages/topShows/TopShows";
 function App() {
   const dispatch = useDispatch();
   const { url } = useSelector((state) => state.home);
@@ -67,6 +69,8 @@ function App() {
         <Route path="/explore/:mediaType" element={<Explore />} />
         <Route path="/watch/:roomId" element={<WatchPartyLoader />} />
         <Route path="/ai-playlists" element={<AIPlaylists />} />
+        <Route path="/top-movies" element={<TopMovies />} />
+        <Route path="/top-shows" element={<TopShows />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
       <Footer />
