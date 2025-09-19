@@ -12,6 +12,7 @@ const Header = () => {
   const [show, setShow] = useState("top");
   const [lastScrollY, setLastScrollY] = useState(0);
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [showTopRatedDropdown, setShowTopRatedDropdown] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -19,9 +20,12 @@ const Header = () => {
     if (path === "/" && location.pathname === "/") return true;
     if (path === "movie" && location.pathname === "/explore/movie") return true;
     if (path === "tv" && location.pathname === "/explore/tv") return true;
-    if (path === "top-movies" && location.pathname === "/top-movies")
+    if (
+      path === "top-rated" &&
+      (location.pathname === "/top-movies" ||
+        location.pathname === "/top-shows")
+    )
       return true;
-    if (path === "top-shows" && location.pathname === "/top-shows") return true;
     if (
       path === "searchPeople" &&
       (location.pathname === "/searchPeople" ||
@@ -125,16 +129,37 @@ const Header = () => {
             TV Shows
           </li>
           <li
-            className={`menuItem ${isActive("top-movies") ? "active" : ""}`}
-            onClick={() => navigate("/top-movies")}
+            className={`menuItem dropdown ${
+              isActive("top-rated") ? "active" : ""
+            }`}
+            onMouseEnter={() => setShowTopRatedDropdown(true)}
+            onMouseLeave={() => setShowTopRatedDropdown(false)}
           >
-            Top Movies
-          </li>
-          <li
-            className={`menuItem ${isActive("top-shows") ? "active" : ""}`}
-            onClick={() => navigate("/top-shows")}
-          >
-            Top Shows
+            Top Rated
+            <ul
+              className={`dropdown-menu ${showTopRatedDropdown ? "show" : ""}`}
+            >
+              <li
+                className="dropdown-item"
+                onClick={() => {
+                  navigate("/top-movies");
+                  setShowTopRatedDropdown(false);
+                  setMobileMenu(false);
+                }}
+              >
+                Movies
+              </li>
+              <li
+                className="dropdown-item"
+                onClick={() => {
+                  navigate("/top-shows");
+                  setShowTopRatedDropdown(false);
+                  setMobileMenu(false);
+                }}
+              >
+                TV Shows
+              </li>
+            </ul>
           </li>
           <li
             className={`menuItem ${isActive("searchPeople") ? "active" : ""}`}
@@ -164,6 +189,46 @@ const Header = () => {
           )}
         </div>
       </ContentWrapper>
+
+      {mobileMenu && (
+        <div className="mobileDropdown">
+          <div
+            className="mobileDropdownHeader"
+            onClick={() => setShowTopRatedDropdown(!showTopRatedDropdown)}
+          >
+            Top Rated
+            <span
+              className={`dropdown-arrow ${showTopRatedDropdown ? "open" : ""}`}
+            >
+              ▼
+            </span>
+          </div>
+          {showTopRatedDropdown && (
+            <div className="mobileDropdownMenu">
+              <div
+                className="mobileDropdownItem"
+                onClick={() => {
+                  navigate("/top-movies");
+                  setMobileMenu(false);
+                  setShowTopRatedDropdown(false);
+                }}
+              >
+                Movies
+              </div>
+              <div
+                className="mobileDropdownItem"
+                onClick={() => {
+                  navigate("/top-shows");
+                  setMobileMenu(false);
+                  setShowTopRatedDropdown(false);
+                }}
+              >
+                TV Shows
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </header>
   );
 };

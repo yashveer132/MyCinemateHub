@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
@@ -7,12 +7,18 @@ import {
   FaCheck,
   FaUser,
   FaArrowRight,
+  FaRobot,
+  FaMagic,
 } from "react-icons/fa";
 
 import "./style.scss";
 import ContentWrapper from "../../components/contentWrapper/ContentWrapper";
 import MovieCard from "../../components/movieCard/MovieCard";
 import Carousel from "../../components/carousel/Carousel";
+import {
+  getAIInsightsWithRecommendations,
+  clearAIInsightsCache,
+} from "../../utils/aiInsights";
 
 const Profile = () => {
   const userState = useSelector((state) => state.user);
@@ -22,14 +28,57 @@ const Profile = () => {
   const favoritesRef = useRef(null);
   const watchLaterRef = useRef(null);
   const watchedRef = useRef(null);
+  const aiRef = useRef(null);
+
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+  const [aiData, setAiData] = useState(null);
+  const [showKeywords, setShowKeywords] = useState(false);
+
+  const allItems = useMemo(
+    () => [...favorites, ...watchLater, ...watched],
+    [favorites, watchLater, watched]
+  );
+
+  React.useEffect(() => {
+    clearAIInsightsCache();
+    setAiData(null);
+  }, []);
 
   const scrollToSection = (ref) => {
     if (ref.current) {
-      const offsetTop = ref.current.offsetTop - 100; // 100px offset for header
+      const offsetTop = ref.current.offsetTop - 100;
       window.scrollTo({
         top: offsetTop,
         behavior: "smooth",
       });
+    }
+  };
+
+  const generateInsights = async () => {
+    setAiError("");
+    setAiLoading(true);
+    try {
+      if (allItems.length === 0) {
+        setAiError(
+          "Add items to Favorites, Watch Later, or Watched to generate insights."
+        );
+        setTimeout(() => scrollToSection(aiRef), 50);
+        return;
+      }
+      const res = await getAIInsightsWithRecommendations(
+        favorites,
+        watchLater,
+        watched,
+        { mediaType: "movie" }
+      );
+      if (!res) throw new Error("Failed to generate insights");
+      setAiData(res);
+      setTimeout(() => scrollToSection(aiRef), 50);
+    } catch (e) {
+      setAiError(e?.message || "Something went wrong");
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -117,6 +166,15 @@ const Profile = () => {
               <span className="statNumber">{watched.length}</span>
               <span className="statLabel">Watched</span>
             </div>
+            <div
+              className="statItem aiStat"
+              onClick={() => scrollToSection(aiRef)}
+            >
+              <span className="statNumber">
+                <FaRobot />
+              </span>
+              <span className="statLabel">AI Insights</span>
+            </div>
           </div>
         </div>
       </ContentWrapper>
@@ -161,6 +219,177 @@ const Profile = () => {
               "Keep track of what you've watched by marking items as complete. Build your viewing history and discover patterns in your taste!",
           }}
         />
+      </div>
+
+      {/* AI Insights Section */}
+      <div ref={aiRef} className="profileSection aiInsightsSection">
+        <ContentWrapper>
+          <div className="sectionHeader">
+            <div className="sectionTitleWrapper">
+              <div className="sectionIcon">
+                <FaRobot />
+              </div>
+              <span className="sectionTitle">AI Insights</span>
+            </div>
+          </div>
+
+          <div className="aiInsightsToolbar">
+            <button
+              type="button"
+              className="generateBtn"
+              disabled={aiLoading}
+              onClick={generateInsights}
+              title={"Generate AI insights"}
+            >
+              {aiLoading ? (
+                <>
+                  <span className="loader" /> Generating...
+                </>
+              ) : (
+                <>
+                  <FaMagic /> Generate AI Insights
+                </>
+              )}
+            </button>
+            {aiData && (
+              <label className="toggleKeywords">
+                <input
+                  type="checkbox"
+                  checked={showKeywords}
+                  onChange={(e) => setShowKeywords(e.target.checked)}
+                />
+                Show discovery keywords
+              </label>
+            )}
+            {aiError && <div className="aiError">{aiError}</div>}
+          </div>
+
+          {aiData ? (
+            <div className="aiInsightsContent">
+              <div className="insightsSummary">
+                <h3>Your Taste Overview</h3>
+                <p className="summaryText">{aiData.insights.summary}</p>
+                <div className="tasteBadges">
+                  {(aiData.insights.tasteProfile?.vibe || []).map((v) => (
+                    <span key={v} className="badge">
+                      {v}
+                    </span>
+                  ))}
+                  {aiData.insights.tasteProfile?.pace && (
+                    <span className="badge subtle">
+                      Pace: {aiData.insights.tasteProfile.pace}
+                    </span>
+                  )}
+                </div>
+                {!!(aiData.insights.topGenres || []).length && (
+                  <div className="topGenres">
+                    <span className="label">Top genres:</span>
+                    {(aiData.insights.topGenres || []).slice(0, 5).map((g) => (
+                      <span key={g} className="genre">
+                        {g}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {(aiData.insights.creatorLeanings?.directors?.length ||
+                aiData.insights.creatorLeanings?.actors?.length) && (
+                <div className="creatorLeanings">
+                  {aiData.insights.creatorLeanings?.directors?.length > 0 && (
+                    <div className="creatorGroup">
+                      <div className="creatorLabel">
+                        Directors you lean toward:
+                      </div>
+                      <div className="creatorChips">
+                        {aiData.insights.creatorLeanings.directors
+                          .slice(0, 6)
+                          .map((d) => (
+                            <span className="chip" key={d}>
+                              {d}
+                            </span>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                  {aiData.insights.creatorLeanings?.actors?.length > 0 && (
+                    <div className="creatorGroup">
+                      <div className="creatorLabel">Actors you favor:</div>
+                      <div className="creatorChips">
+                        {aiData.insights.creatorLeanings.actors
+                          .slice(0, 6)
+                          .map((a) => (
+                            <span className="chip" key={a}>
+                              {a}
+                            </span>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {aiData.insights.diversity && (
+                <div className="diversity">
+                  <div className="diversityBox">
+                    <div className="diversityLabel">Variety</div>
+                    <div className="diversityValue">
+                      {aiData.insights.diversity.genreSpread}
+                    </div>
+                  </div>
+                  <div className="diversityBox">
+                    <div className="diversityLabel">
+                      Risk appetite
+                      <span
+                        className="info"
+                        title="How often you explore outside your core tastes (safe → experimental)"
+                      >
+                        {" "}
+                        ⓘ
+                      </span>
+                    </div>
+                    <div className="diversityValue">
+                      {aiData.insights.diversity.risk}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {showKeywords &&
+                (aiData.insights.suggestedKeywords || []).length > 0 && (
+                  <div className="keywords">
+                    <span className="label">Discovery keywords:</span>
+                    {aiData.insights.suggestedKeywords.map((k) => (
+                      <span key={k} className="chip">
+                        {k}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+              <div className="recommendations">
+                <Carousel
+                  data={aiData.recommended || []}
+                  loading={false}
+                  endpoint="movie"
+                  title="You might like"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="emptyState">
+              <div className="emptyIcon">
+                <FaRobot />
+              </div>
+              <h3 className="emptyTitle">Get AI-powered taste insights</h3>
+              <p className="emptyDescription">
+                We'll analyze your favorites, watch later, and watched lists to
+                surface what you love and recommend new titles. Click the button
+                above to generate when you're ready.
+              </p>
+            </div>
+          )}
+        </ContentWrapper>
       </div>
     </div>
   );

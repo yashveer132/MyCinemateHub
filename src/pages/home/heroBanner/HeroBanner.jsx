@@ -12,14 +12,27 @@ const HeroBanner = () => {
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState("simple");
 
-  const navigate = useNavigate();
   const { url } = useSelector((state) => state.home);
-  const { data, loading } = useFetch("/movie/upcoming");
+  const { data: movieData, loading: movieLoading } =
+    useFetch("/movie/upcoming");
+  const { data: tvData, loading: tvLoading } = useFetch("/tv/on_the_air");
+
+  const loading = movieLoading || tvLoading;
+  const combinedData =
+    movieData && tvData
+      ? {
+          results: [...(movieData.results || []), ...(tvData.results || [])],
+        }
+      : null;
 
   useEffect(() => {
     const changeBg = () => {
-      const randomIndex = Math.floor(Math.random() * 20);
-      const bg = data?.results?.[randomIndex]?.backdrop_path;
+      const totalItems = combinedData?.results?.length || 0;
+      if (totalItems === 0) return;
+
+      const randomIndex = Math.floor(Math.random() * totalItems);
+      const item = combinedData.results[randomIndex];
+      const bg = item?.backdrop_path;
       setBackground(bg ? url.backdrop + bg : "");
     };
 
@@ -30,7 +43,7 @@ const HeroBanner = () => {
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [data, url.backdrop]);
+  }, [combinedData, url.backdrop]);
 
   const clickMeHandle = (e) => {
     navigate(`/search/${query}`);
@@ -63,7 +76,9 @@ const HeroBanner = () => {
             </>
           )}
           <div className="searchContainer">
-            <div className={`searchTabs ${activeTab === "ai" ? "aiActive" : ""}`}>
+            <div
+              className={`searchTabs ${activeTab === "ai" ? "aiActive" : ""}`}
+            >
               <span
                 className={`tab ${activeTab === "simple" ? "active" : ""}`}
                 onClick={() => setActiveTab("simple")}

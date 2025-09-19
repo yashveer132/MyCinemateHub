@@ -78,10 +78,13 @@
         text-align: center;
         transition: all 0.3s ease;
         cursor: pointer;
-        padding: 10px;
+        padding: 12px 14px;
         border-radius: 12px;
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
 
         &:hover {
           transform: translateY(-5px);
@@ -99,7 +102,7 @@
           font-size: 24px;
           font-weight: 700;
           color: #ff6b6b;
-          margin-bottom: 5px;
+          margin-bottom: 6px;
 
           @include md {
             font-size: 32px;
@@ -112,6 +115,7 @@
           text-transform: uppercase;
           letter-spacing: 0.5px;
           transition: color 0.3s ease;
+          margin-top: 4px;
 
           @include md {
             font-size: 16px;
@@ -127,6 +131,19 @@
           font-size: 12px;
           opacity: 0.7;
           margin-left: 4px;
+        }
+      }
+
+      .aiStat {
+        .statNumber {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #6b8cff, #9b6bff);
+          color: #fff;
         }
       }
     }
@@ -383,5 +400,229 @@
         flex-basis: 220px !important;
       }
     }
+  }
+}
+
+.aiInsightsSection {
+  position: relative;
+  z-index: 1;
+  .aiInsightsToolbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 0 20px 20px 20px;
+    position: relative;
+    z-index: 2;
+
+    .generateBtn {
+      background: linear-gradient(135deg, #6b8cff, #9b6bff);
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 8px 20px rgba(107, 140, 255, 0.3);
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 26px rgba(107, 140, 255, 0.4);
+      }
+      .loader {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.6);
+        border-top-color: #fff;
+        animation: spin 0.8s linear infinite;
+      }
+    }
+
+    .toggleKeywords {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 8px 12px;
+      border-radius: 10px;
+    }
+
+    .aiError {
+      color: #ff9b9b;
+      font-weight: 500;
+    }
+  }
+
+  .aiInsightsContent {
+    margin: 10px 20px 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+    position: relative;
+    z-index: 1;
+
+    .insightsSummary {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 22px 24px;
+      text-align: center;
+      h3 {
+        margin: 0 0 12px 0;
+        color: #fff;
+      }
+      .summaryText {
+        margin: 0 auto 16px auto;
+        max-width: 780px;
+        color: rgba(255, 255, 255, 0.85);
+      }
+      .tasteBadges {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        .badge {
+          color: #fff;
+          padding: 6px 10px;
+          border-radius: 999px;
+          font-size: 12px;
+          background: linear-gradient(135deg, #ff7aa8, #ffb86b);
+          box-shadow: 0 4px 12px rgba(255, 120, 168, 0.3);
+          &.subtle {
+            background: linear-gradient(135deg, #6b8cff, #9b6bff);
+            box-shadow: 0 4px 12px rgba(107, 140, 255, 0.3);
+          }
+        }
+      }
+      .topGenres {
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        .label {
+          color: #fff;
+          font-weight: 600;
+        }
+        .genre {
+          padding: 6px 10px;
+          border-radius: 999px;
+          color: #fff;
+          background: linear-gradient(135deg, #4ecdc4, #6b8cff);
+          box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+        }
+      }
+    }
+
+    .creatorLeanings {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+      .creatorGroup {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 14px;
+        padding: 14px 16px;
+        width: 100%;
+        max-width: 900px;
+        text-align: center;
+      }
+      .creatorLabel {
+        color: #fff;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .creatorChips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        .chip {
+          color: #fff;
+          padding: 6px 10px;
+          border-radius: 999px;
+          background: linear-gradient(135deg, #9b6bff, #6bd9ff);
+          box-shadow: 0 4px 12px rgba(155, 107, 255, 0.3);
+        }
+      }
+    }
+
+    .diversity {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      .diversityBox {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 14px 18px;
+        min-width: 160px;
+        text-align: center;
+      }
+      .diversityLabel {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 12px;
+      }
+      .diversityValue {
+        color: #fff;
+        font-weight: 700;
+        margin-top: 6px;
+        text-transform: capitalize;
+      }
+      .info {
+        cursor: help;
+        margin-left: 6px;
+        opacity: 0.8;
+      }
+    }
+
+    .keywords {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      .label {
+        color: #fff;
+        font-weight: 600;
+        margin-right: 6px;
+      }
+      .chip {
+        padding: 6px 10px;
+        border-radius: 999px;
+        color: #fff;
+        background: linear-gradient(135deg, #ffcf6b, #ff7aa8);
+        box-shadow: 0 4px 12px rgba(255, 207, 107, 0.3);
+      }
+    }
+
+    .recommendations {
+      .carousel .carouselTitle {
+        color: #fff;
+        text-align: center;
+        font-size: 28px;
+      }
+      .moviesGrid {
+        margin-top: 14px;
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }

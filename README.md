@@ -35,7 +35,13 @@ Cinemate AI movie platform revolutionizes movie discovery by combining artificia
   - Weighted recommendation merging
   - Diversity-aware suggestions
 
-- 🤖 **AI Search Modes**
+- � **Profile AI Insights**
+  - Analyze your Favorites, Watch Later, and Watched lists
+  - Summarize your viewing taste (vibe, pace, top genres)
+  - Suggest discovery keywords
+  - One-click "Generate AI Insights" with local caching to minimize API calls
+
+- �🤖 **AI Search Modes**
   - Simple Search: Traditional keyword-based search
   - AI Search: Advanced natural language processing
   - Smart Filters: AI-powered genre and theme detection
@@ -186,6 +192,10 @@ VITE_GEMINI_API_KEY=your_gemini_api_key
 ```bash
 npm run dev
 ```
+
+### Using AI Insights
+
+Go to your Profile page. In the stats row, click "AI Insights" to scroll to the section. Click "Generate AI Insights" to run a single AI request that produces a concise taste profile and recommended titles. Results are cached in localStorage keyed to your lists, so repeated clicks won't call the AI unless your lists change.
 
 ## Architecture & Implementation
 

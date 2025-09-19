@@ -8,7 +8,7 @@ if (!GEMINI_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
-const GENRE_MAP = {
+export const GENRE_MAP = {
   action: 28,
   adventure: 12,
   animation: 16,
@@ -680,4 +680,91 @@ export {
   generateMemorableQuotes,
   generateAwards,
   generateAIReview,
+};
+
+export const generateUserInsights = async (summary) => {
+  const model = genAI.getGenerativeModel({
+    model: "models/gemini-2.0-flash",
+    safetySettings: [
+      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+    ],
+  });
+
+  try {
+    const isValid = await validateModel(model);
+    if (!isValid) throw new Error("Model validation failed");
+  } catch (e) {
+    return null;
+  }
+
+  const genreNames = (summary.topGenresById || [])
+    .map((id) => summary.genreIdToName?.[id] || String(id))
+    .join(", ");
+
+  const prompt = `You are an expert movie and TV taste analyst. Using ONLY the structured inputs below, produce concise, useful insights about the user's viewing taste. Do not invent facts.
+
+Speak directly to the user in second person ("you"), never say "this user" or "they". Make the summary vivid but precise. Prefer concrete descriptors.
+
+INPUT:
+${JSON.stringify({
+  counts: summary.counts,
+  topGenresById: summary.topGenresById,
+  topGenresByName: (summary.topGenresById || []).map(
+    (id) => summary.genreIdToName?.[id] || id
+  ),
+  sampleTitles: summary.titlesSample?.slice(0, 15) || [],
+})}
+
+Return ONLY valid JSON with this exact schema:
+{
+  "summary": string,                     // 2-4 sentences overview of your taste, use "you"
+  "tasteProfile": {                      // short bullet-like takeaways
+    "vibe": string[],                    // 3-6 items, e.g., "dark & gritty", "uplifting", "mind-bending"
+    "pace": string,                      // "slow-burn" | "balanced" | "fast-paced" (pick one)
+    "prefersSeries": boolean,            // guess from watchLater vs favorites/watched if possible else false
+    "rewatchTendency": "low"|"medium"|"high"
+  },
+  "topGenres": [                         // by NAME, descending
+    string
+  ],
+  "suggestedKeywords": [                 // 8-12 short keywords to help discovery
+    string
+  ],
+  "creatorLeanings": {                   // optional light-weight tendencies
+    "directors": string[],
+    "actors": string[]
+  },
+  "diversity": {                         // how varied the taste looks
+    "genreSpread": "narrow"|"mixed"|"broad",
+    "risk": "safe"|"experimental"
+  }
+}`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const cleaned = cleanJsonResponse(response.text().trim());
+    const parsed = JSON.parse(cleaned);
+
+    const insights = {
+      summary: parsed.summary || "",
+      tasteProfile: parsed.tasteProfile || {
+        vibe: [],
+        pace: "balanced",
+        prefersSeries: false,
+        rewatchTendency: "medium",
+      },
+      topGenres: Array.isArray(parsed.topGenres) ? parsed.topGenres : [],
+      suggestedKeywords: Array.isArray(parsed.suggestedKeywords)
+        ? parsed.suggestedKeywords
+        : [],
+      creatorLeanings: parsed.creatorLeanings || { directors: [], actors: [] },
+      diversity: parsed.diversity || { genreSpread: "mixed", risk: "safe" },
+    };
+
+    return insights;
+  } catch (error) {
+    console.error("Error generating user insights:", error);
+    return null;
+  }
 };
