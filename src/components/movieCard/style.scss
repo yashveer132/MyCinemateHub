@@ -22,6 +22,79 @@
     justify-content: space-between;
     padding: 16px 10px 18px 10px;
     transition: all ease 0.5s;
+
+    .actionButtons {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      z-index: 2;
+
+      &.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .actionBtn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.9);
+          transform: scale(1.1);
+        }
+
+        &.favoriteBtn {
+          &.active {
+            background: #e50914;
+            color: white;
+          }
+          &:hover {
+            background: #e50914;
+          }
+        }
+
+        &.watchLaterBtn {
+          &.active {
+            background: #f39c12;
+            color: white;
+          }
+          &:hover {
+            background: #f39c12;
+          }
+        }
+
+        &.watchedBtn {
+          &.active {
+            background: #27ae60;
+            color: white;
+          }
+          &:hover {
+            background: #27ae60;
+          }
+        }
+
+        svg {
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
     .lazy-load-image-background {
       position: absolute;
       top: 0;
@@ -79,7 +152,12 @@
   }
   &:hover {
     .posterBlock {
-      opacity: 0.5;
+      opacity: 0.9;
+
+      .actionButtons {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   }
 }

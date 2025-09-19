@@ -1,0 +1,113 @@
+import { createSlice } from "@reduxjs/toolkit";
+
+const saveToLocalStorage = (key, data) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    console.error(`Error saving ${key} to localStorage:`, error);
+  }
+};
+
+const loadFromLocalStorage = (key, defaultValue = []) => {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (error) {
+    console.error(`Error loading ${key} from localStorage:`, error);
+    return defaultValue;
+  }
+};
+
+const initialState = {
+  favorites: loadFromLocalStorage("cinemate_favorites", []),
+  watchLater: loadFromLocalStorage("cinemate_watchLater", []),
+  watched: loadFromLocalStorage("cinemate_watched", []),
+};
+
+const userSlice = createSlice({
+  name: "user",
+  initialState,
+  reducers: {
+    addToFavorites: (state, action) => {
+      const movie = action.payload;
+      const exists = state.favorites.find((item) => item.id === movie.id);
+      if (!exists) {
+        state.favorites.push(movie);
+        saveToLocalStorage("cinemate_favorites", state.favorites);
+      }
+    },
+    removeFromFavorites: (state, action) => {
+      const movieId = action.payload;
+      state.favorites = state.favorites.filter((item) => item.id !== movieId);
+      saveToLocalStorage("cinemate_favorites", state.favorites);
+    },
+
+    addToWatchLater: (state, action) => {
+      const movie = action.payload;
+      const exists = state.watchLater.find((item) => item.id === movie.id);
+      if (!exists) {
+        state.watchLater.push(movie);
+        saveToLocalStorage("cinemate_watchLater", state.watchLater);
+      }
+    },
+    removeFromWatchLater: (state, action) => {
+      const movieId = action.payload;
+      state.watchLater = state.watchLater.filter((item) => item.id !== movieId);
+      saveToLocalStorage("cinemate_watchLater", state.watchLater);
+    },
+
+    addToWatched: (state, action) => {
+      const movie = action.payload;
+      const exists = state.watched.find((item) => item.id === movie.id);
+      if (!exists) {
+        state.watched.push(movie);
+        saveToLocalStorage("cinemate_watched", state.watched);
+
+        state.watchLater = state.watchLater.filter(
+          (item) => item.id !== movie.id
+        );
+        saveToLocalStorage("cinemate_watchLater", state.watchLater);
+      }
+    },
+    removeFromWatched: (state, action) => {
+      const movieId = action.payload;
+      state.watched = state.watched.filter((item) => item.id !== movieId);
+      saveToLocalStorage("cinemate_watched", state.watched);
+    },
+
+    clearAllPreferences: (state) => {
+      state.favorites = [];
+      state.watchLater = [];
+      state.watched = [];
+      localStorage.removeItem("cinemate_favorites");
+      localStorage.removeItem("cinemate_watchLater");
+      localStorage.removeItem("cinemate_watched");
+    },
+
+    moveToWatchLater: (state, action) => {
+      const movie = action.payload;
+
+      state.watched = state.watched.filter((item) => item.id !== movie.id);
+      saveToLocalStorage("cinemate_watched", state.watched);
+
+      const exists = state.watchLater.find((item) => item.id === movie.id);
+      if (!exists) {
+        state.watchLater.push(movie);
+        saveToLocalStorage("cinemate_watchLater", state.watchLater);
+      }
+    },
+  },
+});
+
+export const {
+  addToFavorites,
+  removeFromFavorites,
+  addToWatchLater,
+  removeFromWatchLater,
+  addToWatched,
+  removeFromWatched,
+  clearAllPreferences,
+  moveToWatchLater,
+} = userSlice.actions;
+
+export default userSlice.reducer;

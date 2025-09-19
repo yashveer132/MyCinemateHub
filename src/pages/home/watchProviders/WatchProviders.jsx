@@ -21,11 +21,19 @@ const WatchProviders = () => {
     const fetchData = async () => {
       setLoading(true);
       const today = dayjs().format("YYYY-MM-DD");
+      const firstDayOfThisMonth = dayjs().startOf("month").format("YYYY-MM-DD");
+      const firstDayOfLastMonth = dayjs()
+        .subtract(1, "month")
+        .startOf("month")
+        .format("YYYY-MM-DD");
       const movieData = await fetchDataFromApi("/discover/movie", {
         with_watch_providers: provider,
         watch_region: "US",
         sort_by: "popularity.desc",
         "primary_release_date.lte": today,
+        "primary_release_date.gte": firstDayOfLastMonth,
+        "vote_average.gte": 7,
+        "vote_count.gte": 5,
         page: 1,
       });
       const tvData = await fetchDataFromApi("/discover/tv", {
@@ -33,6 +41,9 @@ const WatchProviders = () => {
         watch_region: "US",
         sort_by: "popularity.desc",
         "first_air_date.lte": today,
+        "first_air_date.gte": firstDayOfLastMonth,
+        "vote_average.gte": 7,
+        "vote_count.gte": 5,
         with_status: "0|2",
         page: 1,
       });
@@ -44,9 +55,56 @@ const WatchProviders = () => {
         ...item,
         media_type: "tv",
       }));
-      const combined = [...movieResults, ...tvResults];
-      combined.sort((a, b) => b.popularity - a.popularity);
-      setData(combined.slice(0, 20));
+      let combined = [...movieResults, ...tvResults];
+      combined.sort((a, b) => {
+        if (b.vote_average !== a.vote_average) {
+          return b.vote_average - a.vote_average;
+        }
+        return b.popularity - a.popularity;
+      });
+
+      if (combined.length < 20) {
+        const fallbackMovieData = await fetchDataFromApi("/discover/movie", {
+          with_watch_providers: provider,
+          watch_region: "US",
+          sort_by: "popularity.desc",
+          "primary_release_date.lte": today,
+          "primary_release_date.gte": firstDayOfLastMonth,
+          page: 1,
+        });
+        const fallbackTvData = await fetchDataFromApi("/discover/tv", {
+          with_watch_providers: provider,
+          watch_region: "US",
+          sort_by: "popularity.desc",
+          "first_air_date.lte": today,
+          "first_air_date.gte": firstDayOfLastMonth,
+          with_status: "0|2",
+          page: 1,
+        });
+        const fallbackMovieResults = (fallbackMovieData?.results || []).map(
+          (item) => ({ ...item, media_type: "movie" })
+        );
+        const fallbackTvResults = (fallbackTvData?.results || []).map(
+          (item) => ({ ...item, media_type: "tv" })
+        );
+        const allResults = [
+          ...combined,
+          ...fallbackMovieResults,
+          ...fallbackTvResults,
+        ];
+        const uniqueResults = [];
+        const seenIds = new Set();
+        for (const item of allResults) {
+          if (!seenIds.has(item.id)) {
+            uniqueResults.push(item);
+            seenIds.add(item.id);
+          }
+        }
+        combined = uniqueResults.slice(0, 20);
+      } else {
+        combined = combined.slice(0, 20);
+      }
+      setData(combined);
       setLoading(false);
     };
     fetchData();

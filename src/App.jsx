@@ -18,6 +18,7 @@ import SearchPeople from "./pages/searchPeople/SearchPeople";
 import AIPlaylists from "./pages/aiPlaylists/AIPlaylists";
 import TopMovies from "./pages/topMovies/TopMovies";
 import TopShows from "./pages/topShows/TopShows";
+import Profile from "./pages/profile/Profile";
 function App() {
   const dispatch = useDispatch();
   const { url } = useSelector((state) => state.home);
@@ -71,6 +72,7 @@ function App() {
         <Route path="/ai-playlists" element={<AIPlaylists />} />
         <Route path="/top-movies" element={<TopMovies />} />
         <Route path="/top-shows" element={<TopShows />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
       <Footer />

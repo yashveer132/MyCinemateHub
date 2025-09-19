@@ -30,6 +30,7 @@ const Header = () => {
       return true;
     if (path === "ai-playlists" && location.pathname === "/ai-playlists")
       return true;
+    if (path === "profile" && location.pathname === "/profile") return true;
     return false;
   };
 
@@ -146,6 +147,12 @@ const Header = () => {
             onClick={() => navigate("/ai-playlists")}
           >
             AI Playlists
+          </li>
+          <li
+            className={`menuItem ${isActive("profile") ? "active" : ""}`}
+            onClick={() => navigate("/profile")}
+          >
+            My Profile
           </li>
         </ul>
 
