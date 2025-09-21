@@ -9,7 +9,7 @@ import MovieCard from "../movieCard/MovieCard";
 
 import "./style.scss";
 
-const Carousel = ({ data, loading, endpoint, title }) => {
+const Carousel = ({ data, loading, endpoint, title, showWatchedDate }) => {
   const carouselContainer = useRef();
 
   const navigation = (dir) => {
@@ -63,6 +63,7 @@ const Carousel = ({ data, loading, endpoint, title }) => {
                     key={item.id}
                     data={item}
                     mediaType={item.media_type || endpoint}
+                    showWatchedDate={showWatchedDate}
                   />
                 );
               })}

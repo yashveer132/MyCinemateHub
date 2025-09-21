@@ -11,7 +11,25 @@ const saveToLocalStorage = (key, data) => {
 const loadFromLocalStorage = (key, defaultValue = []) => {
   try {
     const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : defaultValue;
+    if (!item) return defaultValue;
+
+    const parsed = JSON.parse(item);
+
+    if (key === "cinemate_watched" && Array.isArray(parsed)) {
+      const migrated = parsed.map((item) => {
+        if (!item.watchedAt) {
+          return {
+            ...item,
+            watchedAt: new Date().toISOString(),
+          };
+        }
+        return item;
+      });
+      localStorage.setItem(key, JSON.stringify(migrated));
+      return migrated;
+    }
+
+    return parsed;
   } catch (error) {
     console.error(`Error loading ${key} from localStorage:`, error);
     return defaultValue;
@@ -60,7 +78,11 @@ const userSlice = createSlice({
       const movie = action.payload;
       const exists = state.watched.find((item) => item.id === movie.id);
       if (!exists) {
-        state.watched.push(movie);
+        const watchedItem = {
+          ...movie,
+          watchedAt: new Date().toISOString(),
+        };
+        state.watched.push(watchedItem);
         saveToLocalStorage("cinemate_watched", state.watched);
 
         state.watchLater = state.watchLater.filter(

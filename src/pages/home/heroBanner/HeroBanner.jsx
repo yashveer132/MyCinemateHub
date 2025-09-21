@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import "./style.scss";
@@ -18,12 +18,13 @@ const HeroBanner = () => {
   const { data: tvData, loading: tvLoading } = useFetch("/tv/on_the_air");
 
   const loading = movieLoading || tvLoading;
-  const combinedData =
-    movieData && tvData
+  const combinedData = useMemo(() => {
+    return movieData && tvData
       ? {
           results: [...(movieData.results || []), ...(tvData.results || [])],
         }
       : null;
+  }, [movieData, tvData]);
 
   useEffect(() => {
     const changeBg = () => {

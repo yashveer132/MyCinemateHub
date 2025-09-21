@@ -26,7 +26,7 @@ import {
   moveToWatchLater,
 } from "../../store/userSlice";
 
-const MovieCard = ({ data, fromSearch, mediaType }) => {
+const MovieCard = ({ data, fromSearch, mediaType, showWatchedDate }) => {
   const { url } = useSelector((state) => state.home);
   const { favorites, watchLater, watched } = useSelector((state) => state.user);
   const dispatch = useDispatch();
@@ -144,9 +144,11 @@ const MovieCard = ({ data, fromSearch, mediaType }) => {
       <div className="textBlock">
         <span className="title">{data.title || data.name}</span>
         <span className="date">
-          {dayjs(data.release_date || data.first_air_date).format(
-            "MMM D, YYYY"
-          )}
+          {showWatchedDate && data.watchedAt
+            ? `Watched ${dayjs(data.watchedAt).format("MMM D, YYYY")}`
+            : dayjs(data.release_date || data.first_air_date).format(
+                "MMM D, YYYY"
+              )}
         </span>
       </div>
     </div>

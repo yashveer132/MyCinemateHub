@@ -19,6 +19,7 @@ import {
   getAIInsightsWithRecommendations,
   clearAIInsightsCache,
 } from "../../utils/aiInsights";
+import StatisticsSection from "./StatisticsSection";
 
 const Profile = () => {
   const userState = useSelector((state) => state.user);
@@ -108,7 +109,13 @@ const Profile = () => {
     );
   };
 
-  const ProfileSection = ({ title, data, icon, emptyStateConfig }) => {
+  const ProfileSection = ({
+    title,
+    data,
+    icon,
+    emptyStateConfig,
+    showWatchedDate,
+  }) => {
     return (
       <div className="carouselSection">
         <ContentWrapper>
@@ -121,7 +128,11 @@ const Profile = () => {
           </div>
 
           {data.length > 0 ? (
-            <Carousel data={data} loading={false} />
+            <Carousel
+              data={data}
+              loading={false}
+              showWatchedDate={showWatchedDate}
+            />
           ) : (
             <EmptyState {...emptyStateConfig} />
           )}
@@ -179,6 +190,8 @@ const Profile = () => {
         </div>
       </ContentWrapper>
 
+      <StatisticsSection favorites={favorites} watched={watched} />
+
       <div ref={favoritesRef}>
         <ProfileSection
           title="My Favorites"
@@ -212,6 +225,7 @@ const Profile = () => {
           title="Watched"
           data={watched}
           icon={<FaCheck />}
+          showWatchedDate={true}
           emptyStateConfig={{
             icon: <FaCheck />,
             title: "No Watched Items",
@@ -221,7 +235,6 @@ const Profile = () => {
         />
       </div>
 
-      {/* AI Insights Section */}
       <div ref={aiRef} className="profileSection aiInsightsSection">
         <ContentWrapper>
           <div className="sectionHeader">
