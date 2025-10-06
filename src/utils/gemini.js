@@ -673,6 +673,137 @@ Strict rules:
   }
 };
 
+const generateActorTimeline = async (actorName, biography, credits) => {
+  const model = genAI.getGenerativeModel({
+    model: "models/gemini-2.0-flash",
+    safetySettings: [
+      {
+        category: "HARM_CATEGORY_HARASSMENT",
+        threshold: "BLOCK_NONE",
+      },
+    ],
+  });
+
+  try {
+    const isValid = await validateModel(model);
+    if (!isValid) {
+      throw new Error(
+        "Model validation failed - Check if you're using Gemini 2.0 Flash API key"
+      );
+    }
+  } catch (error) {
+    return null;
+  }
+
+  const movies = (credits?.cast || [])
+    .filter((item) => item.media_type === "movie")
+    .slice(0, 20);
+  const tvShows = (credits?.cast || [])
+    .filter((item) => item.media_type === "tv")
+    .slice(0, 10);
+  const creditsSummary = {
+    movies: movies.map((m) => ({
+      title: m.title,
+      year: m.release_date ? new Date(m.release_date).getFullYear() : null,
+      character: m.character,
+      popularity: m.popularity,
+      id: m.id,
+    })),
+    tvShows: tvShows.map((t) => ({
+      title: t.name,
+      year: t.first_air_date ? new Date(t.first_air_date).getFullYear() : null,
+      character: t.character,
+      popularity: t.popularity,
+      id: t.id,
+    })),
+  };
+
+  const prompt = `
+Generate a comprehensive career timeline for the actor "${actorName}".
+Use the provided biography and credits to create 15-20 key milestones.
+Include a mix of positive and negative moments, achievements, peaks, lows, and significant career events like debut roles, major breakthroughs, awards, genre shifts, collaborations, box office successes/failures, critical acclaim, controversies, comebacks, and recent works.
+Ensure to include milestones from the most recent years available in the credits, prioritizing the latest developments up to 2025 if data is available.
+
+Biography: "${biography || "No biography available"}"
+Credits Summary: ${JSON.stringify(creditsSummary)}
+
+Return ONLY a JSON array of objects with this exact structure, no additional text:
+[
+  {
+    "year": 1990,
+    "title": "Debut in Titanic",
+    "description": "First major role as Jack Dawson in Titanic, which became a blockbuster.",
+    "type": "movie",
+    "link": "/movie/597"
+  },
+  {
+    "year": 2016,
+    "title": "Oscar Win for Revenant",
+    "description": "Won Academy Award for Best Actor for The Revenant.",
+    "type": "award",
+    "link": null
+  },
+  {
+    "year": 2000,
+    "title": "Box Office Peak with Gladiator",
+    "description": "Starred in Gladiator, which grossed over $460 million worldwide.",
+    "type": "peak",
+    "link": "/movie/98"
+  },
+  {
+    "year": 1995,
+    "title": "Critical Low with Cutthroat Island",
+    "description": "Starred in Cutthroat Island, which was a major box office flop.",
+    "type": "low_point",
+    "link": "/movie/1408"
+  }
+]
+
+Types: "movie", "tv", "award", "milestone", "peak", "low_point", "achievement", "controversy", "comeback".
+For "movie" or "tv" types, provide the link as "/movie/{id}" or "/tv/{id}" using the ID from credits. For other types, use null.
+Ensure years are accurate based on credits. Prioritize including recent milestones from the latest years, ensuring coverage up to the most current data available.
+Sort chronologically by year.
+Generate unique, relevant milestones covering the full career spectrum, with emphasis on recent developments. Include both highs and lows for a complete picture.
+Return only the JSON array, nothing else.
+`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    let text = response.text().trim();
+
+    const cleanedResponse = cleanJsonResponse(text);
+
+    let parsedResponse;
+    try {
+      parsedResponse = JSON.parse(cleanedResponse);
+    } catch (parseError) {
+      const jsonStart = text.indexOf("[");
+      const jsonEnd = text.lastIndexOf("]") + 1;
+      if (jsonStart !== -1 && jsonEnd > jsonStart) {
+        const jsonText = text.substring(jsonStart, jsonEnd);
+        parsedResponse = JSON.parse(jsonText);
+      } else {
+        throw parseError;
+      }
+    }
+
+    if (!Array.isArray(parsedResponse)) {
+      throw new Error("Invalid response structure");
+    }
+
+    parsedResponse.sort((a, b) => (a.year || 0) - (b.year || 0));
+
+    return {
+      id: Date.now(),
+      milestones: parsedResponse,
+    };
+  } catch (error) {
+    console.error("Error generating actor timeline:", error);
+    return null;
+  }
+};
+
 export {
   extractSearchParams,
   correctSpelling,
@@ -680,6 +811,7 @@ export {
   generateMemorableQuotes,
   generateAwards,
   generateAIReview,
+  generateActorTimeline,
 };
 
 export const generateUserInsights = async (summary) => {

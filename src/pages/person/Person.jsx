@@ -6,6 +6,7 @@ import useFetch from "../../hooks/useFetch";
 import ContentWrapper from "../../components/contentWrapper/ContentWrapper";
 import SwitchTabs from "../../components/switchTabs/SwitchTabs";
 import Img from "../../components/lazyLoadImage/Img";
+import CareerTimeline from "../../components/careerTimeline/CareerTimeline";
 import avatar from "../../assets/avatar.png";
 import "./style.scss";
 
@@ -720,6 +721,12 @@ const Person = () => {
                 )
               );
             })()}
+
+          <CareerTimeline
+            actorName={person?.name}
+            biography={person?.biography}
+            credits={credits}
+          />
 
           {images && images.profiles && images.profiles.length > 0 && (
             <div className="imagesSection">
