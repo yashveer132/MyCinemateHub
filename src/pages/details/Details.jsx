@@ -1,7 +1,8 @@
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import useFetch from "../../hooks/useFetch";
+import ContentWrapper from "../../components/contentWrapper/ContentWrapper";
 import DetailsBanner from "./detailsBanner/DetailsBanner";
 import Cast from "./cast/Cast";
 import VideosSection from "./videosSection/VideosSection";
@@ -22,6 +23,7 @@ import AwardsSection from "./awardsSection/AwardsSection";
 
 const Details = () => {
   const { mediaType, id } = useParams();
+  const navigate = useNavigate();
   const { data, loading } = useFetch(`/${mediaType}/${id}/videos`);
   const { data: credits, loading: creditsLoading } = useFetch(
     `/${mediaType}/${id}/credits`
@@ -37,6 +39,36 @@ const Details = () => {
   return (
     <div>
       <DetailsBanner video={data?.results?.[0]} crew={credits?.crew} />
+      {mediaType === "movie" && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            margin: "20px 0",
+          }}
+        >
+          <button
+            style={{
+              padding: "12px 24px",
+              background: "var(--pink)",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontSize: "1rem",
+              fontWeight: "bold",
+              transition: "background 0.3s",
+            }}
+            onClick={() => navigate(`/compare?movie1=${id}`)}
+            onMouseOver={(e) =>
+              (e.target.style.background = "var(--pink-hover)")
+            }
+            onMouseOut={(e) => (e.target.style.background = "var(--pink)")}
+          >
+            Compare Movie
+          </button>
+        </div>
+      )}
       <WatchProviders data={watchProviders?.results?.IN} />
       <Cast data={credits?.cast} loading={creditsLoading} />
       <ChartsSection data={details} mediaType={mediaType} />
@@ -55,7 +87,7 @@ const Details = () => {
       <TranslationsSection mediaType={mediaType} id={id} />
       <ProductionInsights data={details} loading={detailsLoading} />
       <AwardsSection movieDetails={details} mediaType={mediaType} />
-      <TriviaSection movieDetails={details} />
+      <TriviaSection movieDetails={details} mediaType={mediaType} />
       {mediaType === "tv" && <ScreenedTheatricallySection id={id} />}
       {mediaType === "movie" && <ReleaseDatesSection id={id} />}
       <MemorableQuotesSection movieDetails={details} />

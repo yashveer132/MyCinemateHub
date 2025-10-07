@@ -19,6 +19,7 @@ import AIPlaylists from "./pages/aiPlaylists/AIPlaylists";
 import TopMovies from "./pages/topMovies/TopMovies";
 import TopShows from "./pages/topShows/TopShows";
 import Profile from "./pages/profile/Profile";
+import MovieComparison from "./pages/movieComparison/MovieComparison";
 function App() {
   const dispatch = useDispatch();
   const { url } = useSelector((state) => state.home);
@@ -73,6 +74,7 @@ function App() {
         <Route path="/top-movies" element={<TopMovies />} />
         <Route path="/top-shows" element={<TopShows />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/compare" element={<MovieComparison />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
       <Footer />

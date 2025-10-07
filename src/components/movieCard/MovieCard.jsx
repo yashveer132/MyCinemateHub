@@ -26,7 +26,13 @@ import {
   moveToWatchLater,
 } from "../../store/userSlice";
 
-const MovieCard = ({ data, fromSearch, mediaType, showWatchedDate }) => {
+const MovieCard = ({
+  data,
+  fromSearch,
+  mediaType,
+  showWatchedDate,
+  onCardClick,
+}) => {
   const { url } = useSelector((state) => state.home);
   const { favorites, watchLater, watched } = useSelector((state) => state.user);
   const dispatch = useDispatch();
@@ -52,6 +58,10 @@ const MovieCard = ({ data, fromSearch, mediaType, showWatchedDate }) => {
   const isWatched = watched.some((item) => item.id === data.id);
 
   const handleClick = () => {
+    if (typeof onCardClick === "function") {
+      onCardClick(data);
+      return;
+    }
     const type = data.media_type || mediaType || "movie";
     navigate(`/${type}/${data.id}`);
   };

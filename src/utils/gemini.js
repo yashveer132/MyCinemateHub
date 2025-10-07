@@ -233,8 +233,15 @@ const generateTrivia = async (movieTitle, movieOverview) => {
   }
 
   const prompt = `
-    Generate 3-5 interesting trivia facts or fun facts about the movie "${movieTitle}".
+    Generate 5-8 interesting trivia facts, fun facts, and easter eggs about the movie/TV show "${movieTitle}".
     Movie overview: "${movieOverview}"
+    
+    Include:
+    - Behind-the-scenes trivia
+    - Hidden details and easter eggs (references to other movies, hidden messages, cameos)
+    - Production facts
+    - Fun facts about cast or crew
+    - Visual easter eggs and hidden details in scenes
     
     Return ONLY a JSON array with this exact structure, no additional text:
     [
@@ -246,14 +253,21 @@ const generateTrivia = async (movieTitle, movieOverview) => {
       },
       {
         "id": "unique_id_2", 
-        "text": "Another interesting fact",
+        "text": "An easter egg or hidden detail",
+        "spoiler": false,
+        "type": "easter_egg"
+      },
+      {
+        "id": "unique_id_3", 
+        "text": "Another interesting fun fact",
         "spoiler": false,
         "type": "fun_fact"
       }
     ]
     
     Make sure the facts are accurate, interesting, and not spoilers.
-    Use "trivia" or "fun_fact" for the type.
+    Use "trivia", "fun_fact", or "easter_egg" for the type.
+    Generate at least 5 items.
     Generate unique IDs for each fact.
     Return only the JSON array, nothing else.
   `;

@@ -8,9 +8,34 @@
     opacity: 0.5;
   }
 }
+
+@keyframes checkboxPop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .triviaSection {
   position: relative;
   margin-bottom: 50px;
+
   .sectionHeading {
     font-size: 28px;
     color: white;
@@ -18,22 +43,220 @@
     font-weight: 700;
     text-align: center;
   }
-  .trivia {
+
+  .watchedCheckboxContainer {
     display: flex;
     flex-direction: column;
-    gap: 24px;
-    margin-right: -20px;
-    margin-left: -20px;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
     padding: 0 20px;
+
+    .watchedCheckbox {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      padding: 16px 24px;
+      background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.05) 100%
+      );
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+      max-width: 480px;
+      width: auto;
+
+      @include md {
+        padding: 18px 28px;
+        gap: 14px;
+      }
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 107, 157, 0.15) 0%,
+          rgba(255, 107, 157, 0.05) 100%
+        );
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      &:hover {
+        transform: translateY(-4px);
+        border-color: rgba(255, 107, 157, 0.4);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25),
+          0 0 20px rgba(255, 107, 157, 0.2);
+
+        &::before {
+          opacity: 1;
+        }
+
+        .checkboxCustom {
+          border-color: var(--pink);
+          transform: scale(1.05);
+        }
+      }
+
+      .checkboxInput {
+        display: none;
+
+        &:checked + .checkboxCustom {
+          background: linear-gradient(135deg, var(--pink) 0%, #ff6b9d 100%);
+          border-color: var(--pink);
+          animation: checkboxPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+          .checkIcon {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+      }
+
+      .checkboxCustom {
+        position: relative;
+        width: 24px;
+        height: 24px;
+        min-width: 24px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.05);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        @include md {
+          width: 26px;
+          height: 26px;
+          min-width: 26px;
+        }
+
+        .checkIcon {
+          width: 16px;
+          height: 16px;
+          color: white;
+          opacity: 0;
+          transform: scale(0.5) translateY(-5px);
+          transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+          @include md {
+            width: 17px;
+            height: 17px;
+          }
+        }
+      }
+
+      .checkboxLabel {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        position: relative;
+        z-index: 1;
+        text-align: center;
+
+        .watchedText {
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.9);
+          font-weight: 500;
+          line-height: 1.4;
+
+          @include md {
+            font-size: 15px;
+          }
+        }
+
+        .mediaTitle {
+          font-size: 13px;
+          color: var(--pink);
+          font-weight: 600;
+          line-height: 1.3;
+          text-shadow: 0 2px 8px rgba(255, 107, 157, 0.3);
+
+          @include md {
+            font-size: 14px;
+          }
+        }
+      }
+    }
+
+    .spoilerWarning {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 20px;
+      background: linear-gradient(
+        135deg,
+        rgba(255, 193, 7, 0.15) 0%,
+        rgba(255, 152, 0, 0.1) 100%
+      );
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      border-radius: 10px;
+      max-width: 480px;
+      width: auto;
+      animation: slideInUp 0.4s ease-out;
+
+      @include md {
+        padding: 14px 24px;
+      }
+
+      .warningIcon {
+        font-size: 20px;
+        flex-shrink: 0;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+      }
+
+      .warningText {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.5;
+        font-weight: 500;
+        text-align: center;
+
+        @include md {
+          font-size: 14px;
+        }
+      }
+    }
+  }
+
+  .triviaGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-top: 20px;
+    padding: 0 20px;
+
     @include md {
-      margin: 0;
+      grid-template-columns: repeat(2, 1fr);
       padding: 0;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 30px;
     }
+
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
     .triviaItem {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.05) 100%);
+      background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.05) 100%
+      );
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 16px;
       padding: 24px;
@@ -42,9 +265,12 @@
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
       backdrop-filter: blur(10px);
-      
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
       &::before {
-        content: '';
+        content: "";
         position: absolute;
         top: 0;
         left: 0;
@@ -54,54 +280,69 @@
         opacity: 0;
         transition: opacity 0.3s ease;
       }
-      
-      &::after {
-        content: '💡';
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        font-size: 20px;
-        opacity: 0.6;
-        transition: all 0.3s ease;
-      }
-      
+
       &:hover {
         transform: translateY(-8px) scale(1.02);
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.08) 100%);
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.12) 0%,
+          rgba(255, 255, 255, 0.08) 100%
+        );
         border-color: rgba(255, 255, 255, 0.2);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), 0 0 20px rgba(255, 107, 157, 0.1);
-        
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25),
+          0 0 20px rgba(255, 107, 157, 0.1);
+
         &::before {
           opacity: 1;
         }
-        
-        &::after {
-          opacity: 1;
-          transform: scale(1.1) rotate(10deg);
+
+        .triviaIcon {
+          transform: scale(1.2) rotate(10deg);
         }
       }
-      
+
+      .triviaIcon {
+        font-size: 32px;
+        opacity: 0.8;
+        transition: all 0.3s ease;
+        text-align: center;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+      }
+
       .triviaText {
-        font-size: 16px;
+        font-size: 15px;
         color: white;
         line-height: 1.6;
         position: relative;
         z-index: 1;
         font-weight: 400;
-        
+        flex: 1;
+
         @include md {
-          font-size: 18px;
+          font-size: 16px;
         }
-        
+
         &.skeleton {
-          height: 20px;
+          height: 80px;
           background: rgba(255, 255, 255, 0.1);
           border-radius: 4px;
           animation: pulse 1.5s ease-in-out infinite;
         }
       }
+
+      .triviaType {
+        font-size: 12px;
+        color: var(--pink);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: center;
+        padding-top: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
     }
   }
+
   .triviaEmpty {
     display: flex;
     justify-content: center;
@@ -117,42 +358,46 @@
     justify-content: center;
     padding: 30px;
     text-align: center;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.05) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     margin: 0;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     backdrop-filter: blur(10px);
-    
+
     @include md {
       width: 300px;
       padding: 40px;
     }
-    
+
     .noTriviaIcon {
       font-size: 56px;
       margin-bottom: 20px;
       opacity: 0.8;
       filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
     }
-    
+
     .noTriviaText {
       font-size: 18px;
       color: white;
       font-weight: 600;
       margin-bottom: 10px;
       line-height: 1.3;
-      
+
       @include md {
         font-size: 20px;
       }
     }
-    
+
     .noTriviaSubtext {
       font-size: 14px;
       color: rgba(255, 255, 255, 0.7);
       line-height: 1.4;
-      
+
       @include md {
         font-size: 16px;
       }
