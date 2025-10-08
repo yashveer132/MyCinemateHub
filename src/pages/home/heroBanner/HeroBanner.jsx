@@ -13,6 +13,7 @@ const HeroBanner = () => {
   const [activeTab, setActiveTab] = useState("simple");
 
   const { url } = useSelector((state) => state.home);
+  const navigate = useNavigate();
   const { data: movieData, loading: movieLoading } =
     useFetch("/movie/upcoming");
   const { data: tvData, loading: tvLoading } = useFetch("/tv/on_the_air");

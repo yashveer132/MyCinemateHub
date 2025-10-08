@@ -315,6 +315,14 @@
       @include md {
         font-size: 28px;
       }
+
+      &.reviewStatsHeading {
+        margin-top: 50px;
+        background: linear-gradient(135deg, #ffd700, #ffa500);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
     }
 
     .statsGrid {
@@ -338,8 +346,39 @@
           box-shadow: 0 8px 25px rgba(255, 107, 107, 0.2);
         }
 
+        &.reviewCard {
+          background: linear-gradient(
+            135deg,
+            rgba(255, 215, 0, 0.1),
+            rgba(255, 165, 0, 0.1)
+          );
+          border-color: rgba(255, 215, 0, 0.2);
+
+          &:hover {
+            background: linear-gradient(
+              135deg,
+              rgba(255, 215, 0, 0.15),
+              rgba(255, 165, 0, 0.15)
+            );
+            border-color: rgba(255, 215, 0, 0.4);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+          }
+
+          .statValue {
+            color: #ffd700;
+
+            &.starRating {
+              font-size: 26px;
+
+              @include md {
+                font-size: 30px;
+              }
+            }
+          }
+        }
+
         .statValue {
-          font-size: 28px;
+          font-size: 22px;
           font-weight: 700;
           color: #ff6b6b;
           margin-bottom: 8px;
@@ -352,19 +391,28 @@
           -webkit-box-orient: vertical;
           line-clamp: 3;
           overflow-wrap: break-word;
+          word-break: break-word;
+
+          &.longText {
+            font-size: 18px;
+
+            @include md {
+              font-size: 20px;
+            }
+          }
 
           .loading {
-            font-size: 16px;
+            font-size: 14px;
             color: rgba(255, 107, 107, 0.7);
             font-style: italic;
           }
 
           @include md {
-            font-size: 32px;
+            font-size: 26px;
           }
         }
         .statLabel {
-          font-size: 14px;
+          font-size: 13px;
           color: rgba(255, 255, 255, 0.7);
           text-transform: uppercase;
           letter-spacing: 0.5px;
@@ -378,7 +426,7 @@
           }
 
           @include md {
-            font-size: 16px;
+            font-size: 14px;
           }
         }
       }

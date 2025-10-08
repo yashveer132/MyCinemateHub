@@ -1,0 +1,317 @@
+.reviewDisplayContainer {
+  background: linear-gradient(
+    135deg,
+    rgba(218, 112, 214, 0.1) 0%,
+    rgba(255, 140, 0, 0.1) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 18px;
+  margin-top: 12px;
+  animation: slideIn 0.3s ease;
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .reviewHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+
+    .ratingSection {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .reviewStars {
+        display: flex;
+        gap: 4px;
+        font-size: 18px;
+
+        svg {
+          &.filled {
+            color: #ffd700;
+            filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.3));
+          }
+
+          &.half {
+            color: #ffd700;
+            filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.3));
+          }
+
+          &.empty {
+            color: rgba(255, 255, 255, 0.2);
+          }
+        }
+      }
+
+      .ratingLabel {
+        font-size: 14px;
+        font-weight: 600;
+        color: #ffd700;
+      }
+    }
+
+    .reviewActions {
+      display: flex;
+      gap: 8px;
+
+      .actionBtn {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: white;
+        font-size: 14px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          transform: translateY(-2px);
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--pink);
+          outline-offset: 2px;
+        }
+
+        &.editBtn:hover {
+          background: var(--orange);
+        }
+
+        &.deleteBtn:hover {
+          background: #ff6b6b;
+        }
+      }
+    }
+  }
+
+  .reviewTextSection {
+    margin-bottom: 12px;
+
+    .reviewText {
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 14px;
+      line-height: 1.7;
+      margin: 0;
+      overflow: hidden;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+
+      &:not(.expanded) {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+      }
+    }
+
+    .expandBtn {
+      background: none;
+      border: none;
+      color: var(--pink);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 8px 0;
+      margin-top: 6px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        color: var(--orange);
+        text-decoration: underline;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--pink);
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+    }
+  }
+
+  .reviewMeta {
+    display: flex;
+    justify-content: flex-end;
+
+    .reviewDate {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      font-style: italic;
+    }
+  }
+
+  .deleteConfirmOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.2s ease;
+    padding: 20px;
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .deleteConfirmDialog {
+      background: linear-gradient(135deg, #1e1e2e 0%, #2a2a3e 100%);
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      animation: slideUp 0.3s ease;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+
+      @keyframes slideUp {
+        from {
+          transform: translateY(30px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .closeDialogBtn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: white;
+        font-size: 14px;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.2);
+          transform: rotate(90deg);
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--pink);
+          outline-offset: 2px;
+        }
+      }
+
+      h3 {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: white;
+        text-align: center;
+      }
+
+      p {
+        font-size: 15px;
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.6;
+        margin-bottom: 25px;
+        text-align: center;
+      }
+
+      .dialogActions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+
+        button {
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          border: none;
+          flex: 1;
+          max-width: 150px;
+
+          &:focus-visible {
+            outline: 2px solid var(--pink);
+            outline-offset: 2px;
+          }
+        }
+
+        .cancelBtn {
+          background: rgba(255, 255, 255, 0.1);
+          color: white;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.15);
+          }
+        }
+
+        .confirmDeleteBtn {
+          background: #ff6b6b;
+          color: white;
+
+          &:hover {
+            background: #ff5252;
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+          }
+        }
+      }
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    padding: 15px;
+
+    .reviewHeader {
+      flex-direction: column;
+      gap: 12px;
+
+      .reviewActions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+
+    .deleteConfirmOverlay {
+      .deleteConfirmDialog {
+        padding: 25px;
+
+        .dialogActions {
+          flex-direction: column;
+
+          button {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+}

@@ -75,12 +75,13 @@ const userSlice = createSlice({
     },
 
     addToWatched: (state, action) => {
-      const movie = action.payload;
+      const { movie, review } = action.payload;
       const exists = state.watched.find((item) => item.id === movie.id);
       if (!exists) {
         const watchedItem = {
           ...movie,
           watchedAt: new Date().toISOString(),
+          review: review || null,
         };
         state.watched.push(watchedItem);
         saveToLocalStorage("cinemate_watched", state.watched);
@@ -89,6 +90,14 @@ const userSlice = createSlice({
           (item) => item.id !== movie.id
         );
         saveToLocalStorage("cinemate_watchLater", state.watchLater);
+      }
+    },
+    updateWatchedReview: (state, action) => {
+      const { movieId, review } = action.payload;
+      const item = state.watched.find((item) => item.id === movieId);
+      if (item) {
+        item.review = review;
+        saveToLocalStorage("cinemate_watched", state.watched);
       }
     },
     removeFromWatched: (state, action) => {
@@ -127,6 +136,7 @@ export const {
   addToWatchLater,
   removeFromWatchLater,
   addToWatched,
+  updateWatchedReview,
   removeFromWatched,
   clearAllPreferences,
   moveToWatchLater,

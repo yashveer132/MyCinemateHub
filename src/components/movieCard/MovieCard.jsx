@@ -9,6 +9,7 @@ import {
   FaRegBookmark,
   FaCheck,
   FaUndo,
+  FaStar,
 } from "react-icons/fa";
 
 import "./style.scss";
@@ -16,6 +17,7 @@ import Img from "../lazyLoadImage/Img";
 import CircleRating from "../circleRating/CircleRating";
 import Genres from "../genres/Genres";
 import PosterFallback from "../../assets/no-poster.png";
+import ReviewModal from "../reviewModal/ReviewModal";
 import {
   addToFavorites,
   removeFromFavorites,
@@ -38,6 +40,7 @@ const MovieCard = ({
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showActions, setShowActions] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   const posterUrl = data.poster_path
     ? url.poster + data.poster_path
@@ -56,6 +59,8 @@ const MovieCard = ({
   const isFavorite = favorites.some((item) => item.id === data.id);
   const isInWatchLater = watchLater.some((item) => item.id === data.id);
   const isWatched = watched.some((item) => item.id === data.id);
+  const watchedItem = watched.find((item) => item.id === data.id);
+  const hasReview = watchedItem?.review && watchedItem.review.rating > 0;
 
   const handleClick = () => {
     if (typeof onCardClick === "function") {
@@ -91,8 +96,17 @@ const MovieCard = ({
     if (isWatched) {
       dispatch(removeFromWatched(data.id));
     } else {
-      dispatch(addToWatched(movieData));
+      setShowReviewModal(true);
     }
+  };
+
+  const handleReviewSubmit = (review) => {
+    dispatch(addToWatched({ movie: movieData, review }));
+    setShowReviewModal(false);
+  };
+
+  const handleReviewClose = () => {
+    setShowReviewModal(false);
   };
 
   const moveToWatchLaterAction = () => {
@@ -100,68 +114,85 @@ const MovieCard = ({
   };
 
   return (
-    <div
-      className="movieCard"
-      onClick={handleClick}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
-    >
-      <div className="posterBlock">
-        <Img className="posterImg" src={posterUrl} />
+    <>
+      <ReviewModal
+        show={showReviewModal}
+        onClose={handleReviewClose}
+        onSubmit={handleReviewSubmit}
+        movieData={movieData}
+      />
+      <div
+        className="movieCard"
+        onClick={handleClick}
+        onMouseEnter={() => setShowActions(true)}
+        onMouseLeave={() => setShowActions(false)}
+      >
+        <div className="posterBlock">
+          <Img className="posterImg" src={posterUrl} />
 
-        <div className={`actionButtons ${showActions ? "show" : ""}`}>
-          <button
-            className={`actionBtn favoriteBtn ${isFavorite ? "active" : ""}`}
-            onClick={(e) => handleActionClick(e, toggleFavorite)}
-            title={isFavorite ? "Remove from Favorites" : "Add to Favorites"}
-          >
-            {isFavorite ? <FaHeart /> : <FaRegHeart />}
-          </button>
+          {hasReview && (
+            <div className="reviewBadge">
+              <FaStar />
+              <span>{watchedItem.review.rating}</span>
+            </div>
+          )}
 
-          <button
-            className={`actionBtn watchLaterBtn ${
-              isInWatchLater ? "active" : ""
-            }`}
-            onClick={(e) => handleActionClick(e, toggleWatchLater)}
-            title={
-              isInWatchLater ? "Remove from Watch Later" : "Add to Watch Later"
-            }
-          >
-            {isInWatchLater ? <FaBookmark /> : <FaRegBookmark />}
-          </button>
+          <div className={`actionButtons ${showActions ? "show" : ""}`}>
+            <button
+              className={`actionBtn favoriteBtn ${isFavorite ? "active" : ""}`}
+              onClick={(e) => handleActionClick(e, toggleFavorite)}
+              title={isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+            >
+              {isFavorite ? <FaHeart /> : <FaRegHeart />}
+            </button>
 
-          <button
-            className={`actionBtn watchedBtn ${isWatched ? "active" : ""}`}
-            onClick={(e) =>
-              handleActionClick(
-                e,
-                isWatched ? moveToWatchLaterAction : toggleWatched
-              )
-            }
-            title={isWatched ? "Move to Watch Later" : "Mark as Watched"}
-          >
-            {isWatched ? <FaUndo /> : <FaCheck />}
-          </button>
+            <button
+              className={`actionBtn watchLaterBtn ${
+                isInWatchLater ? "active" : ""
+              }`}
+              onClick={(e) => handleActionClick(e, toggleWatchLater)}
+              title={
+                isInWatchLater
+                  ? "Remove from Watch Later"
+                  : "Add to Watch Later"
+              }
+            >
+              {isInWatchLater ? <FaBookmark /> : <FaRegBookmark />}
+            </button>
+
+            <button
+              className={`actionBtn watchedBtn ${isWatched ? "active" : ""}`}
+              onClick={(e) =>
+                handleActionClick(
+                  e,
+                  isWatched ? moveToWatchLaterAction : toggleWatched
+                )
+              }
+              title={isWatched ? "Move to Watch Later" : "Mark as Watched"}
+            >
+              {isWatched ? <FaUndo /> : <FaCheck />}
+            </button>
+          </div>
+
+          {!fromSearch && (
+            <React.Fragment>
+              <CircleRating rating={(data.vote_average || 0).toFixed(1)} />
+              <Genres data={data.genre_ids?.slice(0, 2) || []} />
+            </React.Fragment>
+          )}
         </div>
-
-        {!fromSearch && (
-          <React.Fragment>
-            <CircleRating rating={(data.vote_average || 0).toFixed(1)} />
-            <Genres data={data.genre_ids?.slice(0, 2) || []} />
-          </React.Fragment>
-        )}
+        <div className="textBlock">
+          <span className="title">{data.title || data.name}</span>
+          <span className="date">
+            {showWatchedDate && data.watchedAt
+              ? `Watched ${dayjs(data.watchedAt).format("MMM D, YYYY")}`
+              : dayjs(data.release_date || data.first_air_date).format(
+                  "MMM D, YYYY"
+                )}
+          </span>
+        </div>
       </div>
-      <div className="textBlock">
-        <span className="title">{data.title || data.name}</span>
-        <span className="date">
-          {showWatchedDate && data.watchedAt
-            ? `Watched ${dayjs(data.watchedAt).format("MMM D, YYYY")}`
-            : dayjs(data.release_date || data.first_air_date).format(
-                "MMM D, YYYY"
-              )}
-        </span>
-      </div>
-    </div>
+    </>
   );
 };
 

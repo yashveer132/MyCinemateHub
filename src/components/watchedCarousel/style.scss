@@ -1,0 +1,31 @@
+@import "../../mixins.scss";
+
+.watchedCarousel {
+  position: relative;
+
+  .carouselItems {
+    > .watchedItemCard {
+      width: 125px !important;
+      min-width: 125px !important;
+      max-width: 125px !important;
+      flex-shrink: 0 !important;
+      flex-grow: 0 !important;
+      flex-basis: 125px !important;
+      margin-bottom: 0 !important;
+
+      @include md {
+        width: 200px !important;
+        min-width: 200px !important;
+        max-width: 200px !important;
+        flex-basis: 200px !important;
+      }
+
+      @include lg {
+        width: 220px !important;
+        min-width: 220px !important;
+        max-width: 220px !important;
+        flex-basis: 220px !important;
+      }
+    }
+  }
+}

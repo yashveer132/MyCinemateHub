@@ -15,6 +15,7 @@ import "./style.scss";
 import ContentWrapper from "../../components/contentWrapper/ContentWrapper";
 import MovieCard from "../../components/movieCard/MovieCard";
 import Carousel from "../../components/carousel/Carousel";
+import WatchedCarousel from "../../components/watchedCarousel/WatchedCarousel";
 import {
   getAIInsightsWithRecommendations,
   clearAIInsightsCache,
@@ -24,6 +25,7 @@ import StatisticsSection from "./StatisticsSection";
 const Profile = () => {
   const userState = useSelector((state) => state.user);
   const { favorites = [], watchLater = [], watched = [] } = userState || {};
+  const { url } = useSelector((state) => state.home);
   const navigate = useNavigate();
 
   const favoritesRef = useRef(null);
@@ -115,6 +117,7 @@ const Profile = () => {
     icon,
     emptyStateConfig,
     showWatchedDate,
+    isWatchedSection,
   }) => {
     return (
       <div className="carouselSection">
@@ -128,11 +131,15 @@ const Profile = () => {
           </div>
 
           {data.length > 0 ? (
-            <Carousel
-              data={data}
-              loading={false}
-              showWatchedDate={showWatchedDate}
-            />
+            isWatchedSection ? (
+              <WatchedCarousel data={data} loading={false} url={url} />
+            ) : (
+              <Carousel
+                data={data}
+                loading={false}
+                showWatchedDate={showWatchedDate}
+              />
+            )
           ) : (
             <EmptyState {...emptyStateConfig} />
           )}
@@ -158,6 +165,13 @@ const Profile = () => {
           <div className="profileStats">
             <div
               className="statItem"
+              onClick={() => scrollToSection(watchedRef)}
+            >
+              <span className="statNumber">{watched.length}</span>
+              <span className="statLabel">Watched</span>
+            </div>
+            <div
+              className="statItem"
               onClick={() => scrollToSection(favoritesRef)}
             >
               <span className="statNumber">{favorites.length}</span>
@@ -169,13 +183,6 @@ const Profile = () => {
             >
               <span className="statNumber">{watchLater.length}</span>
               <span className="statLabel">Watch Later</span>
-            </div>
-            <div
-              className="statItem"
-              onClick={() => scrollToSection(watchedRef)}
-            >
-              <span className="statNumber">{watched.length}</span>
-              <span className="statLabel">Watched</span>
             </div>
             <div
               className="statItem aiStat"
@@ -191,6 +198,22 @@ const Profile = () => {
       </ContentWrapper>
 
       <StatisticsSection favorites={favorites} watched={watched} />
+
+      <div ref={watchedRef}>
+        <ProfileSection
+          title="Watched"
+          data={watched}
+          icon={<FaCheck />}
+          showWatchedDate={true}
+          isWatchedSection={true}
+          emptyStateConfig={{
+            icon: <FaCheck />,
+            title: "No Watched Items",
+            description:
+              "Keep track of what you've watched by marking items as complete. Build your viewing history and discover patterns in your taste!",
+          }}
+        />
+      </div>
 
       <div ref={favoritesRef}>
         <ProfileSection
@@ -216,21 +239,6 @@ const Profile = () => {
             title: "Watch Later List is Empty",
             description:
               "Save movies and TV shows you want to watch later. Never forget about that interesting title you discovered!",
-          }}
-        />
-      </div>
-
-      <div ref={watchedRef}>
-        <ProfileSection
-          title="Watched"
-          data={watched}
-          icon={<FaCheck />}
-          showWatchedDate={true}
-          emptyStateConfig={{
-            icon: <FaCheck />,
-            title: "No Watched Items",
-            description:
-              "Keep track of what you've watched by marking items as complete. Build your viewing history and discover patterns in your taste!",
           }}
         />
       </div>

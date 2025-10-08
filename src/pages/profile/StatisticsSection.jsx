@@ -15,6 +15,77 @@ import ContentWrapper from "../../components/contentWrapper/ContentWrapper";
 import { fetchDataFromApi } from "../../utils/api";
 import "./style.scss";
 
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div
+        style={{
+          backgroundColor: "rgba(255, 255, 255, 0.95)",
+          padding: "10px",
+          borderRadius: "8px",
+          border: "1px solid rgba(0, 0, 0, 0.1)",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+        }}
+      >
+        <p
+          style={{
+            margin: 0,
+            color: "#000",
+            fontWeight: 600,
+            fontSize: "14px",
+          }}
+        >
+          {label}
+        </p>
+        {payload.map((entry, index) => (
+          <p
+            key={index}
+            style={{ margin: "4px 0 0 0", color: "#333", fontSize: "13px" }}
+          >
+            {entry.name}: {entry.value}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+const WatchTimeTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    const minutes = Math.round(payload[0].value);
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    const formattedTime = hours > 0 ? `${hours} hr ${mins} min` : `${mins} min`;
+    return (
+      <div
+        style={{
+          backgroundColor: "rgba(255, 255, 255, 0.95)",
+          padding: "10px",
+          borderRadius: "8px",
+          border: "1px solid rgba(0, 0, 0, 0.1)",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+        }}
+      >
+        <p
+          style={{
+            margin: 0,
+            color: "#000",
+            fontWeight: 600,
+            fontSize: "14px",
+          }}
+        >
+          {label}
+        </p>
+        <p style={{ margin: "4px 0 0 0", color: "#333", fontSize: "13px" }}>
+          Watch Time: {formattedTime}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 const GENRE_ID_TO_NAME = {
   28: "Action",
   12: "Adventure",
@@ -115,6 +186,10 @@ const StatisticsSection = ({ favorites, watched }) => {
     return text.substring(0, maxLength) + "...";
   };
 
+  const isLongText = (text) => {
+    return text && text.length > 15;
+  };
+
   const formatWatchTime = (minutes) => {
     if (minutes === 0) return "0 min";
 
@@ -130,6 +205,44 @@ const StatisticsSection = ({ favorites, watched }) => {
     if (allItems.length === 0) return null;
 
     const totalItems = allItems.length;
+
+    const itemsWithReviews = allItems.filter(
+      (item) => item.review && item.review.rating > 0
+    );
+    const totalReviews = itemsWithReviews.length;
+    const reviewPercentage =
+      totalItems > 0 ? ((totalReviews / totalItems) * 100).toFixed(1) : 0;
+
+    const reviewsWithText = itemsWithReviews.filter(
+      (item) => item.review.reviewText && item.review.reviewText.trim()
+    ).length;
+
+    const avgUserRating =
+      itemsWithReviews.length > 0
+        ? (
+            itemsWithReviews.reduce(
+              (sum, item) => sum + item.review.rating,
+              0
+            ) / itemsWithReviews.length
+          ).toFixed(1)
+        : 0;
+
+    const ratingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    itemsWithReviews.forEach((item) => {
+      if (item.review && item.review.rating) {
+        const roundedRating = Math.round(item.review.rating);
+        if (roundedRating >= 1 && roundedRating <= 5) {
+          ratingDistribution[roundedRating]++;
+        }
+      }
+    });
+
+    const ratingDistData = Object.entries(ratingDistribution).map(
+      ([rating, count]) => ({
+        rating: `${rating} ★`,
+        count,
+      })
+    );
 
     const genreCount = {};
     allItems.forEach((item) => {
@@ -263,6 +376,23 @@ const StatisticsSection = ({ favorites, watched }) => {
       ([, a], [, b]) => b - a
     )[0];
 
+    const watchTimeByGenre = {};
+    allItems.forEach((item) => {
+      if (item.genre_ids && runtimeData[item.id]) {
+        const runtime = runtimeData[item.id].runtime;
+        const numGenres = item.genre_ids.length;
+        item.genre_ids.forEach((id) => {
+          const name = GENRE_ID_TO_NAME[id] || `Genre ${id}`;
+          watchTimeByGenre[name] =
+            (watchTimeByGenre[name] || 0) + runtime / numGenres;
+        });
+      }
+    });
+    const watchTimeGenreData = Object.entries(watchTimeByGenre)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 8)
+      .map(([name, value]) => ({ name, value: Math.round(value) }));
+
     let currentStreak = 0;
     if (watchedDates.length > 0) {
       const today = new Date();
@@ -360,7 +490,13 @@ const StatisticsSection = ({ favorites, watched }) => {
       latestReleased,
       avgDaysBetweenWatches,
       mostWatchedGenre,
+      watchTimeGenreData,
       currentStreak,
+      totalReviews,
+      reviewPercentage,
+      reviewsWithText,
+      avgUserRating,
+      ratingDistData,
     };
   }, [allItems, runtimeData]);
 
@@ -415,7 +551,11 @@ const StatisticsSection = ({ favorites, watched }) => {
           </div>
           <div className="statCard">
             <div
-              className="statValue"
+              className={`statValue ${
+                isLongText(stats.mostPopular?.title || stats.mostPopular?.name)
+                  ? "longText"
+                  : ""
+              }`}
               title={
                 stats.mostPopular?.title || stats.mostPopular?.name || "N/A"
               }
@@ -428,7 +568,11 @@ const StatisticsSection = ({ favorites, watched }) => {
           </div>
           <div className="statCard">
             <div
-              className="statValue"
+              className={`statValue ${
+                isLongText(stats.topRated?.title || stats.topRated?.name)
+                  ? "longText"
+                  : ""
+              }`}
               title={stats.topRated?.title || stats.topRated?.name || "N/A"}
             >
               {truncateText(
@@ -439,7 +583,13 @@ const StatisticsSection = ({ favorites, watched }) => {
           </div>
           <div className="statCard">
             <div
-              className="statValue"
+              className={`statValue ${
+                isLongText(
+                  stats.oldestWatched?.title || stats.oldestWatched?.name
+                )
+                  ? "longText"
+                  : ""
+              }`}
               title={
                 stats.oldestWatched?.title || stats.oldestWatched?.name || "N/A"
               }
@@ -452,7 +602,13 @@ const StatisticsSection = ({ favorites, watched }) => {
           </div>
           <div className="statCard">
             <div
-              className="statValue"
+              className={`statValue ${
+                isLongText(
+                  stats.latestReleased?.title || stats.latestReleased?.name
+                )
+                  ? "longText"
+                  : ""
+              }`}
               title={
                 stats.latestReleased?.title ||
                 stats.latestReleased?.name ||
@@ -483,6 +639,34 @@ const StatisticsSection = ({ favorites, watched }) => {
           </div>
         </div>
 
+        {stats.totalReviews > 0 && (
+          <>
+            <div className="sectionHeading reviewStatsHeading">
+              Your Reviews
+            </div>
+            <div className="statsGrid reviewStatsGrid">
+              <div className="statCard reviewCard">
+                <div className="statValue">{stats.totalReviews}</div>
+                <div className="statLabel">Total Reviews</div>
+              </div>
+              <div className="statCard reviewCard">
+                <div className="statValue">{stats.reviewPercentage}%</div>
+                <div className="statLabel">Items Reviewed</div>
+              </div>
+              <div className="statCard reviewCard">
+                <div className="statValue starRating">
+                  {stats.avgUserRating} ★
+                </div>
+                <div className="statLabel">Your Avg Rating</div>
+              </div>
+              <div className="statCard reviewCard">
+                <div className="statValue">{stats.reviewsWithText}</div>
+                <div className="statLabel">Written Reviews</div>
+              </div>
+            </div>
+          </>
+        )}
+
         <div className="chartsGrid">
           {stats.genreData.length > 0 && (
             <div className="chartCard">
@@ -507,7 +691,7 @@ const StatisticsSection = ({ favorites, watched }) => {
                       />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip content={<CustomTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -521,7 +705,7 @@ const StatisticsSection = ({ favorites, watched }) => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="year" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="count" fill="#8884d8" />
                 </BarChart>
               </ResponsiveContainer>
@@ -536,8 +720,23 @@ const StatisticsSection = ({ favorites, watched }) => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="count" fill="#82ca9d" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {stats.totalReviews > 0 && stats.ratingDistData.length > 0 && (
+            <div className="chartCard">
+              <h3>Your Rating Distribution</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={stats.ratingDistData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="rating" />
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="count" fill="#FFD700" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -551,8 +750,29 @@ const StatisticsSection = ({ favorites, watched }) => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="year" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="count" fill="#ffc658" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {stats.watchTimeGenreData.length > 0 && (
+            <div className="chartCard">
+              <h3>Watch Time by Genre</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={stats.watchTimeGenreData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis
+                    label={{
+                      value: "Minutes",
+                      angle: -90,
+                      position: "insideLeft",
+                    }}
+                  />
+                  <Tooltip content={<WatchTimeTooltip />} />
+                  <Bar dataKey="value" fill="#ff7c7c" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
