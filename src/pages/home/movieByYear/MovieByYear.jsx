@@ -5,7 +5,7 @@ import Carousel from "../../../components/carousel/Carousel";
 import "./style.scss";
 
 const MovieByYear = () => {
-  const [selectedYear, setSelectedYear] = useState("2024");
+  const [selectedYear, setSelectedYear] = useState("2025");
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
 
