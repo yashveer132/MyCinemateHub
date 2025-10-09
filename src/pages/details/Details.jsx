@@ -20,6 +20,7 @@ import ChartsSection from "./chartsSection/ChartsSection";
 import TriviaSection from "./triviaSection/TriviaSection";
 import MemorableQuotesSection from "./memorableQuotesSection/MemorableQuotesSection";
 import AwardsSection from "./awardsSection/AwardsSection";
+import BingeCalculator from "./bingeCalculator/BingeCalculator";
 
 const Details = () => {
   const { mediaType, id } = useParams();
@@ -39,6 +40,7 @@ const Details = () => {
   return (
     <div>
       <DetailsBanner video={data?.results?.[0]} crew={credits?.crew} />
+      {mediaType === "tv" && <BingeCalculator showId={id} showData={details} />}
       {mediaType === "movie" && (
         <div
           style={{

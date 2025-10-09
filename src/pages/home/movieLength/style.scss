@@ -1,0 +1,281 @@
+@import "../../../mixins.scss";
+
+.movieLengthSection {
+  margin-bottom: 50px;
+  padding-top: 40px;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%
+    );
+  }
+
+  .sectionHeader {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 0 20px;
+
+    .sectionTitle {
+      font-size: 32px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+
+      @include md {
+        font-size: 42px;
+      }
+    }
+
+    .sectionSubtitle {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 400;
+
+      @include md {
+        font-size: 18px;
+      }
+    }
+  }
+
+  .categoryGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-bottom: 40px;
+    padding: 0 20px;
+
+    @include sm {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @include md {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      padding: 0;
+    }
+
+    .categoryCard {
+      position: relative;
+      padding: 24px 20px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+
+      @include md {
+        padding: 28px 24px;
+      }
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: inherit;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+
+      &:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.2);
+
+        &::before {
+          opacity: 0.1;
+        }
+
+        .categoryIcon {
+          transform: scale(1.2) rotate(5deg);
+        }
+      }
+
+      &.active {
+        border-color: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        transform: translateY(-4px);
+
+        &::before {
+          opacity: 1;
+        }
+
+        .categoryIcon {
+          transform: scale(1.1);
+          animation: bounce 1s ease-in-out;
+        }
+
+        .categoryInfo {
+          .categoryName,
+          .categorySubtitle,
+          .categoryDescription {
+            color: #ffffff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+          }
+        }
+      }
+
+      .categoryIcon {
+        font-size: 40px;
+        margin-bottom: 12px;
+        display: inline-block;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+
+        @include md {
+          font-size: 48px;
+          margin-bottom: 16px;
+        }
+      }
+
+      .categoryInfo {
+        position: relative;
+        z-index: 1;
+
+        .categoryName {
+          font-size: 20px;
+          font-weight: 700;
+          color: #ffffff;
+          margin-bottom: 4px;
+          transition: all 0.3s ease;
+
+          @include md {
+            font-size: 22px;
+            margin-bottom: 6px;
+          }
+        }
+
+        .categorySubtitle {
+          font-size: 14px;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.8);
+          margin-bottom: 8px;
+          transition: all 0.3s ease;
+
+          @include md {
+            font-size: 15px;
+            margin-bottom: 10px;
+          }
+        }
+
+        .categoryDescription {
+          font-size: 13px;
+          color: rgba(255, 255, 255, 0.6);
+          font-weight: 400;
+          line-height: 1.4;
+          transition: all 0.3s ease;
+
+          @include md {
+            font-size: 14px;
+          }
+        }
+      }
+
+      .activeIndicator {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+
+        .checkmark {
+          color: #ffffff;
+          font-size: 18px;
+          font-weight: bold;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+      }
+    }
+  }
+
+  @keyframes bounce {
+    0%,
+    100% {
+      transform: scale(1.1) translateY(0);
+    }
+    50% {
+      transform: scale(1.1) translateY(-5px);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @include sm {
+    padding-top: 30px;
+
+    .sectionHeader {
+      margin-bottom: 30px;
+    }
+
+    .categoryGrid {
+      .categoryCard {
+        min-height: 180px;
+      }
+    }
+  }
+
+  .runtimeInfo {
+    margin-top: 30px;
+    padding: 0 20px;
+
+    @include md {
+      padding: 0;
+      margin-top: 40px;
+    }
+
+    .infoText {
+      text-align: center;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 15px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+
+      @include md {
+        font-size: 15px;
+        padding: 18px 25px;
+      }
+
+      strong {
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 700;
+      }
+    }
+  }
+}

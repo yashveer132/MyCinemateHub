@@ -6,6 +6,8 @@ import Popular from "./popular/Popular";
 import TopRated from "./topRated/topRated";
 import LatestVideos from "./latestVideos/LatestVideos";
 import WatchProviders from "./watchProviders/WatchProviders";
+import MovieLength from "./movieLength/MovieLength";
+import MovieByYear from "./movieByYear/MovieByYear";
 
 const Home = () => {
   return (
@@ -16,6 +18,8 @@ const Home = () => {
       <TopRated />
       <LatestVideos />
       <WatchProviders />
+      <MovieLength />
+      <MovieByYear />
     </div>
   );
 };

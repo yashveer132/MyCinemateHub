@@ -1,0 +1,237 @@
+@import "../../../mixins.scss";
+
+.movieByYearSection {
+  margin-bottom: 50px;
+  padding-top: 40px;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%
+    );
+  }
+
+  .sectionHeader {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 0 20px;
+
+    .sectionTitle {
+      font-size: 32px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+
+      @include md {
+        font-size: 42px;
+      }
+    }
+
+    .sectionSubtitle {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 400;
+
+      @include md {
+        font-size: 18px;
+      }
+    }
+  }
+
+  .yearGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 40px;
+    padding: 0 20px;
+
+    @include sm {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    @include md {
+      grid-template-columns: repeat(6, 1fr);
+      gap: 20px;
+      padding: 0;
+    }
+
+    .yearCard {
+      position: relative;
+      padding: 24px 20px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+
+      @include md {
+        padding: 28px 24px;
+      }
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: inherit;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+
+      &:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.2);
+
+        &::before {
+          opacity: 0.1;
+        }
+
+        .yearIcon {
+          transform: scale(1.15) rotate(5deg);
+        }
+
+        .yearNumber {
+          transform: scale(1.05);
+        }
+      }
+
+      &.active {
+        border-color: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        transform: translateY(-4px);
+
+        &::before {
+          opacity: 0.2;
+        }
+
+        .yearIcon {
+          animation: pulse 2s infinite;
+        }
+      }
+
+      .yearIcon {
+        font-size: 42px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+
+        @include md {
+          font-size: 48px;
+        }
+      }
+
+      .yearInfo {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        width: 100%;
+
+        .yearNumber {
+          font-size: 24px;
+          font-weight: 800;
+          color: #ffffff;
+          margin-bottom: 4px;
+          transition: all 0.3s ease;
+          text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+          letter-spacing: 1px;
+
+          @include md {
+            font-size: 28px;
+            margin-bottom: 6px;
+          }
+        }
+
+        .yearTagline {
+          font-size: 12px;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.8);
+          transition: all 0.3s ease;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+
+          @include md {
+            font-size: 13px;
+          }
+        }
+      }
+
+      .activeIndicator {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+
+        .checkmark {
+          color: #ffffff;
+          font-size: 18px;
+          font-weight: bold;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+      }
+    }
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      transform: scale(1) rotate(0deg);
+    }
+    50% {
+      transform: scale(1.1) rotate(5deg);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @include sm {
+    padding-top: 30px;
+
+    .sectionHeader {
+      margin-bottom: 30px;
+    }
+
+    .yearGrid {
+      .yearCard {
+        min-height: 160px;
+      }
+    }
+  }
+}
