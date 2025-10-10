@@ -6,61 +6,242 @@
   background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
 
   .resultNotFound {
-    font-size: 24px;
-    color: var(--black-light);
-    text-align: center;
-    margin-top: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 40px 20px;
+    margin-top: 40px;
+
+    .notFoundIcon {
+      font-size: 64px;
+      opacity: 0.5;
+    }
+
+    .notFoundText {
+      font-size: 24px;
+      color: white;
+      font-weight: 600;
+    }
+
+    .notFoundSubtext {
+      font-size: 16px;
+      color: var(--black-light);
+      opacity: 0.7;
+    }
   }
 
   .pageHeader {
     display: flex;
     justify-content: center;
-    margin-bottom: 40px;
+    margin-bottom: 25px;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      rgba(255, 255, 255, 0.05) 100%
-    );
-    border-radius: 20px;
-    padding: 40px 20px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   }
 
   .pageTitle {
-    font-size: 36px;
-    line-height: 44px;
+    font-size: 28px;
+    line-height: 34px;
     color: #ffffff;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     font-weight: 700;
     text-align: center;
     background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcf7f);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 
     @include md {
-      font-size: 48px;
-      line-height: 56px;
+      font-size: 34px;
+      line-height: 40px;
     }
   }
 
-  .pageSubtitle {
-    font-size: 16px;
-    line-height: 24px;
-    color: rgba(255, 255, 255, 0.8);
-    max-width: 600px;
-    text-align: center;
-    margin: 0 auto;
+  .filters {
+    display: flex;
+    gap: 12px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 1200px;
+    padding: 0 20px;
 
-    @include md {
-      font-size: 18px;
-      line-height: 28px;
+    .filtersRow {
+      display: flex;
+      gap: 12px;
+      flex-direction: column;
+      width: 100%;
+
+      @include md {
+        flex-direction: row;
+        justify-content: center;
+      }
+
+      &.fiveColumns {
+        @include md {
+          .filterItem {
+            flex: 1;
+            min-width: 0;
+            max-width: calc((100% - 48px) / 5);
+          }
+        }
+      }
+
+      &.fourColumns {
+        @include md {
+          .filterItem {
+            flex: 1;
+            min-width: 0;
+            max-width: calc((100% - 36px) / 4);
+          }
+        }
+      }
+
+      &.threeColumns {
+        @include md {
+          .filterItem {
+            flex: 1;
+            min-width: 0;
+            max-width: calc((100% - 24px) / 3);
+          }
+        }
+      }
+
+      &.twoColumns {
+        @include md {
+          .filterItem {
+            flex: 1;
+            min-width: 0;
+            max-width: calc((100% - 12px) / 2);
+          }
+        }
+      }
+
+      &.fullWidth {
+        .filterItem {
+          width: 100%;
+        }
+      }
+    }
+
+    .react-select-container {
+      &.filterItem {
+        width: 100%;
+
+        @include md {
+          min-width: 0;
+        }
+      }
+
+      .react-select__control {
+        border: 0;
+        outline: 0;
+        box-shadow: none;
+        background-color: var(--black-light);
+        border-radius: 20px;
+        text-align: center;
+        min-height: 44px;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background-color: var(--black3);
+        }
+
+        .react-select__value-container {
+          padding: 2px 12px;
+
+          .react-select__placeholder,
+          .react-select__input-container {
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0;
+            text-align: center;
+          }
+        }
+
+        .react-select__single-value {
+          color: white;
+          text-align: center;
+        }
+
+        .react-select__indicators {
+          .react-select__indicator-separator {
+            background-color: rgba(255, 255, 255, 0.2);
+          }
+
+          .react-select__clear-indicator,
+          .react-select__dropdown-indicator {
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+
+            &:hover {
+              color: white;
+            }
+          }
+        }
+
+        .react-select__multi-value {
+          background-color: var(--black3);
+          border-radius: 10px;
+          margin: 2px;
+
+          .react-select__multi-value__label {
+            color: white;
+            padding: 3px 6px;
+          }
+
+          .react-select__multi-value__remove {
+            background-color: transparent;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            border-radius: 0 10px 10px 0;
+
+            &:hover {
+              background-color: rgba(255, 59, 59, 0.3);
+              color: white;
+            }
+          }
+        }
+      }
+
+      .react-select__menu {
+        background-color: var(--black-light);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        margin-top: 4px;
+        z-index: 100;
+
+        .react-select__menu-list {
+          padding: 4px;
+          max-height: 300px;
+
+          .react-select__option {
+            background-color: transparent;
+            color: white;
+            cursor: pointer;
+            padding: 10px 12px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background-color: var(--black3);
+            }
+
+            &--is-selected {
+              background-color: var(--pink);
+              color: white;
+              font-weight: 500;
+            }
+
+            &--is-focused {
+              background-color: var(--black3);
+            }
+          }
+        }
+      }
     }
   }
 

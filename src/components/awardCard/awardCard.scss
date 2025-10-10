@@ -1,17 +1,17 @@
 @import "../../mixins.scss";
 
 .awardCard {
-  width: calc(50% - 5px);
+  width: 125px;
   margin-bottom: 25px;
   cursor: pointer;
   flex-shrink: 0;
 
   @include md {
-    width: calc(25% - 15px);
+    width: 200px;
   }
 
   @include lg {
-    width: calc(20% - 16px);
+    width: 220px;
   }
 
   .posterBlock {

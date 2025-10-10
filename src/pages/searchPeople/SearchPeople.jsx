@@ -1,6 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import InfiniteScroll from "react-infinite-scroll-component";
+import Select from "react-select";
 
 import "./style.scss";
 
@@ -10,6 +17,19 @@ import Img from "../../components/lazyLoadImage/Img";
 import Spinner from "../../components/spinner/Spinner";
 import avatar from "../../assets/avatar.png";
 import noResults from "../../assets/no-results.png";
+
+const genderData = [
+  { value: "all", label: "All Genders" },
+  { value: "2", label: "Male" },
+  { value: "1", label: "Female" },
+  { value: "0", label: "Not Specified" },
+];
+
+const sortByData = [
+  { value: "popularity", label: "Popularity" },
+  { value: "name_asc", label: "Name (A-Z)" },
+  { value: "name_desc", label: "Name (Z-A)" },
+];
 
 const SearchPeople = () => {
   const [data, setData] = useState(null);
@@ -22,6 +42,11 @@ const SearchPeople = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [gender, setGender] = useState({ value: "all", label: "All Genders" });
+  const [sortBy, setSortBy] = useState({
+    value: "popularity",
+    label: "Popularity",
+  });
   const { query: urlQuery } = useParams();
   const navigate = useNavigate();
   const searchInputRef = useRef(null);
@@ -206,9 +231,43 @@ const SearchPeople = () => {
     ? pageNum <= (data?.total_pages || 0)
     : popularPageNum <= 10;
 
+  const filteredAndSortedData = useMemo(() => {
+    if (!currentData?.results) return [];
+
+    let filtered = [...currentData.results];
+
+    if (gender.value !== "all") {
+      filtered = filtered.filter(
+        (person) => person.gender === parseInt(gender.value)
+      );
+    }
+
+    if (sortBy.value === "name_asc") {
+      filtered.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    } else if (sortBy.value === "name_desc") {
+      filtered.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+    } else {
+    }
+
+    return filtered;
+  }, [currentData, gender, sortBy]);
+
+  const handleFilterChange = (selectedItem, action) => {
+    if (action.name === "gender") {
+      setGender(selectedItem || { value: "all", label: "All Genders" });
+    } else if (action.name === "sortBy") {
+      setSortBy(selectedItem || { value: "popularity", label: "Popularity" });
+    }
+  };
+
   return (
     <div className="searchPeoplePage">
       <ContentWrapper>
+        {!urlQuery && <div className="pageTitle">Popular People</div>}
+        {urlQuery && (
+          <div className="pageTitle">Search results for '{urlQuery}'</div>
+        )}
+
         <div className="searchSection">
           <div className="searchBox">
             <div className="inputContainer">
@@ -287,11 +346,32 @@ const SearchPeople = () => {
         {!currentLoading && currentData && (
           <>
             {(currentData?.results?.length > 0 || !urlQuery) && (
-              <div className="pageTitle">
-                {urlQuery
-                  ? `Search results for '${urlQuery}'`
-                  : "Popular People"}
-              </div>
+              <>
+                <div className="filtersSection">
+                  <div className="filtersRow twoColumns">
+                    <Select
+                      name="gender"
+                      value={gender}
+                      options={genderData}
+                      onChange={handleFilterChange}
+                      isClearable={false}
+                      placeholder="Gender"
+                      className="react-select-container filterItem"
+                      classNamePrefix="react-select"
+                    />
+                    <Select
+                      name="sortBy"
+                      value={sortBy}
+                      options={sortByData}
+                      onChange={handleFilterChange}
+                      isClearable={false}
+                      placeholder="Sort By"
+                      className="react-select-container filterItem"
+                      classNamePrefix="react-select"
+                    />
+                  </div>
+                </div>
+              </>
             )}
             <InfiniteScroll
               className="content"
@@ -301,40 +381,52 @@ const SearchPeople = () => {
               loader={<Spinner />}
             >
               <div className="peopleGrid">
-                {currentData?.results.map((item, index) => {
-                  let imgUrl = item.profile_path
-                    ? `https://image.tmdb.org/t/p/original${item.profile_path}`
-                    : avatar;
-                  return (
-                    <div
-                      key={item.id}
-                      className="personCard"
-                      onClick={() => handlePersonClick(item.id)}
-                    >
-                      <div className="profileImg">
-                        <Img src={imgUrl} />
-                      </div>
-                      <div className="personInfo">
-                        <div className="name">{item.name}</div>
-                        <div className="knownFor">
-                          {item.known_for_department || "Actor"}
+                {filteredAndSortedData.length > 0 ? (
+                  filteredAndSortedData.map((item, index) => {
+                    let imgUrl = item.profile_path
+                      ? `https://image.tmdb.org/t/p/original${item.profile_path}`
+                      : avatar;
+                    return (
+                      <div
+                        key={item.id}
+                        className="personCard"
+                        onClick={() => handlePersonClick(item.id)}
+                      >
+                        <div className="profileImg">
+                          <Img src={imgUrl} />
                         </div>
-                        {item.known_for && item.known_for.length > 0 && (
-                          <div className="knownForTitles">
-                            {item.known_for.slice(0, 2).map((media, idx) => (
-                              <span key={idx}>
-                                {media.title || media.name}
-                                {idx < 1 && item.known_for.length > 1
-                                  ? ", "
-                                  : ""}
-                              </span>
-                            ))}
+                        <div className="personInfo">
+                          <div className="name">{item.name}</div>
+                          <div className="knownFor">
+                            {item.known_for_department || "Actor"}
                           </div>
-                        )}
+                          {item.known_for && item.known_for.length > 0 && (
+                            <div className="knownForTitles">
+                              {item.known_for.slice(0, 2).map((media, idx) => (
+                                <span key={idx}>
+                                  {media.title || media.name}
+                                  {idx < 1 && item.known_for.length > 1
+                                    ? ", "
+                                    : ""}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
+                    );
+                  })
+                ) : (
+                  <div className="noFilterResults">
+                    <div className="noFilterResultsIcon">🔍</div>
+                    <div className="noFilterResultsText">
+                      No people match your filters
                     </div>
-                  );
-                })}
+                    <div className="noFilterResultsSubtext">
+                      Try adjusting your filter criteria to see more results
+                    </div>
+                  </div>
+                )}
               </div>
             </InfiniteScroll>
           </>

@@ -31,13 +31,13 @@
     .carouselLeftNav,
     .carouselRighttNav {
       font-size: 30px;
-      color: white;
+      color: #da2f68;
       position: absolute;
       top: 44%;
       transform: translateY(-50%);
       cursor: pointer;
-      opacity: 0.5;
-      z-index: 1;
+      opacity: 0.7;
+      z-index: 5;
       display: none;
       transition: opacity 0.3s;
 
@@ -46,7 +46,7 @@
       }
 
       &:hover {
-        opacity: 0.8;
+        opacity: 1;
       }
     }
 
@@ -62,20 +62,45 @@
       display: flex;
       gap: 10px;
       overflow-y: hidden;
+      overflow-x: auto;
       margin-right: -20px;
       margin-left: -20px;
       padding: 0 20px;
-      overflow-x: auto;
       scroll-behavior: smooth;
 
       @include md {
         gap: 20px;
-        padding: 0 60px;
-        margin: 0 -60px;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
       }
 
       &::-webkit-scrollbar {
         display: none;
+      }
+
+      > .awardCard {
+        width: 125px !important;
+        min-width: 125px !important;
+        max-width: 125px !important;
+        flex-shrink: 0 !important;
+        flex-grow: 0 !important;
+        flex-basis: 125px !important;
+        margin-bottom: 0 !important;
+
+        @include md {
+          width: 200px !important;
+          min-width: 200px !important;
+          max-width: 200px !important;
+          flex-basis: 200px !important;
+        }
+
+        @include lg {
+          width: 220px !important;
+          min-width: 220px !important;
+          max-width: 220px !important;
+          flex-basis: 220px !important;
+        }
       }
     }
 
@@ -117,20 +142,21 @@
 
       @include md {
         gap: 20px;
-        padding: 0 60px;
-        margin: 0 -60px;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
       }
 
       .skeletonItem {
-        width: calc(50% - 5px);
+        width: 125px;
         flex-shrink: 0;
 
         @include md {
-          width: calc(25% - 15px);
+          width: 200px;
         }
 
         @include lg {
-          width: calc(20% - 16px);
+          width: 220px;
         }
 
         .posterBlock {
