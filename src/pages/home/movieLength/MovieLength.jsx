@@ -64,10 +64,6 @@ const MovieLength = () => {
       const todayStr = today.toISOString().split("T")[0];
       const threeYearsAgoStr = threeYearsAgo.toISOString().split("T")[0];
 
-      console.log(
-        `🎬 [MovieLength] Fetching latest + popular ${category.name} (${category.runtime.min}-${category.runtime.max} min)`
-      );
-
       const fetchPromises = [
         ...Array.from({ length: 3 }, (_, i) => {
           const params = {
@@ -110,10 +106,6 @@ const MovieLength = () => {
           index === self.findIndex((m) => m.id === movie.id)
       );
 
-      console.log(
-        `📥 Fetched ${uniqueMovies.length} unique movies (latest + popular), now verifying...`
-      );
-
       const verifiedMovies = [];
       let checked = 0;
       let filtered = 0;
@@ -151,16 +143,10 @@ const MovieLength = () => {
               movie.vote_average = details.vote_average || 0;
               verifiedMovies.push(movie);
               if (verifiedMovies.length <= 3) {
-                console.log(
-                  `  ✓ ${movie.title}: ${runtime} min (${details.release_date}, ⭐${movie.vote_average})`
-                );
               }
             } else {
               filtered++;
               if (filtered <= 3) {
-                console.log(
-                  `  ❌ FILTERED: ${movie.title}: ${runtime} min (outside ${category.runtime.min}-${category.runtime.max})`
-                );
               }
             }
           }
@@ -179,10 +165,6 @@ const MovieLength = () => {
 
         return dateDiff;
       });
-
-      console.log(
-        `✅ Final: ${verifiedMovies.length} accurate movies (latest + popular) - checked ${checked}, filtered ${filtered}`
-      );
 
       setData({ results: verifiedMovies });
     } catch (error) {

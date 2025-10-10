@@ -1,0 +1,163 @@
+@import "../../../mixins.scss";
+
+.awardWinnersSection {
+  position: relative;
+  margin-bottom: 70px;
+
+  .carouselTitle {
+    font-size: 24px;
+    color: white;
+    margin-bottom: 20px;
+    font-weight: normal;
+
+    @include md {
+      margin-bottom: 0;
+      font-size: 28px;
+    }
+  }
+
+  .contentWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .carousel {
+    .contentWrapper {
+      position: relative;
+    }
+
+    .carouselLeftNav,
+    .carouselRighttNav {
+      font-size: 30px;
+      color: white;
+      position: absolute;
+      top: 44%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      opacity: 0.5;
+      z-index: 1;
+      display: none;
+      transition: opacity 0.3s;
+
+      @include md {
+        display: block;
+      }
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+
+    .carouselLeftNav {
+      left: 30px;
+    }
+
+    .carouselRighttNav {
+      right: 30px;
+    }
+
+    .carouselItems {
+      display: flex;
+      gap: 10px;
+      overflow-y: hidden;
+      margin-right: -20px;
+      margin-left: -20px;
+      padding: 0 20px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+
+      @include md {
+        gap: 20px;
+        padding: 0 60px;
+        margin: 0 -60px;
+      }
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    .carouselItemsEmpty {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 60px 0;
+
+      .noItems {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.6);
+
+        .noItemsIcon {
+          font-size: 60px;
+          margin-bottom: 20px;
+        }
+
+        .noItemsText {
+          font-size: 18px;
+          margin-bottom: 10px;
+          font-weight: 600;
+        }
+
+        .noItemsSubtext {
+          font-size: 14px;
+          opacity: 0.7;
+        }
+      }
+    }
+
+    .loadingSkeleton {
+      display: flex;
+      gap: 10px;
+      overflow-y: hidden;
+      margin-right: -20px;
+      margin-left: -20px;
+      padding: 0 20px;
+
+      @include md {
+        gap: 20px;
+        padding: 0 60px;
+        margin: 0 -60px;
+      }
+
+      .skeletonItem {
+        width: calc(50% - 5px);
+        flex-shrink: 0;
+
+        @include md {
+          width: calc(25% - 15px);
+        }
+
+        @include lg {
+          width: calc(20% - 16px);
+        }
+
+        .posterBlock {
+          border-radius: 12px;
+          width: 100%;
+          aspect-ratio: 1 / 1.7;
+          margin-bottom: 30px;
+        }
+
+        .textBlock {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+
+          .title {
+            width: 100%;
+            height: 20px;
+            border-radius: 10px;
+          }
+
+          .date {
+            width: 75%;
+            height: 20px;
+            border-radius: 10px;
+          }
+        }
+      }
+    }
+  }
+}

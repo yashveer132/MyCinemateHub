@@ -69,10 +69,6 @@ const MovieByYear = () => {
       const endDate =
         parseInt(year) === currentYear ? currentDate : `${year}-12-31`;
 
-      console.log(
-        `🎬 [MovieByYear] Fetching top popular movies from ${year} (${startDate} to ${endDate})`
-      );
-
       const fetchPromises = Array.from({ length: 3 }, (_, i) => {
         const params = {
           include_adult: false,
@@ -98,15 +94,7 @@ const MovieByYear = () => {
         .sort((a, b) => b.popularity - a.popularity)
         .slice(0, 30);
 
-      console.log(`✅ Found ${topMovies.length} popular movies from ${year}`);
-
-      topMovies.slice(0, 5).forEach((movie, index) => {
-        console.log(
-          `  ${index + 1}. ${movie.title} (⭐${movie.vote_average.toFixed(
-            1
-          )}, 🔥${Math.round(movie.popularity)})`
-        );
-      });
+      topMovies.slice(0, 5).forEach((movie, index) => {});
 
       setData({ results: topMovies });
     } catch (error) {

@@ -20,6 +20,7 @@ import TopMovies from "./pages/topMovies/TopMovies";
 import TopShows from "./pages/topShows/TopShows";
 import Profile from "./pages/profile/Profile";
 import MovieComparison from "./pages/movieComparison/MovieComparison";
+import Collection from "./pages/collection/Collection";
 function App() {
   const dispatch = useDispatch();
   const { url } = useSelector((state) => state.home);
@@ -65,6 +66,7 @@ function App() {
           element={<EpisodeDetails />}
         />
         <Route path="/person/:id" element={<Person />} />
+        <Route path="/collection/:id" element={<Collection />} />
         <Route path="/search/:query" element={<SearchResult />} />
         <Route path="/searchPeople" element={<SearchPeople />} />
         <Route path="/searchPeople/:query" element={<SearchPeople />} />

@@ -1,0 +1,184 @@
+.collectionPage {
+  min-height: 100vh;
+  padding-top: 60px;
+  background: #04152d;
+
+  .collectionHeader {
+    position: relative;
+    width: 100%;
+    min-height: 500px;
+    padding: 80px 0 60px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 50px;
+
+    @media only screen and (max-width: 768px) {
+      min-height: auto;
+      padding: 60px 0 40px;
+      margin-bottom: 30px;
+    }
+
+    .backdropImg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center top;
+      }
+
+      .opacity-layer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          180deg,
+          rgba(4, 21, 45, 0.3) 0%,
+          rgba(4, 21, 45, 0.85) 40%,
+          #04152d 100%
+        );
+      }
+    }
+
+    .headerContent {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      gap: 50px;
+      align-items: flex-start;
+
+      @media only screen and (max-width: 768px) {
+        flex-direction: column;
+        gap: 25px;
+        align-items: center;
+        text-align: center;
+      }
+
+      .posterBlock {
+        flex-shrink: 0;
+        width: 320px;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 50px rgba(0, 0, 0, 0.6);
+        border: 3px solid rgba(255, 255, 255, 0.1);
+
+        @media only screen and (max-width: 768px) {
+          width: 220px;
+        }
+
+        img {
+          width: 100%;
+          display: block;
+        }
+      }
+
+      .detailsBlock {
+        flex: 1;
+        color: white;
+        padding-top: 20px;
+
+        .collectionTitle {
+          font-size: 48px;
+          font-weight: 700;
+          margin-bottom: 20px;
+          line-height: 1.2;
+          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+
+          @media only screen and (max-width: 768px) {
+            font-size: 32px;
+            margin-bottom: 15px;
+          }
+        }
+
+        .collectionOverview {
+          font-size: 17px;
+          line-height: 1.7;
+          color: rgba(255, 255, 255, 0.9);
+          margin-bottom: 30px;
+          max-width: 900px;
+
+          @media only screen and (max-width: 768px) {
+            font-size: 15px;
+            margin-bottom: 20px;
+          }
+        }
+
+        .collectionInfo {
+          display: flex;
+          gap: 40px;
+          flex-wrap: wrap;
+          padding: 20px 0;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+          @media only screen and (max-width: 768px) {
+            justify-content: center;
+            gap: 25px;
+          }
+
+          .infoItem {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+
+            .label {
+              font-size: 14px;
+              color: rgba(255, 255, 255, 0.6);
+              font-weight: 500;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+
+            .value {
+              font-size: 24px;
+              color: white;
+              font-weight: 700;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .carouselSection {
+    margin-bottom: 50px;
+  }
+
+  .errorMessage {
+    text-align: center;
+    color: white;
+    font-size: 22px;
+    font-weight: 500;
+    padding: 120px 20px;
+    opacity: 0.7;
+  }
+
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 200% 100%;
+    animation: loading 1.5s ease-in-out infinite;
+  }
+
+  @keyframes loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+}

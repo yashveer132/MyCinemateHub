@@ -1,0 +1,15 @@
+.comingSoonSection {
+  position: relative;
+  margin-bottom: 70px;
+
+  .carouselTitle {
+    font-size: 24px;
+    color: white;
+    margin-bottom: 20px;
+    font-weight: normal;
+  }
+
+  @media only screen and (max-width: 768px) {
+    margin-bottom: 50px;
+  }
+}

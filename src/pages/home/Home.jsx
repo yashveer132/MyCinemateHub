@@ -6,8 +6,11 @@ import Popular from "./popular/Popular";
 import TopRated from "./topRated/topRated";
 import LatestVideos from "./latestVideos/LatestVideos";
 import WatchProviders from "./watchProviders/WatchProviders";
+import ComingSoon from "./comingSoon/ComingSoon";
+import MovieCollections from "./movieCollections/MovieCollections";
 import MovieLength from "./movieLength/MovieLength";
 import MovieByYear from "./movieByYear/MovieByYear";
+import AwardWinners from "./awardWinners/AwardWinners";
 
 const Home = () => {
   return (
@@ -15,9 +18,12 @@ const Home = () => {
       <HeroBanner />
       <Trending />
       <Popular />
-      <TopRated />
-      <LatestVideos />
+      <AwardWinners />
       <WatchProviders />
+      <ComingSoon />
+      <MovieCollections />
+      <LatestVideos />
+      <TopRated />
       <MovieLength />
       <MovieByYear />
     </div>
