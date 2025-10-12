@@ -259,49 +259,6 @@ const BingeCalculator = ({ showId, showData }) => {
             </div>
           ))}
         </div>
-
-        <div className="bingeInsights">
-          <div className="insightCard">
-            <div className="insightIcon">☕</div>
-            <div className="insightContent">
-              <div className="insightTitle">Coffee Breaks</div>
-              <div className="insightValue">
-                {Math.ceil(totalMinutes / selectedSpeed / 60)} breaks
-              </div>
-              <div className="insightDesc">One per hour recommended</div>
-            </div>
-          </div>
-          <div className="insightCard">
-            <div className="insightIcon">🍿</div>
-            <div className="insightContent">
-              <div className="insightTitle">Snack Time</div>
-              <div className="insightValue">
-                {Math.ceil(totalMinutes / selectedSpeed / 120)} meals
-              </div>
-              <div className="insightDesc">Plan your meals ahead</div>
-            </div>
-          </div>
-          <div className="insightCard">
-            <div className="insightIcon">😴</div>
-            <div className="insightContent">
-              <div className="insightTitle">Sleep Cycles</div>
-              <div className="insightValue">
-                {Math.ceil(totalMinutes / selectedSpeed / 1440)} nights
-              </div>
-              <div className="insightDesc">Don't forget to rest!</div>
-            </div>
-          </div>
-          <div className="insightCard">
-            <div className="insightIcon">🎯</div>
-            <div className="insightContent">
-              <div className="insightTitle">Marathon Mode</div>
-              <div className="insightValue">
-                {Math.ceil(totalMinutes / selectedSpeed / 60 / 8)} days
-              </div>
-              <div className="insightDesc">8 hours of watching/day</div>
-            </div>
-          </div>
-        </div>
       </ContentWrapper>
     </div>
   );

@@ -7,13 +7,13 @@ import React, {
 } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import InfiniteScroll from "react-infinite-scroll-component";
-import Select from "react-select";
 
 import "./style.scss";
 
 import { fetchDataFromApi } from "../../utils/api";
 import ContentWrapper from "../../components/contentWrapper/ContentWrapper";
 import Img from "../../components/lazyLoadImage/Img";
+import PersonCard from "../../components/personCard/PersonCard";
 import Spinner from "../../components/spinner/Spinner";
 import avatar from "../../assets/avatar.png";
 import noResults from "../../assets/no-results.png";
@@ -42,11 +42,6 @@ const SearchPeople = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
-  const [gender, setGender] = useState({ value: "all", label: "All Genders" });
-  const [sortBy, setSortBy] = useState({
-    value: "popularity",
-    label: "Popularity",
-  });
   const { query: urlQuery } = useParams();
   const navigate = useNavigate();
   const searchInputRef = useRef(null);
@@ -57,12 +52,14 @@ const SearchPeople = () => {
     if (urlQuery) {
       setQuery(urlQuery);
       setPageNum(1);
+      setData(null);
       fetchInitialData();
     } else {
       if (!popularData) {
         fetchPopularPeople();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlQuery]);
 
   useEffect(() => {
@@ -119,29 +116,38 @@ const SearchPeople = () => {
   );
 
   const fetchPopularPeople = () => {
-    setPopularLoading(true);
+    const initialLoad = !popularData;
+    if (initialLoad) setPopularLoading(true);
     fetchDataFromApi(`/person/popular?page=${popularPageNum}`).then((res) => {
+      if (!res) {
+        if (initialLoad) setPopularLoading(false);
+        return;
+      }
       if (popularData?.results) {
         setPopularData({
           ...popularData,
-          results: [...popularData.results, ...res.results],
+          results: [...popularData.results, ...(res.results || [])],
+          total_pages: res.total_pages,
+          total_results: res.total_results,
         });
       } else {
         setPopularData(res);
       }
       setPopularPageNum((prev) => prev + 1);
-      setPopularLoading(false);
+      if (initialLoad) setPopularLoading(false);
     });
   };
 
   const fetchInitialData = () => {
     if (!urlQuery) return;
     setLoading(true);
-    setData(null);
-    fetchDataFromApi(`/search/person?query=${urlQuery}&page=${pageNum}`)
+    const firstPage = 1;
+    fetchDataFromApi(
+      `/search/person?query=${encodeURIComponent(urlQuery)}&page=${firstPage}`
+    )
       .then((res) => {
         setData(res);
-        setPageNum((prev) => prev + 1);
+        setPageNum(firstPage + 1);
         setLoading(false);
       })
       .catch(() => {
@@ -152,19 +158,23 @@ const SearchPeople = () => {
 
   const fetchNextPageData = () => {
     if (urlQuery) {
-      fetchDataFromApi(`/search/person?query=${urlQuery}&page=${pageNum}`).then(
-        (res) => {
-          if (data?.results) {
-            setData({
-              ...data,
-              results: [...data?.results, ...res.results],
-            });
-          } else {
-            setData(res);
-          }
-          setPageNum((prev) => prev + 1);
+      if (data?.total_pages && pageNum > data.total_pages) return;
+      const thisPage = pageNum;
+      fetchDataFromApi(
+        `/search/person?query=${encodeURIComponent(urlQuery)}&page=${thisPage}`
+      ).then((res) => {
+        if (!res) return;
+        if (data?.results) {
+          setData({
+            ...data,
+            results: [...data?.results, ...(res.results || [])],
+            total_pages: res.total_pages || data.total_pages,
+          });
+        } else {
+          setData(res);
         }
-      );
+        setPageNum((prev) => prev + 1);
+      });
     } else {
       fetchPopularPeople();
     }
@@ -200,15 +210,21 @@ const SearchPeople = () => {
     navigate("/searchPeople");
   };
 
-  const handlePersonClick = (personId) => {
-    navigate(`/person/${personId}`);
-  };
+  const handlePersonClick = useCallback(
+    (personId) => {
+      navigate(`/person/${personId}`);
+    },
+    [navigate]
+  );
 
-  const handleSuggestionClick = (person) => {
-    setQuery(person.name);
-    setShowSuggestions(false);
-    navigate(`/searchPeople/${person.name}`);
-  };
+  const handleSuggestionClick = useCallback(
+    (person) => {
+      setQuery(person.name);
+      setShowSuggestions(false);
+      navigate(`/searchPeople/${person.name}`);
+    },
+    [navigate]
+  );
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -228,37 +244,13 @@ const SearchPeople = () => {
   const currentData = urlQuery ? data : popularData;
   const currentLoading = urlQuery ? loading : popularLoading;
   const hasMore = urlQuery
-    ? pageNum <= (data?.total_pages || 0)
+    ? data && pageNum <= (data?.total_pages || 0)
     : popularPageNum <= 10;
 
   const filteredAndSortedData = useMemo(() => {
     if (!currentData?.results) return [];
-
-    let filtered = [...currentData.results];
-
-    if (gender.value !== "all") {
-      filtered = filtered.filter(
-        (person) => person.gender === parseInt(gender.value)
-      );
-    }
-
-    if (sortBy.value === "name_asc") {
-      filtered.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-    } else if (sortBy.value === "name_desc") {
-      filtered.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
-    } else {
-    }
-
-    return filtered;
-  }, [currentData, gender, sortBy]);
-
-  const handleFilterChange = (selectedItem, action) => {
-    if (action.name === "gender") {
-      setGender(selectedItem || { value: "all", label: "All Genders" });
-    } else if (action.name === "sortBy") {
-      setSortBy(selectedItem || { value: "popularity", label: "Popularity" });
-    }
-  };
+    return currentData.results;
+  }, [currentData?.results]);
 
   return (
     <div className="searchPeoplePage">
@@ -345,77 +337,23 @@ const SearchPeople = () => {
         {currentLoading && <Spinner initial={true} />}
         {!currentLoading && currentData && (
           <>
-            {(currentData?.results?.length > 0 || !urlQuery) && (
-              <>
-                <div className="filtersSection">
-                  <div className="filtersRow twoColumns">
-                    <Select
-                      name="gender"
-                      value={gender}
-                      options={genderData}
-                      onChange={handleFilterChange}
-                      isClearable={false}
-                      placeholder="Gender"
-                      className="react-select-container filterItem"
-                      classNamePrefix="react-select"
-                    />
-                    <Select
-                      name="sortBy"
-                      value={sortBy}
-                      options={sortByData}
-                      onChange={handleFilterChange}
-                      isClearable={false}
-                      placeholder="Sort By"
-                      className="react-select-container filterItem"
-                      classNamePrefix="react-select"
-                    />
-                  </div>
-                </div>
-              </>
-            )}
+            {(currentData?.results?.length > 0 || !urlQuery) && null}
             <InfiniteScroll
               className="content"
-              dataLength={currentData?.results?.length || []}
+              dataLength={currentData?.results?.length || 0}
               next={fetchNextPageData}
               hasMore={hasMore}
               loader={<Spinner />}
             >
               <div className="peopleGrid">
                 {filteredAndSortedData.length > 0 ? (
-                  filteredAndSortedData.map((item, index) => {
-                    let imgUrl = item.profile_path
-                      ? `https://image.tmdb.org/t/p/original${item.profile_path}`
-                      : avatar;
-                    return (
-                      <div
-                        key={item.id}
-                        className="personCard"
-                        onClick={() => handlePersonClick(item.id)}
-                      >
-                        <div className="profileImg">
-                          <Img src={imgUrl} />
-                        </div>
-                        <div className="personInfo">
-                          <div className="name">{item.name}</div>
-                          <div className="knownFor">
-                            {item.known_for_department || "Actor"}
-                          </div>
-                          {item.known_for && item.known_for.length > 0 && (
-                            <div className="knownForTitles">
-                              {item.known_for.slice(0, 2).map((media, idx) => (
-                                <span key={idx}>
-                                  {media.title || media.name}
-                                  {idx < 1 && item.known_for.length > 1
-                                    ? ", "
-                                    : ""}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
+                  filteredAndSortedData.map((item) => (
+                    <PersonCard
+                      key={`person-${item.id}`}
+                      person={item}
+                      onClick={handlePersonClick}
+                    />
+                  ))
                 ) : (
                   <div className="noFilterResults">
                     <div className="noFilterResultsIcon">🔍</div>

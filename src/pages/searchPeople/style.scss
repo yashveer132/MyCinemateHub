@@ -3,6 +3,7 @@
 .searchPeoplePage {
   min-height: 700px;
   padding-top: 100px;
+  contain: layout style;
 
   .pageTitle {
     font-size: 32px;
@@ -400,6 +401,7 @@
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 30px;
       margin-bottom: 50px;
+      min-height: 400px;
 
       @include md {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));

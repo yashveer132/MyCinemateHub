@@ -1,0 +1,124 @@
+.personCardV2 {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--card-bg, #0f1720);
+  color: var(--text, #fff);
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  contain: layout style paint;
+}
+
+.personCardV2:focus,
+.personCardV2:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
+.personCardV2 .thumb {
+  width: 96px;
+  height: 132px;
+  overflow: hidden;
+  border-radius: 6px;
+  flex-shrink: 0;
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.personCardV2 .thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.personCardV2 .meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 132px;
+}
+
+.personCardV2 .name {
+  font-weight: 700;
+  font-size: 1rem;
+  min-height: 1.2em;
+}
+
+.personCardV2 .primaryRole {
+  font-size: 0.85rem;
+  color: var(--muted, #9aa4b2);
+  min-height: 1.2em;
+}
+
+.personCardV2 .bio {
+  font-size: 0.86rem;
+  color: var(--muted, #b9c0c7);
+  max-width: 48ch;
+  min-height: 3em;
+}
+
+.thumbSkeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+  pointer-events: none;
+}
+
+.skeletonLine {
+  width: 60%;
+  height: 12px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 6px;
+  animation: shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.personCardV2 .knownForList {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.personCardV2 .kfItem {
+  background: rgba(255, 255, 255, 0.04);
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+}
+
+.personCardV2 .kfTitle {
+  font-weight: 600;
+}
+
+.personCardV2 .kfYear,
+.personCardV2 .kfRole {
+  color: var(--muted, #9aa4b2);
+  font-size: 0.78rem;
+}

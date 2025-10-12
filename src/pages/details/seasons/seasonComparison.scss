@@ -1,0 +1,398 @@
+@import "../../../mixins.scss";
+
+.seasonComparison {
+  margin: 40px 0;
+  padding: 30px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 107, 107, 0.05),
+    rgba(255, 107, 107, 0.02)
+  );
+  border-radius: 20px;
+  border: 1px solid rgba(255, 107, 107, 0.1);
+
+  .comparisonHeader {
+    text-align: center;
+    margin-bottom: 30px;
+
+    h3 {
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 8px;
+    }
+
+    p {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+
+  .statsCards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+
+    .statCard {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 24px;
+      border-radius: 16px;
+      text-align: center;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      &.best {
+        border-color: rgba(255, 215, 0, 0.3);
+        background: linear-gradient(
+          135deg,
+          rgba(255, 215, 0, 0.1),
+          rgba(0, 0, 0, 0.3)
+        );
+
+        &:hover {
+          border-color: rgba(255, 215, 0, 0.6);
+          box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2);
+        }
+      }
+
+      &.worst {
+        border-color: rgba(255, 107, 107, 0.3);
+        background: linear-gradient(
+          135deg,
+          rgba(255, 107, 107, 0.1),
+          rgba(0, 0, 0, 0.3)
+        );
+
+        &:hover {
+          border-color: rgba(255, 107, 107, 0.6);
+          box-shadow: 0 10px 30px rgba(255, 107, 107, 0.2);
+        }
+      }
+
+      &.average {
+        border-color: rgba(52, 211, 153, 0.3);
+        background: linear-gradient(
+          135deg,
+          rgba(52, 211, 153, 0.1),
+          rgba(0, 0, 0, 0.3)
+        );
+
+        &:hover {
+          border-color: rgba(52, 211, 153, 0.6);
+          box-shadow: 0 10px 30px rgba(52, 211, 153, 0.2);
+        }
+      }
+
+      &.episodes {
+        border-color: rgba(99, 102, 241, 0.3);
+        background: linear-gradient(
+          135deg,
+          rgba(99, 102, 241, 0.1),
+          rgba(0, 0, 0, 0.3)
+        );
+
+        &:hover {
+          border-color: rgba(99, 102, 241, 0.6);
+          box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+        }
+      }
+
+      .statIcon {
+        font-size: 36px;
+        margin-bottom: 12px;
+      }
+
+      .statLabel {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+      }
+
+      .statValue {
+        font-size: 28px;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 4px;
+      }
+
+      .statSubtext {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.5);
+      }
+    }
+  }
+
+  .chartSection {
+    margin-bottom: 40px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+
+    h4 {
+      font-size: 20px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+  }
+
+  .ratingChart {
+    .chartArea {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      height: 250px;
+      padding: 20px 0;
+      position: relative;
+
+      &::before {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .chartBar {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 80px;
+
+        .barContainer {
+          flex: 1;
+          width: 100%;
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          padding: 0 5px;
+
+          .bar {
+            width: 100%;
+            max-width: 50px;
+            background: linear-gradient(
+              to top,
+              var(--pink),
+              rgba(255, 107, 107, 0.6)
+            );
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+
+            &:hover {
+              transform: scaleY(1.05);
+              box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5);
+            }
+
+            &.highest {
+              background: linear-gradient(
+                to top,
+                #ffd700,
+                rgba(255, 215, 0, 0.7)
+              );
+              box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+
+              &:hover {
+                box-shadow: 0 8px 25px rgba(255, 215, 0, 0.6);
+              }
+            }
+
+            &.lowest {
+              background: linear-gradient(
+                to top,
+                #ef4444,
+                rgba(239, 68, 68, 0.7)
+              );
+              box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+
+              &:hover {
+                box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6);
+              }
+            }
+
+            .barValue {
+              position: absolute;
+              top: -25px;
+              left: 50%;
+              transform: translateX(-50%);
+              font-size: 13px;
+              font-weight: 600;
+              color: white;
+              white-space: nowrap;
+              background: rgba(0, 0, 0, 0.6);
+              padding: 4px 8px;
+              border-radius: 6px;
+            }
+          }
+        }
+
+        .barLabel {
+          margin-top: 12px;
+          font-size: 14px;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.8);
+        }
+      }
+    }
+
+    .chartLegend {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+      .legendItem {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.7);
+
+        .legendDot {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+
+          &.highest {
+            background: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+          }
+
+          &.lowest {
+            background: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+          }
+        }
+      }
+    }
+  }
+
+  .episodeChart {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    .episodeBar {
+      .episodeLabel {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+
+        .seasonNum {
+          font-size: 15px;
+          font-weight: 600;
+          color: white;
+        }
+
+        .episodeCount {
+          font-size: 13px;
+          color: rgba(255, 255, 255, 0.6);
+        }
+      }
+
+      .progressBar {
+        height: 32px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+
+        .progress {
+          height: 100%;
+          background: linear-gradient(
+            90deg,
+            var(--pink),
+            rgba(255, 107, 107, 0.7)
+          );
+          border-radius: 8px;
+          transition: width 0.5s ease;
+          box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
+          position: relative;
+
+          &::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+              90deg,
+              transparent,
+              rgba(255, 255, 255, 0.2),
+              transparent
+            );
+            animation: shimmer 2s infinite;
+          }
+        }
+      }
+    }
+  }
+
+  .trendChart {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    min-height: 200px;
+
+    svg {
+      display: block;
+    }
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (max-width: 768px) {
+  .seasonComparison {
+    padding: 20px;
+
+    .statsCards {
+      grid-template-columns: 1fr;
+    }
+
+    .ratingChart .chartArea {
+      height: 200px;
+
+      .chartBar {
+        max-width: 50px;
+
+        .barContainer .bar {
+          max-width: 35px;
+
+          .barValue {
+            font-size: 11px;
+          }
+        }
+
+        .barLabel {
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}

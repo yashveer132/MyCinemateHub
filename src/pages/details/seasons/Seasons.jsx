@@ -6,6 +6,7 @@ import useFetch from "../../../hooks/useFetch";
 import ContentWrapper from "../../../components/contentWrapper/ContentWrapper";
 import Img from "../../../components/lazyLoadImage/Img";
 import Episodes from "../episodes/Episodes";
+import SeasonComparison from "./SeasonComparison";
 import "./style.scss";
 
 const Seasons = ({ data, loading }) => {
@@ -56,6 +57,9 @@ const Seasons = ({ data, loading }) => {
         <div className="sectionHeading">Seasons</div>
         {!loading ? (
           <>
+            {data?.seasons?.filter((season) => season.season_number > 0)
+              ?.length > 0 && <SeasonComparison seasons={data.seasons} />}
+
             {data?.seasons?.filter((season) => season.season_number > 0)
               ?.length > 0 ? (
               <div className="seasonsList">
