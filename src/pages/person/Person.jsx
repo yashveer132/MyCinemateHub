@@ -243,107 +243,111 @@ const Person = () => {
           {person && (
             <div className="personBanner">
               <ContentWrapper>
-                <div className="content">
-                  <div className="left">
-                    {person.profile_path ? (
-                      <Img
-                        className="profileImg"
-                        src={url.profile + person.profile_path}
-                      />
-                    ) : (
-                      <Img className="profileImg" src={avatar} />
-                    )}
-                  </div>
-                  <div className="right">
-                    <div className="name">{person.name}</div>
-                    {person.birthday && (
-                      <div className="info">
-                        <span className="bold">Born: </span>
-                        <span>
-                          {formatDate(person.birthday)}
-                          {person.place_of_birth &&
-                            ` in ${person.place_of_birth}`}
-                          {(() => {
-                            const age = getAge(
-                              person.birthday,
-                              person.deathday
-                            );
-                            return age ? ` (Age ${age})` : "";
-                          })()}
-                        </span>
-                      </div>
-                    )}
-                    {person.deathday && (
-                      <div className="info">
-                        <span className="bold">Died: </span>
-                        <span>{formatDate(person.deathday)}</span>
-                      </div>
-                    )}
-                    {person.known_for_department && (
-                      <div className="info">
-                        <span className="bold">Known for: </span>
-                        <span>{person.known_for_department}</span>
-                      </div>
-                    )}
-                    {person.also_known_as &&
-                      person.also_known_as.length > 0 && (
+                <div className="bannerContainer">
+                  <div className="leftSection">
+                    <div className="profileContainer">
+                      {person.profile_path ? (
+                        <Img
+                          className="profileImg"
+                          src={url.profile + person.profile_path}
+                        />
+                      ) : (
+                        <Img className="profileImg" src={avatar} />
+                      )}
+                    </div>
+                    <div className="personInfo">
+                      <div className="name">{person.name}</div>
+                      {person.birthday && (
                         <div className="info">
-                          <span className="bold">Also known as: </span>
-                          <span>{person.also_known_as.join(", ")}</span>
+                          <span className="bold">Born: </span>
+                          <span>
+                            {formatDate(person.birthday)}
+                            {person.place_of_birth &&
+                              ` in ${person.place_of_birth}`}
+                            {(() => {
+                              const age = getAge(
+                                person.birthday,
+                                person.deathday
+                              );
+                              return age ? ` (Age ${age})` : "";
+                            })()}
+                          </span>
                         </div>
                       )}
-                    {externalIds && (
-                      <div className="socialLinks">
-                        {externalIds.imdb_id && (
-                          <a
-                            href={`https://www.imdb.com/name/${externalIds.imdb_id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="socialLink"
-                          >
-                            IMDb
-                          </a>
+                      {person.deathday && (
+                        <div className="info">
+                          <span className="bold">Died: </span>
+                          <span>{formatDate(person.deathday)}</span>
+                        </div>
+                      )}
+                      {person.known_for_department && (
+                        <div className="info">
+                          <span className="bold">Known for: </span>
+                          <span>{person.known_for_department}</span>
+                        </div>
+                      )}
+                      {person.also_known_as &&
+                        person.also_known_as.length > 0 && (
+                          <div className="info">
+                            <span className="bold">Also known as: </span>
+                            <span>{person.also_known_as.join(", ")}</span>
+                          </div>
                         )}
-                        {externalIds.twitter_id && (
-                          <a
-                            href={`https://twitter.com/${externalIds.twitter_id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="socialLink"
-                          >
-                            Twitter
-                          </a>
-                        )}
-                        {externalIds.instagram_id && (
-                          <a
-                            href={`https://instagram.com/${externalIds.instagram_id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="socialLink"
-                          >
-                            Instagram
-                          </a>
-                        )}
-                        {externalIds.facebook_id && (
-                          <a
-                            href={`https://facebook.com/${externalIds.facebook_id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="socialLink"
-                          >
-                            Facebook
-                          </a>
-                        )}
+                      {externalIds && (
+                        <div className="socialLinks">
+                          {externalIds.imdb_id && (
+                            <a
+                              href={`https://www.imdb.com/name/${externalIds.imdb_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="socialLink"
+                            >
+                              IMDb
+                            </a>
+                          )}
+                          {externalIds.twitter_id && (
+                            <a
+                              href={`https://twitter.com/${externalIds.twitter_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="socialLink"
+                            >
+                              Twitter
+                            </a>
+                          )}
+                          {externalIds.instagram_id && (
+                            <a
+                              href={`https://instagram.com/${externalIds.instagram_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="socialLink"
+                            >
+                              Instagram
+                            </a>
+                          )}
+                          {externalIds.facebook_id && (
+                            <a
+                              href={`https://facebook.com/${externalIds.facebook_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="socialLink"
+                            >
+                              Facebook
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {person.biography && (
+                    <div className="rightSection">
+                      <div className="biography">
+                        <div className="heading">Biography</div>
+                        <div className="description">{person.biography}</div>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
-                {person.biography && (
-                  <div className="biography">
-                    <div className="heading">Biography</div>
-                    <div className="description">{person.biography}</div>
-                  </div>
-                )}
               </ContentWrapper>
             </div>
           )}

@@ -2,11 +2,18 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
+let geminiAvailable = true;
+let lastErrorTime = 0;
+const ERROR_COOLDOWN = 60000;
+
 if (!GEMINI_API_KEY) {
-  throw new Error("Missing VITE_GEMINI_API_KEY in environment variables");
+  console.warn(
+    "⚠️ VITE_GEMINI_API_KEY not found - AI features will be limited"
+  );
+  geminiAvailable = false;
 }
 
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
 export const GENRE_MAP = {
   action: 28,
@@ -102,6 +109,15 @@ const convertToTMDBParams = (geminiResponse) => {
 };
 
 const extractSearchParams = async (query) => {
+  if (!geminiAvailable || !genAI) {
+    throw new Error("VITE_GEMINI_API_KEY not configured");
+  }
+
+  const now = Date.now();
+  if (now - lastErrorTime < ERROR_COOLDOWN) {
+    throw new Error("AI temporarily unavailable due to recent errors");
+  }
+
   const model = genAI.getGenerativeModel({
     model: "models/gemini-2.0-flash",
     safetySettings: [
@@ -115,12 +131,16 @@ const extractSearchParams = async (query) => {
   try {
     const isValid = await validateModel(model);
     if (!isValid) {
+      lastErrorTime = now;
+      geminiAvailable = false;
       throw new Error(
         "Model validation failed - Check if you're using Gemini 2.0 Flash API key"
       );
     }
   } catch (error) {
-    return null;
+    lastErrorTime = now;
+    geminiAvailable = false;
+    throw error;
   }
 
   const prompt = `
@@ -147,6 +167,18 @@ const extractSearchParams = async (query) => {
       "keywords": ["action", "2020"],
       "isSimilarity": false,
       "similarTitles": [],
+      "person": null
+    }
+    
+    For "shows like money heist" would return:
+    {
+      "mediaType": "tv",
+      "year": null,
+      "genres": ["crime", "thriller"],
+      "sort": "popularity",
+      "keywords": ["heist", "crime", "thriller"],
+      "isSimilarity": true,
+      "similarTitles": ["Money Heist"],
       "person": null
     }
     
@@ -197,15 +229,25 @@ const extractSearchParams = async (query) => {
       tmdbParams: tmdbParams,
     };
   } catch (error) {
+    lastErrorTime = now;
+    console.error("AI extraction error:", error);
+
     return {
-      mediaType: "all",
-      genres: [],
-      sort: "popularity",
-      keywords: [query],
-      isSimilarity: false,
-      similarTitles: [],
-      person: null,
-      role: null,
+      aiParams: {
+        mediaType: "all",
+        genres: [],
+        sort: "popularity",
+        keywords: [query],
+        isSimilarity: false,
+        similarTitles: [],
+        person: null,
+        role: null,
+      },
+      tmdbParams: {
+        query: query,
+        sort_by: "popularity.desc",
+      },
+      fallback: true,
     };
   }
 };

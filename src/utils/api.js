@@ -264,3 +264,86 @@ export const getTopRatedTVShows = async (page = 1) => {
     return null;
   }
 };
+
+export const getAIRecommendations = async (
+  titles,
+  mediaType,
+  originalQuery
+) => {
+  try {
+    if (!Array.isArray(titles) || titles.length === 0) {
+      return null;
+    }
+
+    const allRecommendations = [];
+    const seenIds = new Set();
+
+    for (const title of titles.slice(0, 3)) {
+      const searchEndpoint =
+        mediaType === "tv" ? "/search/tv" : "/search/movie";
+      const searchData = await fetchDataFromApi(searchEndpoint, {
+        query: title,
+        page: 1,
+      });
+
+      if (searchData?.results?.length > 0) {
+        const item = searchData.results[0];
+        const itemMediaType = item.media_type || mediaType;
+        const recEndpoint =
+          itemMediaType === "tv"
+            ? `/tv/${item.id}/recommendations`
+            : `/movie/${item.id}/recommendations`;
+
+        const recData = await fetchDataFromApi(recEndpoint, { page: 1 });
+
+        if (recData?.results) {
+          recData.results.forEach((rec) => {
+            if (!seenIds.has(rec.id)) {
+              seenIds.add(rec.id);
+              allRecommendations.push({
+                ...rec,
+                media_type: itemMediaType,
+                source_title: title,
+              });
+            }
+          });
+        }
+
+        const similarEndpoint =
+          itemMediaType === "tv"
+            ? `/tv/${item.id}/similar`
+            : `/movie/${item.id}/similar`;
+        const similarData = await fetchDataFromApi(similarEndpoint, {
+          page: 1,
+        });
+
+        if (similarData?.results) {
+          similarData.results.forEach((sim) => {
+            if (!seenIds.has(sim.id)) {
+              seenIds.add(sim.id);
+              allRecommendations.push({
+                ...sim,
+                media_type: itemMediaType,
+                source_title: title,
+              });
+            }
+          });
+        }
+      }
+    }
+
+    allRecommendations.sort(
+      (a, b) => (b.popularity || 0) - (a.popularity || 0)
+    );
+
+    return {
+      results: allRecommendations.slice(0, 20),
+      total_results: allRecommendations.length,
+      ai_powered: true,
+      source_titles: titles,
+    };
+  } catch (error) {
+    console.error("AI recommendations error:", error);
+    return null;
+  }
+};

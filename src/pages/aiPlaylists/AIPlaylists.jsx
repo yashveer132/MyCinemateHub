@@ -7,17 +7,20 @@ import {
   getFallbackResults,
   getSimilarityResults,
   getMoviesByPerson,
+  getAIRecommendations,
 } from "../../utils/api";
 import { playlistStorage } from "../../utils/playlistStorage";
 import "./style.scss";
 
 const SUGGESTIONS = [
+  "shows like money heist",
   "horror movies 2024",
   "cozy romances for weekend",
   "mind-bending sci-fi",
-  "feel-good comedies",
   "korean thrillers",
-  "pixar movies for kids",
+  "Christopher Nolan movies",
+  "movies like inception",
+  "best animated films",
 ];
 
 const LANGUAGE_MAP = {
@@ -77,7 +80,11 @@ const buildDiscoverParams = (ai, mediaType, rawQuery) => {
   let params = ai?.tmdbParams ? { ...ai.tmdbParams } : {};
 
   const q = rawQuery.toLowerCase();
-  if (q.match(/best|top|highest rated|rating|imdb/)) {
+  if (
+    q.match(
+      /best|top|highest rated|rating|imdb|award|oscar|academy|golden globe/
+    )
+  ) {
     params.sort_by = "vote_average.desc";
     params["vote_count.gte"] = 200;
   } else if (q.match(/trending|popular|hot|buzz/)) {
@@ -119,9 +126,7 @@ const AIPlaylists = () => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
-  const [subtitle, setSubtitle] = useState("");
   const [mediaType, setMediaType] = useState("movie");
-  const [error, setError] = useState("");
   const [savedPlaylists, setSavedPlaylists] = useState([]);
   const [showSavedPlaylists, setShowSavedPlaylists] = useState(false);
   const [saveDialog, setSaveDialog] = useState({ show: false, name: "" });
@@ -131,15 +136,23 @@ const AIPlaylists = () => {
   const pageTitle = "AI Playlists";
 
   const runSearch = async (q) => {
-    setError("");
     setLoading(true);
     setResults([]);
+
     try {
-      const ai = await extractSearchParams(q);
+      let ai = null;
+
+      try {
+        ai = await extractSearchParams(q);
+      } catch (aiError) {
+        console.warn("AI extraction failed, using fallback:", aiError);
+      }
+
       const mt = detectMediaType(ai, q);
       setMediaType(mt);
 
-      let data;
+      let data = null;
+
       if (ai?.aiParams?.person) {
         data = await getMoviesByPerson(
           ai.aiParams.person,
@@ -151,8 +164,23 @@ const AIPlaylists = () => {
         ai?.aiParams?.isSimilarity &&
         ai.aiParams.similarTitles.length > 0
       ) {
-        data = await getSimilarityResults(ai.aiParams.similarTitles, mt);
-      } else {
+        try {
+          const similarityData = await getAIRecommendations(
+            ai.aiParams.similarTitles,
+            mt,
+            q
+          );
+          if (similarityData?.results?.length > 0) {
+            data = similarityData;
+          }
+        } catch (e) {
+          console.warn("AI recommendations failed, using TMDB similarity:", e);
+        }
+
+        if (!data || !data.results || data.results.length === 0) {
+          data = await getSimilarityResults(ai.aiParams.similarTitles, mt);
+        }
+      } else if (ai?.aiParams) {
         const discoverParams = buildDiscoverParams(ai, mt, q);
         const endpoint = mt === "tv" ? "/discover/tv" : "/discover/movie";
 
@@ -179,14 +207,20 @@ const AIPlaylists = () => {
         data = fb;
       }
 
-      const items = (data?.results || []).slice(0, 10);
-      setResults(items.map((i) => ({ ...i, media_type: mt })));
-      setSubtitle("");
-      setPlaylistTitle(
-        q ? `Playlist: ${q}` : "Sample Playlist: Horror Movies 2024"
-      );
+      const items = (data?.results || []).slice(0, 20);
+      if (items.length > 0) {
+        setResults(items.map((i) => ({ ...i, media_type: mt })));
+        setPlaylistTitle(
+          q ? `Playlist: ${q}` : "Sample Playlist: Horror Movies 2024"
+        );
+      } else {
+        runSearch("horror movies 2024");
+        setPlaylistTitle("Sample Playlist: Horror Movies 2024");
+      }
     } catch (e) {
-      setError("We couldn't create a playlist for that. Try rephrasing.");
+      console.error("Search error:", e);
+      runSearch("horror movies 2024");
+      setPlaylistTitle("Sample Playlist: Horror Movies 2024");
     } finally {
       setLoading(false);
     }
@@ -203,15 +237,11 @@ const AIPlaylists = () => {
       setSavedPlaylists(playlists);
     } catch (error) {
       console.error("Failed to load playlists:", error);
-      setError("Failed to load saved playlists. Please refresh the page.");
     }
   };
 
   const saveCurrentPlaylist = (name) => {
-    if (!results.length) {
-      setError("No playlist to save. Generate a playlist first.");
-      return;
-    }
+    if (!results.length) return;
 
     try {
       const saved = playlistStorage.savePlaylist(
@@ -222,9 +252,8 @@ const AIPlaylists = () => {
       );
       setSaveDialog({ show: false, name: "" });
       loadSavedPlaylists();
-      setError("");
     } catch (err) {
-      setError(err.message);
+      console.error("Failed to save playlist:", err);
     }
   };
 
@@ -235,10 +264,8 @@ const AIPlaylists = () => {
       setMediaType(playlist.mediaType);
       setShowSavedPlaylists(false);
       setPlaylistTitle(`Playlist: ${playlist.query}`);
-      setError("");
     } catch (error) {
       console.error("Failed to load playlist:", error);
-      setError("Failed to load the selected playlist.");
     }
   };
 
@@ -246,12 +273,9 @@ const AIPlaylists = () => {
     try {
       if (playlistStorage.deletePlaylist(id)) {
         loadSavedPlaylists();
-      } else {
-        setError("Failed to delete playlist.");
       }
     } catch (error) {
       console.error("Failed to delete playlist:", error);
-      setError("Failed to delete playlist.");
     }
   };
 
@@ -271,13 +295,7 @@ const AIPlaylists = () => {
               type="text"
               placeholder="e.g. 'horror movies 2024' or 'korean thrillers'"
               value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                if (e.target.value === "") {
-                  runSearch("horror movies 2024");
-                  setPlaylistTitle("Sample Playlist: Horror Movies 2024");
-                }
-              }}
+              onChange={(e) => setQuery(e.target.value)}
               onKeyUp={(e) => e.key === "Enter" && onSubmit()}
             />
             <button onClick={onSubmit} disabled={!query.trim()}>
@@ -401,8 +419,6 @@ const AIPlaylists = () => {
               )}
             </div>
           )}
-
-          {error && <div className="error-message">{error}</div>}
         </div>
       </ContentWrapper>
 

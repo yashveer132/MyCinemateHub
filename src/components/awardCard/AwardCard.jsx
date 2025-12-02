@@ -197,7 +197,7 @@ const AwardCard = ({
           </div>
 
           {showAwards && (
-            <div className="awardsOverlay" onClick={(e) => e.stopPropagation()}>
+            <div className="awardsOverlay">
               {isLoadingAwards && (
                 <div className="awardsLoading">
                   <div className="spinner"></div>

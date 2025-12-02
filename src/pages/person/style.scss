@@ -18,114 +18,173 @@
     background: var(--black2);
     color: white;
 
-    .content {
-      display: flex;
+    .bannerContainer {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 40px;
+      align-items: flex-start;
 
-      @include md {
-        flex-direction: column;
-        gap: 20px;
+      @media only screen and (max-width: 1024px) {
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
       }
 
-      .left {
-        flex-shrink: 0;
-        width: 100%;
+      @media only screen and (max-width: 767px) {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+
+      .leftSection {
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        gap: 25px;
+        align-items: center;
+        margin-top: 40px;
 
-        .profileImg {
-          width: 300px;
-          height: 450px;
-          border-radius: 12px;
-          overflow: hidden;
-          background: rgba(255, 255, 255, 0.1);
-
-          @include md {
-            width: 200px;
-            height: 300px;
-          }
-
-          img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-          }
-        }
-      }
-
-      .right {
-        flex: 1;
-
-        .name {
-          font-size: 3rem;
-          font-weight: 700;
-          margin-bottom: 20px;
-          color: white;
-
-          @include md {
-            font-size: 2rem;
-            text-align: center;
-          }
-        }
-
-        .info {
-          font-size: 1.1rem;
-          margin-bottom: 12px;
-          line-height: 1.5;
-
-          .bold {
-            font-weight: 600;
-            color: var(--pink);
-          }
-
-          @include md {
-            text-align: center;
-          }
-        }
-
-        .socialLinks {
-          display: flex;
-          gap: 15px;
+        @media only screen and (max-width: 767px) {
+          gap: 20px;
           margin-top: 20px;
+        }
 
-          @include md {
-            justify-content: center;
+        .profileContainer {
+          width: 100%;
+          display: flex;
+          justify-content: center;
+
+          .profileImg {
+            width: 160px;
+            height: 240px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+
+            @media only screen and (max-width: 1024px) {
+              width: 150px;
+              height: 225px;
+            }
+
+            @media only screen and (max-width: 767px) {
+              width: 140px;
+              height: 210px;
+            }
+
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+        }
+
+        .personInfo {
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+          width: 100%;
+          text-align: center;
+
+          .name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: white;
+            line-height: 1.2;
+
+            @media only screen and (max-width: 1024px) {
+              font-size: 1.6rem;
+            }
+
+            @media only screen and (max-width: 767px) {
+              font-size: 1.4rem;
+            }
           }
 
-          .socialLink {
-            padding: 8px 16px;
-            background: var(--pink);
-            color: white;
-            border-radius: 20px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
+          .info {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
 
-            &:hover {
-              background: var(--pink-hover);
-              transform: translateY(-2px);
+            .bold {
+              font-weight: 600;
+              color: var(--pink);
+              margin-right: 4px;
+            }
+          }
+
+          .socialLinks {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+
+            .socialLink {
+              padding: 8px 16px;
+              background: var(--pink);
+              color: white;
+              border-radius: 20px;
+              text-decoration: none;
+              font-weight: 500;
+              font-size: 0.9rem;
+              transition: all 0.3s ease;
+
+              &:hover {
+                background: var(--pink-hover);
+                transform: translateY(-2px);
+              }
             }
           }
         }
       }
-    }
 
-    .biography {
-      margin-top: 40px;
+      .rightSection {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin-top: 80px;
 
-      .heading {
-        font-size: 28px;
-        font-weight: 600;
-        margin-bottom: 20px;
-        color: white;
-        text-align: center;
-      }
+        @media only screen and (max-width: 767px) {
+          margin-top: 20px;
+          justify-content: flex-start;
+        }
 
-      .description {
-        font-size: 1.1rem;
-        line-height: 1.6;
-        color: rgba(255, 255, 255, 0.8);
-        text-align: justify;
+        .biography {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+
+          .heading {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: white;
+            text-align: center;
+
+            @media only screen and (max-width: 1024px) {
+              font-size: 1.6rem;
+              margin-bottom: 15px;
+            }
+
+            @media only screen and (max-width: 767px) {
+              text-align: center;
+              font-size: 1.4rem;
+            }
+          }
+
+          .description {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.85);
+            text-align: justify;
+            flex: 1;
+
+            @media only screen and (max-width: 767px) {
+              font-size: 0.9rem;
+              text-align: left;
+            }
+          }
+        }
       }
     }
   }
