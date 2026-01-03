@@ -29,7 +29,7 @@
     .reviewBadge {
       position: absolute;
       top: 10px;
-      left: 10px;
+      right: 10px;
       background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
       color: #000;
       padding: 6px 12px;
@@ -62,7 +62,7 @@
     .addReviewBadge {
       position: absolute;
       top: 10px;
-      left: 10px;
+      right: 10px;
       background: linear-gradient(
         135deg,
         #ff6b6b 0%,
@@ -139,17 +139,46 @@
       }
     }
 
+    .ratingsWrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 2;
+    }
+
     .circleRating {
-      width: 40px;
-      height: 40px;
-      position: relative;
-      top: 30px;
-      background-color: white;
+      width: 32px;
+      height: 32px;
+      background-color: blue;
       flex-shrink: 0;
 
       @include md {
-        width: 50px;
-        height: 50px;
+        width: 40px;
+        height: 40px;
+      }
+      .ratingText {
+        font-size: 12px;
+        @include md {
+          font-size: 14px;
+        }
+      }
+    }
+
+    .imdbRating {
+      width: 32px;
+      height: 32px;
+      @include md {
+        width: 40px;
+        height: 40px;
+      }
+      .ratingText {
+        font-size: 11px;
+        @include md {
+          font-size: 13px;
+        }
       }
     }
 

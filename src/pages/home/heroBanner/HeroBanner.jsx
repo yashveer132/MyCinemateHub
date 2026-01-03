@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import "./style.scss";
@@ -11,6 +11,8 @@ const HeroBanner = () => {
   const [background, setBackground] = useState("");
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState("simple");
+
+  const recentIndicesRef = useRef([]);
 
   const { url } = useSelector((state) => state.home);
   const navigate = useNavigate();
@@ -28,21 +30,32 @@ const HeroBanner = () => {
   }, [movieData, tvData]);
 
   useEffect(() => {
+    recentIndicesRef.current = [];
+
     const changeBg = () => {
       const totalItems = combinedData?.results?.length || 0;
       if (totalItems === 0) return;
 
-      const randomIndex = Math.floor(Math.random() * totalItems);
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * totalItems);
+      } while (recentIndicesRef.current.includes(randomIndex));
+
       const item = combinedData.results[randomIndex];
       const bg = item?.backdrop_path;
       setBackground(bg ? url.backdrop + bg : "");
+
+      recentIndicesRef.current.push(randomIndex);
+      if (recentIndicesRef.current.length > 20) {
+        recentIndicesRef.current.shift();
+      }
     };
 
     changeBg();
 
     const interval = setInterval(() => {
       changeBg();
-    }, 10000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [combinedData, url.backdrop]);

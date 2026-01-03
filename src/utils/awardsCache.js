@@ -1,4 +1,5 @@
 import { getAwardsById } from "./awardsDatabase";
+import { fetchAwardsFromOMDb } from "./api";
 
 const awardsCache = new Map();
 
@@ -9,15 +10,35 @@ export const fetchAwardsData = async (data) => {
     return awardsCache.get(cacheKey);
   }
 
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const awardsData = getAwardsById(data.id);
+  try {
+    const omdbAwards = await fetchAwardsFromOMDb(
+      data.id,
+      data.media_type || "movie"
+    );
 
-      awardsCache.set(cacheKey, awardsData);
+    if (omdbAwards && omdbAwards.summary) {
+      awardsCache.set(cacheKey, omdbAwards);
+      return omdbAwards;
+    }
 
-      resolve(awardsData);
-    }, 100);
-  });
+    const manualAwards = getAwardsById(data.id);
+    if (manualAwards) {
+      awardsCache.set(cacheKey, manualAwards);
+      return manualAwards;
+    }
+
+    const noAwards = { awards: [], summary: null };
+    awardsCache.set(cacheKey, noAwards);
+    return noAwards;
+  } catch (error) {
+    console.error("Error fetching awards data:", error);
+    const manualAwards = getAwardsById(data.id) || {
+      awards: [],
+      summary: null,
+    };
+    awardsCache.set(cacheKey, manualAwards);
+    return manualAwards;
+  }
 };
 
 export const clearAwardsCache = () => {

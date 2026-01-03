@@ -96,13 +96,29 @@
         }
       }
       .circleRating {
-        max-width: 70px;
-        background-color: var(--black2);
+        width: 60px;
+        height: 60px;
+        background-color: blue;
         @include md {
-          max-width: 90px;
+          width: 70px;
+          height: 70px;
         }
-        .CircularProgressbar-text {
-          fill: white;
+        .ratingText {
+          font-size: 24px;
+        }
+      }
+      .imdbRating {
+        width: 60px;
+        height: 60px;
+        @include md {
+          width: 70px;
+          height: 70px;
+        }
+        .ratingText {
+          font-size: 20px;
+          @include md {
+            font-size: 24px;
+          }
         }
       }
       .playbtn {
@@ -154,6 +170,34 @@
         align-items: center;
         gap: 25px;
         margin-bottom: 25px;
+        flex-wrap: wrap;
+
+        .ratingsSection {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+
+          .ratingInfo {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            .ratingLabel {
+              font-size: 14px;
+              font-weight: 700;
+              color: white;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+
+            .voteCount {
+              font-size: 12px;
+              color: rgba(255, 255, 255, 0.7);
+              font-weight: 500;
+            }
+          }
+        }
+
         .aiRecommendBtn {
           display: flex;
           align-items: center;

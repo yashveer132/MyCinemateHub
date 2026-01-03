@@ -1,0 +1,57 @@
+@import "../../mixins.scss";
+
+.additionalRatings {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+
+  .ratingsSection {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .circleRating {
+      width: 50px;
+      height: 50px;
+      background-color: blue;
+
+      @include md {
+        width: 60px;
+        height: 60px;
+      }
+
+      .ratingText {
+        font-size: 18px;
+        @include md {
+          font-size: 20px;
+        }
+      }
+    }
+
+    .ratingInfo {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .ratingLabel {
+        font-size: 12px;
+        font-weight: 700;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        @include md {
+          font-size: 14px;
+        }
+      }
+
+      .voteCount {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 500;
+        @include md {
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}

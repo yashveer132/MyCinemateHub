@@ -5,6 +5,7 @@ import useFetch from "../../hooks/useFetch";
 import { fetchDataFromApi } from "../../utils/api";
 import Img from "../../components/lazyLoadImage/Img";
 import CircleRating from "../../components/circleRating/CircleRating";
+import ImdbRating from "../../components/imdbRating/ImdbRating";
 import ContentWrapper from "../../components/contentWrapper/ContentWrapper";
 import Spinner from "../../components/spinner/Spinner";
 import MovieCard from "../../components/movieCard/MovieCard";
@@ -19,6 +20,8 @@ const MovieComparison = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMovie2, setSelectedMovie2] = useState(null);
   const [similarMovies, setSimilarMovies] = useState([]);
+  const [imdbData1, setImdbData1] = useState(null);
+  const [imdbData2, setImdbData2] = useState(null);
 
   const { url } = useSelector((state) => state.home);
 
@@ -224,15 +227,32 @@ const MovieComparison = () => {
                 {movie1.tagline && (
                   <p className="tagline">"{movie1.tagline}"</p>
                 )}
-                <div className="rating">
-                  <CircleRating
-                    rating={
-                      movie1.vote_average ? movie1.vote_average.toFixed(1) : 0
-                    }
-                  />
-                  <span className="ratingText">
-                    ({movie1.vote_count?.toLocaleString() || 0} votes)
-                  </span>
+                <div className="ratingsContainer">
+                  <div className="rating">
+                    <CircleRating
+                      rating={
+                        movie1.vote_average ? movie1.vote_average.toFixed(1) : 0
+                      }
+                      voteCount={movie1.vote_count}
+                      showTooltip={true}
+                    />
+                    <span className="ratingText">
+                      ({movie1.vote_count?.toLocaleString() || 0} votes)
+                    </span>
+                  </div>
+                  <div className="rating">
+                    <ImdbRating
+                      tmdbId={movie1.id}
+                      mediaType="movie"
+                      showTooltip={true}
+                      onDataLoaded={setImdbData1}
+                    />
+                    {imdbData1?.votes && (
+                      <span className="ratingText">
+                        ({imdbData1.votes} votes)
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="metaInfo">
                   <div className="metaItem">
@@ -390,15 +410,32 @@ const MovieComparison = () => {
                 {movie2.tagline && (
                   <p className="tagline">"{movie2.tagline}"</p>
                 )}
-                <div className="rating">
-                  <CircleRating
-                    rating={
-                      movie2.vote_average ? movie2.vote_average.toFixed(1) : 0
-                    }
-                  />
-                  <span className="ratingText">
-                    ({movie2.vote_count?.toLocaleString() || 0} votes)
-                  </span>
+                <div className="ratingsContainer">
+                  <div className="rating">
+                    <CircleRating
+                      rating={
+                        movie2.vote_average ? movie2.vote_average.toFixed(1) : 0
+                      }
+                      voteCount={movie2.vote_count}
+                      showTooltip={true}
+                    />
+                    <span className="ratingText">
+                      ({movie2.vote_count?.toLocaleString() || 0} votes)
+                    </span>
+                  </div>
+                  <div className="rating">
+                    <ImdbRating
+                      tmdbId={movie2.id}
+                      mediaType="movie"
+                      showTooltip={true}
+                      onDataLoaded={setImdbData2}
+                    />
+                    {imdbData2?.votes && (
+                      <span className="ratingText">
+                        ({imdbData2.votes} votes)
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="metaInfo">
                   <div className="metaItem">

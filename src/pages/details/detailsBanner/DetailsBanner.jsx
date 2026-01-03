@@ -9,6 +9,8 @@ import ContentWrapper from "../../../components/contentWrapper/ContentWrapper";
 import useFetch from "../../../hooks/useFetch";
 import Genres from "../../../components/genres/Genres";
 import CircleRating from "../../../components/circleRating/CircleRating";
+import ImdbRating from "../../../components/imdbRating/ImdbRating";
+import AdditionalRatings from "../../../components/additionalRatings/AdditionalRatings";
 import Img from "../../../components/lazyLoadImage/Img.jsx";
 import PosterFallback from "../../../assets/no-poster.png";
 import { PlayIcon } from "../Playbtn";
@@ -17,6 +19,7 @@ import VideoPopup from "../../../components/videoPopup/VideoPopup";
 const DetailsBanner = ({ video, crew }) => {
   const [show, setShow] = useState(false);
   const [videoId, setVideoId] = useState(null);
+  const [imdbData, setImdbData] = useState(null);
 
   const { mediaType, id } = useParams();
   const navigate = useNavigate();
@@ -73,13 +76,50 @@ const DetailsBanner = ({ video, crew }) => {
                     <Genres data={_genres} />
 
                     <div className="row">
-                      <CircleRating
-                        rating={
-                          data.vote_average
-                            ? data.vote_average.toFixed(1)
-                            : "0.0"
-                        }
-                      />
+                      <div className="ratingsSection">
+                        <CircleRating
+                          rating={
+                            data.vote_average
+                              ? data.vote_average.toFixed(1)
+                              : "0.0"
+                          }
+                          voteCount={data.vote_count}
+                          showTooltip={true}
+                        />
+                        <div className="ratingInfo">
+                          <div className="ratingLabel">TMDB</div>
+                          <div className="voteCount">
+                            {data.vote_count?.toLocaleString() || "0"} votes
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="ratingsSection">
+                        <ImdbRating
+                          tmdbId={id}
+                          mediaType={mediaType}
+                          onDataLoaded={setImdbData}
+                          showTooltip={true}
+                        />
+                        <div className="ratingInfo">
+                          <div className="ratingLabel">IMDb</div>
+                          <div className="voteCount">
+                            {imdbData
+                              ? imdbData.votes
+                                ? `${imdbData.votes} votes`
+                                : "N/A votes"
+                              : "Loading..."}
+                          </div>
+                        </div>
+                      </div>
+
+                      {imdbData?.additionalRatings && (
+                        <AdditionalRatings
+                          ratings={imdbData.additionalRatings}
+                          showTooltip={true}
+                        />
+                      )}
+
                       {video?.key && (
                         <div
                           className="playbtn"

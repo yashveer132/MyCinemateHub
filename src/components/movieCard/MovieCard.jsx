@@ -15,6 +15,7 @@ import {
 import "./style.scss";
 import Img from "../lazyLoadImage/Img";
 import CircleRating from "../circleRating/CircleRating";
+import ImdbRating from "../imdbRating/ImdbRating";
 import Genres from "../genres/Genres";
 import PosterFallback from "../../assets/no-poster.png";
 import ReviewModal from "../reviewModal/ReviewModal";
@@ -176,7 +177,18 @@ const MovieCard = ({
 
           {!fromSearch && (
             <React.Fragment>
-              <CircleRating rating={(data.vote_average || 0).toFixed(1)} />
+              <div className="ratingsWrapper">
+                <CircleRating
+                  rating={(data.vote_average || 0).toFixed(1)}
+                  voteCount={data.vote_count}
+                  showTooltip={true}
+                />
+                <ImdbRating
+                  tmdbId={data.id}
+                  mediaType={data.media_type || mediaType || "movie"}
+                  showTooltip={true}
+                />
+              </div>
               <Genres data={data.genre_ids?.slice(0, 2) || []} />
             </React.Fragment>
           )}

@@ -16,6 +16,7 @@ import {
 import "./awardCard.scss";
 import Img from "../lazyLoadImage/Img";
 import CircleRating from "../circleRating/CircleRating";
+import ImdbRating from "../imdbRating/ImdbRating";
 import Genres from "../genres/Genres";
 import PosterFallback from "../../assets/no-poster.png";
 import ReviewModal from "../reviewModal/ReviewModal";
@@ -207,41 +208,51 @@ const AwardCard = ({
 
               {!isLoadingAwards &&
                 awardsData &&
-                awardsData.awards &&
-                awardsData.awards.length > 0 && (
+                ((awardsData.awards && awardsData.awards.length > 0) || awardsData.summary) && (
                   <div className="awardsContent">
                     <div className="awardsHeader">
                       <FaTrophy className="trophyIcon" />
-                      <h3>Awards Won</h3>
+                      <h3>Awards</h3>
                     </div>
-                    <div className="awardsList">
-                      {awardsData.awards.slice(0, 4).map((award) => (
-                        <div key={award.id} className="awardItem">
-                          <div className="awardIcon">🏆</div>
-                          <div className="awardDetails">
-                            <div className="awardName">{award.award}</div>
-                            <div className="awardCategory">
-                              {award.category} {award.year && `(${award.year})`}
+                    
+                    {awardsData.awards && awardsData.awards.length > 0 && (
+                      <div className="awardsList">
+                        {awardsData.awards.slice(0, 4).map((award) => (
+                          <div key={award.id} className="awardItem">
+                            <div className="awardIcon">🏆</div>
+                            <div className="awardDetails">
+                              <div className="awardName">{award.award}</div>
+                              <div className="awardCategory">
+                                {award.category} {award.year && `(${award.year})`}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                    {awardsData.awards.length > 4 && (
-                      <div className="moreAwards">
-                        +{awardsData.awards.length - 4} more awards
+                        ))}
+                        {awardsData.awards.length > 4 && (
+                          <div className="moreAwards">
+                            +{awardsData.awards.length - 4} more awards
+                          </div>
+                        )}
                       </div>
                     )}
+                    
                     {awardsData.summary && (
-                      <div className="awardsSummary">{awardsData.summary}</div>
+                      <div className="awardsSummary">
+                        {awardsData.source === 'omdb' ? (
+                          <div className="omdbAwards">
+                            <strong>IMDb Awards:</strong> {awardsData.summary}
+                          </div>
+                        ) : (
+                          awardsData.summary
+                        )}
+                      </div>
                     )}
                   </div>
                 )}
 
               {!isLoadingAwards &&
                 (!awardsData ||
-                  !awardsData.awards ||
-                  awardsData.awards.length === 0) && (
+                  ((!awardsData.awards || awardsData.awards.length === 0) && !awardsData.summary)) && (
                   <div className="noAwards">
                     <FaTrophy className="noAwardsIcon" />
                     <span>No major awards won</span>
@@ -252,7 +263,18 @@ const AwardCard = ({
 
           {!fromSearch && (
             <React.Fragment>
-              <CircleRating rating={(data.vote_average || 0).toFixed(1)} />
+              <div className="ratingsWrapper">
+                <CircleRating
+                  rating={(data.vote_average || 0).toFixed(1)}
+                  voteCount={data.vote_count}
+                  showTooltip={true}
+                />
+                <ImdbRating
+                  tmdbId={data.id}
+                  mediaType={data.media_type || mediaType || "movie"}
+                  showTooltip={true}
+                />
+              </div>
               <Genres data={data.genre_ids?.slice(0, 2) || []} />
             </React.Fragment>
           )}

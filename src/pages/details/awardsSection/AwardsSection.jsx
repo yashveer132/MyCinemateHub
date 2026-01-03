@@ -4,6 +4,7 @@ import "./style.scss";
 
 import ContentWrapper from "../../../components/contentWrapper/ContentWrapper";
 import { generateAwards } from "../../../utils/gemini";
+import { fetchAwardsFromOMDb } from "../../../utils/api";
 
 const AwardsSection = ({ movieDetails, mediaType }) => {
   const [awardsData, setAwardsData] = useState(null);
@@ -13,17 +14,53 @@ const AwardsSection = ({ movieDetails, mediaType }) => {
 
   useEffect(() => {
     const loadAwards = async () => {
-      if (movieDetails && (movieDetails.title || movieDetails.name)) {
+      if (movieDetails && movieDetails.id) {
         setLoading(true);
         try {
-          const generated = await generateAwards(
-            movieDetails.title || movieDetails.name,
-            movieDetails.overview,
-            movieDetails.genres
+          const omdbAwards = await fetchAwardsFromOMDb(
+            movieDetails.id,
+            mediaType
           );
-          setAwardsData(generated);
+
+          if (omdbAwards && omdbAwards.summary) {
+            const detailedAwards = await generateAwards(
+              movieDetails.title || movieDetails.name,
+              movieDetails.overview,
+              movieDetails.genres,
+              omdbAwards.summary
+            );
+
+            if (detailedAwards) {
+              setAwardsData({
+                ...detailedAwards,
+                source: "omdb_ai",
+                omdbSummary: omdbAwards.summary,
+              });
+            } else {
+              setAwardsData({
+                awards: [],
+                summary: omdbAwards.summary,
+                source: "omdb",
+              });
+            }
+          } else {
+            const generated = await generateAwards(
+              movieDetails.title || movieDetails.name,
+              movieDetails.overview,
+              movieDetails.genres
+            );
+            if (generated) {
+              setAwardsData({
+                ...generated,
+                source: "ai",
+              });
+            } else {
+              setAwardsData(null);
+            }
+          }
         } catch (error) {
-          console.error("Failed to generate awards:", error);
+          console.error("Failed to load awards:", error);
+          setAwardsData(null);
         } finally {
           setLoading(false);
         }
@@ -31,7 +68,7 @@ const AwardsSection = ({ movieDetails, mediaType }) => {
     };
 
     loadAwards();
-  }, [movieDetails]);
+  }, [movieDetails, mediaType]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -144,43 +181,71 @@ const AwardsSection = ({ movieDetails, mediaType }) => {
     <div className="awardsSection">
       <ContentWrapper>
         <div className="sectionHeading">
-          {mediaType === "tv" ? "TV Awards Won" : "Movie Awards Won"}
+          {mediaType === "tv" ? "TV Awards" : "Movie Awards"}
+          {awardsData?.source === "omdb" && (
+            <span className="dataSource"> (IMDb Data)</span>
+          )}
+          {awardsData?.source === "omdb_ai" && (
+            <span className="dataSource"> (IMDb + AI Enhanced)</span>
+          )}
+          {awardsData?.source === "ai" && (
+            <span className="dataSource"> (AI Generated)</span>
+          )}
         </div>
         {!loading ? (
-          awardsData && awardsData.awards && awardsData.awards.length > 0 ? (
+          awardsData &&
+          ((awardsData.awards && awardsData.awards.length > 0) ||
+            awardsData.summary) ? (
             <div className="awardsContent">
               {awardsData.summary && (
                 <div className="awardsSummary">
-                  <div className="summaryText">{awardsData.summary}</div>
-                </div>
-              )}
-              <div className="awardsList">
-                {currentAwards.map((award) => (
-                  <div key={award.id} className="awardItem">
-                    <div className="awardHeader">
-                      <div className="awardName">{award.award}</div>
-                      <div
-                        className={`awardResult ${award.result.toLowerCase()}`}
-                      >
-                        {award.result}
+                  <div className="summaryText">
+                    {awardsData.source === "omdb" ? (
+                      <div className="omdbAwardsSummary">
+                        {awardsData.summary}
                       </div>
-                    </div>
-                    <div className="awardDetails">
-                      <div className="awardCategory">{award.category}</div>
-                      <div className="awardYear">{award.year}</div>
-                    </div>
-                    {award.nominees && award.nominees.length > 0 && (
-                      <div className="awardNominees">
-                        <span className="nomineesLabel">Winner:</span>
-                        <span className="nomineesList">
-                          {award.nominees.join(", ")}
-                        </span>
+                    ) : awardsData.source === "omdb_ai" ? (
+                      <div className="combinedAwardsSummary">
+                        <div className="omdbBase">{awardsData.omdbSummary}</div>
+                        <div className="aiEnhanced">{awardsData.summary}</div>
                       </div>
+                    ) : (
+                      awardsData.summary
                     )}
                   </div>
-                ))}
-              </div>
-              {renderPagination()}
+                </div>
+              )}
+              {awardsData.awards && awardsData.awards.length > 0 && (
+                <div className="awardsList">
+                  {currentAwards.map((award) => (
+                    <div key={award.id} className="awardItem">
+                      <div className="awardHeader">
+                        <div className="awardName">{award.award}</div>
+                        <div
+                          className={`awardResult ${award.result.toLowerCase()}`}
+                        >
+                          {award.result}
+                        </div>
+                      </div>
+                      <div className="awardDetails">
+                        <div className="awardCategory">{award.category}</div>
+                        <div className="awardYear">{award.year}</div>
+                      </div>
+                      {award.nominees && award.nominees.length > 0 && (
+                        <div className="awardNominees">
+                          <span className="nomineesLabel">Winner:</span>
+                          <span className="nomineesList">
+                            {award.nominees.join(", ")}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {awardsData.awards &&
+                awardsData.awards.length > 0 &&
+                renderPagination()}
             </div>
           ) : (
             <div className="awardsEmpty">

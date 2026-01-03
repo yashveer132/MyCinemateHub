@@ -193,44 +193,47 @@
             padding: 0 10px;
           }
 
+          .ratingsContainer {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+          }
+
           .rating {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-            justify-content: center;
-            transform-origin: center;
-
-            @media (min-width: 641px) {
-              transform: scale(0.85);
-            }
-
-            @media (max-width: 640px) {
-              justify-content: center;
-            }
+            gap: 8px;
 
             .circleRating {
               display: inline-flex;
               align-items: center;
               justify-content: center;
+              background-color: blue;
+              width: 60px;
+              height: 60px;
 
-              .CircularProgressbar-text {
+              .ratingText {
                 font-size: 18px;
                 font-weight: 700;
-                fill: #ffffff;
-                text-anchor: middle;
-                dominant-baseline: central;
-                alignment-baseline: central;
+                color: #ffffff;
               }
+            }
 
-              .CircularProgressbar-trail {
-                stroke: transparent;
+            .imdbRating {
+              width: 60px;
+              height: 60px;
+
+              .ratingText {
+                font-size: 18px;
               }
             }
 
             .ratingText {
-              color: rgba(255, 255, 255, 0.9);
-              font-size: 1.05rem;
+              color: rgba(255, 255, 255, 0.7);
+              font-size: 0.85rem;
               font-weight: 600;
             }
           }

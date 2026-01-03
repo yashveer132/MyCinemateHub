@@ -423,7 +423,7 @@ Response must be valid JSON array only.`;
   }
 };
 
-const generateAwards = async (title, overview, genres = []) => {
+const generateAwards = async (title, overview, genres = [], omdbAwardsSummary = null) => {
   const model = genAI.getGenerativeModel({
     model: "models/gemini-2.0-flash",
     safetySettings: [
@@ -451,6 +451,12 @@ const generateAwards = async (title, overview, genres = []) => {
     Generate information about major awards WON by the movie/TV show "${title}".
     Movie/TV overview: "${overview}"
     Genres: ${genreNames}
+    ${omdbAwardsSummary ? `REAL AWARDS DATA FROM IMDb: "${omdbAwardsSummary}"` : ''}
+    
+    ${omdbAwardsSummary ? 
+      'IMPORTANT: Use the REAL AWARDS DATA above as your foundation. Generate detailed award information that matches and expands upon this verified data. Do not contradict the real awards summary.' :
+      'IMPORTANT: Only include awards that were ACTUALLY WON, not nominations. Focus on major awards like Oscars, Golden Globes, Emmys (for TV), BAFTAs, Cannes, etc.'
+    }
     
     Return ONLY a JSON object with this exact structure, no additional text:
     {
@@ -475,12 +481,10 @@ const generateAwards = async (title, overview, genres = []) => {
       "summary": "Brief summary of the movie's major award wins"
     }
     
-    IMPORTANT: Only include awards that were ACTUALLY WON, not nominations.
-    Focus on major awards like Oscars, Golden Globes, Emmys (for TV), BAFTAs, Cannes, etc.
-    If no major awards were won, return an empty awards array and appropriate summary.
-    Make sure the information is accurate based on real knowledge.
-    Generate unique IDs for each award entry.
-    Return only the JSON object, nothing else.
+    ${omdbAwardsSummary ? 
+      'Generate unique IDs for each award entry. Return only the JSON object, nothing else.' :
+      'If no major awards were won, return an empty awards array and appropriate summary. Make sure the information is accurate based on real knowledge. Generate unique IDs for each award entry. Return only the JSON object, nothing else.'
+    }
   `;
 
   try {
