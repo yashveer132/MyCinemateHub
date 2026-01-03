@@ -1,0 +1,438 @@
+.watchProvidersPage {
+  min-height: 100vh;
+  padding: 20px 0;
+
+  @media only screen and (max-width: 768px) {
+    padding: 15px 0;
+  }
+
+  @media only screen and (max-width: 480px) {
+    padding: 10px 0;
+  }
+
+  .pageHeader {
+    text-align: center;
+    margin-bottom: 40px;
+    margin-top: 80px; // Reduced from 100px to bring it up
+
+    h1 {
+      font-size: 36px;
+      color: white;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+
+  .filtersSection {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+
+    @media only screen and (max-width: 1024px) {
+      gap: 30px;
+    }
+
+    @media only screen and (max-width: 768px) {
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .filterGroup {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+
+      label {
+        font-size: 16px;
+        color: white;
+        font-weight: 500;
+      }
+
+      .regionSelect {
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        font-size: 14px;
+        min-width: 200px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+          border-color: rgba(255, 107, 107, 0.5);
+        }
+
+        &:focus {
+          outline: none;
+          border-color: #ff6b6b;
+          box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+        }
+
+        option {
+          background: #000;
+          color: white;
+        }
+      }
+
+      .searchInput {
+        padding: 10px 15px;
+        border-radius: 25px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        font-size: 14px;
+        min-width: 200px;
+        transition: all 0.3s ease;
+
+        &::placeholder {
+          color: rgba(255, 255, 255, 0.5);
+        }
+
+        &:focus {
+          outline: none;
+          border-color: #ff6b6b;
+          box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+        }
+      }
+    }
+  }
+
+  .providersSection {
+    margin-bottom: 40px;
+
+    .centeredTitle {
+      font-size: 24px;
+      color: white;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .providersGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+
+      .providerCard {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 107, 107, 0.5);
+          transform: translateY(-5px);
+        }
+
+        &.selected {
+          background: rgba(255, 107, 107, 0.2);
+          border-color: #ff6b6b;
+          box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .providerLogo {
+          width: 80px;
+          height: 80px;
+          object-fit: contain;
+          border-radius: 8px;
+          margin-bottom: 10px;
+        }
+
+        .providerName {
+          font-size: 14px;
+          color: white;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  .contentSection {
+    h2 {
+      font-size: 28px;
+      color: white;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .noContent {
+      text-align: center;
+      padding: 40px;
+
+      p {
+        font-size: 18px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      margin-top: 30px;
+      color: #ffffff;
+
+      .pageBtn {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover:not(:disabled) {
+          background: linear-gradient(135deg, #5a6fd8, #6a4195);
+          transform: translateY(-2px);
+        }
+
+        &:disabled {
+          background: rgba(255, 255, 255, 0.2);
+          color: rgba(255, 255, 255, 0.5);
+          cursor: not-allowed;
+          transform: none;
+        }
+      }
+
+      .pageInfo {
+        color: #ffffff !important;
+        font-size: 16px;
+        font-weight: 500;
+      }
+    }
+    .pageHeader {
+      margin-top: 60px; // Reduced from 80px for mobile
+      h1 {
+        font-size: 28px;
+      }
+      p {
+        font-size: 16px;
+      }
+    }
+
+    .filtersSection {
+      gap: 20px;
+
+      .filterGroup {
+        .regionSelect {
+          min-width: 150px;
+        }
+
+        .searchInput {
+          min-width: 150px;
+        }
+      }
+    }
+
+    @media only screen and (max-width: 1024px) and (min-width: 769px) {
+      .filtersSection {
+        gap: 30px;
+
+        .filterGroup {
+          .regionSelect {
+            min-width: 180px;
+          }
+
+          .searchInput {
+            min-width: 180px;
+          }
+        }
+      }
+
+      .providersGrid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 18px;
+
+        .providerCard {
+          padding: 18px;
+
+          .providerLogo {
+            width: 70px;
+            height: 70px;
+          }
+
+          .providerName {
+            font-size: 13px;
+          }
+        }
+      }
+    }
+    padding: 15px 0;
+
+    .pageHeader {
+      margin-top: 60px;
+      margin-bottom: 30px;
+
+      h1 {
+        font-size: 28px;
+      }
+      p {
+        font-size: 16px;
+      }
+    }
+
+    .filtersSection {
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 30px;
+
+      .filterGroup {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        width: 100%;
+
+        label {
+          font-size: 14px;
+          font-weight: 600;
+        }
+
+        .regionSelect {
+          width: 100%;
+          min-width: auto;
+          padding: 12px;
+          font-size: 16px; // Prevent zoom on iOS
+        }
+
+        .searchInput {
+          width: 100%;
+          min-width: auto;
+          padding: 12px 15px;
+          font-size: 16px; // Prevent zoom on iOS
+        }
+      }
+    }
+
+    .providersSection {
+      margin-bottom: 30px;
+
+      .centeredTitle {
+        font-size: 20px;
+        margin-bottom: 15px;
+      }
+
+      .providersGrid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 15px;
+
+        .providerCard {
+          padding: 15px;
+
+          .providerLogo {
+            width: 60px;
+            height: 60px;
+          }
+
+          .providerName {
+            font-size: 12px;
+          }
+        }
+      }
+    }
+
+    .contentSection {
+      h2 {
+        font-size: 24px;
+        margin-bottom: 15px;
+      }
+
+      .noContent {
+        padding: 30px 20px;
+
+        p {
+          font-size: 16px;
+        }
+      }
+    }
+
+    .pagination {
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 20px;
+
+      .pageBtn {
+        width: 100%;
+        max-width: 250px;
+        padding: 12px;
+        font-size: 16px;
+      }
+
+      .pageInfo {
+        font-size: 14px;
+        order: -1; // Show page info at top on mobile
+      }
+    }
+  }
+
+  @media only screen and (max-width: 480px) {
+    .pageHeader {
+      margin-top: 40px;
+
+      h1 {
+        font-size: 24px;
+      }
+      p {
+        font-size: 14px;
+      }
+    }
+
+    .filtersSection {
+      .filterGroup {
+        label {
+          font-size: 13px;
+        }
+      }
+    }
+
+    .providersSection {
+      .centeredTitle {
+        font-size: 18px;
+      }
+
+      .providersGrid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 12px;
+
+        .providerCard {
+          padding: 12px;
+
+          .providerLogo {
+            width: 50px;
+            height: 50px;
+          }
+
+          .providerName {
+            font-size: 11px;
+          }
+        }
+      }
+    }
+
+    .contentSection {
+      h2 {
+        font-size: 20px;
+      }
+    }
+  }
+}

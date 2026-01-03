@@ -21,6 +21,7 @@ import TopShows from "./pages/topShows/TopShows";
 import Profile from "./pages/profile/Profile";
 import MovieComparison from "./pages/movieComparison/MovieComparison";
 import Collection from "./pages/collection/Collection";
+import WatchProvidersPage from "./pages/watchProviders/WatchProvidersPage";
 function App() {
   const dispatch = useDispatch();
   const { url } = useSelector((state) => state.home);
@@ -77,6 +78,7 @@ function App() {
         <Route path="/top-shows" element={<TopShows />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/compare" element={<MovieComparison />} />
+        <Route path="/watch-providers" element={<WatchProvidersPage />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
       <Footer />

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import { Link } from "react-router-dom";
 import ContentWrapper from "../../../components/contentWrapper/ContentWrapper";
 import SwitchTabs from "../../../components/switchTabs/SwitchTabs";
 import Carousel from "../../../components/carousel/Carousel";
@@ -120,7 +121,12 @@ const WatchProviders = () => {
   return (
     <div className="carouselSection watchProvidersSection">
       <ContentWrapper>
-        <span className="carouselTitle">What's Streaming</span>
+        <div className="titleWithButton">
+          <span className="carouselTitle">What's Streaming</span>
+          <Link to="/watch-providers" className="browseAllBtn">
+            Browse All Providers
+          </Link>
+        </div>
         <SwitchTabs data={tabData} onTabChange={onTabChange} />
       </ContentWrapper>
       <Carousel data={data} loading={loading} endpoint="movie" />
