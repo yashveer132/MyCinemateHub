@@ -20,7 +20,8 @@
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   animation: tooltipFadeIn 0.2s ease-out;
-  position: relative;
+  position: absolute;
+  z-index: 9999;
 
   &::before {
     content: "";

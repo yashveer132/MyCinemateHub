@@ -84,7 +84,7 @@ const DetailsBanner = ({ video, crew }) => {
                               : "0.0"
                           }
                           voteCount={data.vote_count}
-                          showTooltip={true}
+                          showTooltip={false}
                         />
                         <div className="ratingInfo">
                           <div className="ratingLabel">TMDB</div>
@@ -99,7 +99,7 @@ const DetailsBanner = ({ video, crew }) => {
                           tmdbId={id}
                           mediaType={mediaType}
                           onDataLoaded={setImdbData}
-                          showTooltip={true}
+                          showTooltip={false}
                         />
                         <div className="ratingInfo">
                           <div className="ratingLabel">IMDb</div>
@@ -116,7 +116,7 @@ const DetailsBanner = ({ video, crew }) => {
                       {imdbData?.additionalRatings && (
                         <AdditionalRatings
                           ratings={imdbData.additionalRatings}
-                          showTooltip={true}
+                          showTooltip={false}
                         />
                       )}
 

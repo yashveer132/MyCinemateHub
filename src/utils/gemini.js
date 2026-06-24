@@ -8,7 +8,7 @@ const ERROR_COOLDOWN = 60000;
 
 if (!GEMINI_API_KEY) {
   console.warn(
-    "⚠️ VITE_GEMINI_API_KEY not found - AI features will be limited"
+    "⚠️ VITE_GEMINI_API_KEY not found - AI features will be limited",
   );
   geminiAvailable = false;
 }
@@ -39,23 +39,18 @@ export const GENRE_MAP = {
   western: 37,
 };
 
-const validateModel = async (model) => {
-  try {
-    await model.generateContent("test");
-    return true;
-  } catch (error) {
-    return false;
-  }
-};
-
 const cleanJsonResponse = (text) => {
   const jsonMatch = text.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
   return jsonMatch ? jsonMatch[0] : text;
 };
 
 const correctSpelling = async (query) => {
+  if (!geminiAvailable || !genAI) {
+    return query;
+  }
+
   const model = genAI.getGenerativeModel({
-    model: "models/gemini-2.0-flash",
+    model: "models/gemini-2.5-flash",
     safetySettings: [
       {
         category: "HARM_CATEGORY_HARASSMENT",
@@ -63,15 +58,6 @@ const correctSpelling = async (query) => {
       },
     ],
   });
-
-  try {
-    const isValid = await validateModel(model);
-    if (!isValid) {
-      return query;
-    }
-  } catch (error) {
-    return query;
-  }
 
   const prompt = `Correct any spelling mistakes in this movie/TV search query: "${query}". 
   If there are no spelling mistakes, return the original query exactly as is.
@@ -83,6 +69,14 @@ const correctSpelling = async (query) => {
     const corrected = response.text().trim();
     return corrected || query;
   } catch (error) {
+    console.error("AI Spelling correction error:", error);
+    if (
+      error?.message?.includes("API key") ||
+      error?.status === 403 ||
+      error?.status === 400
+    ) {
+      geminiAvailable = false;
+    }
     return query;
   }
 };
@@ -103,8 +97,8 @@ const convertToTMDBParams = (geminiResponse) => {
       geminiResponse.sort === "rating"
         ? "vote_average.desc"
         : geminiResponse.sort === "date"
-        ? "primary_release_date.desc"
-        : "popularity.desc",
+          ? "primary_release_date.desc"
+          : "popularity.desc",
   };
 };
 
@@ -119,7 +113,7 @@ const extractSearchParams = async (query) => {
   }
 
   const model = genAI.getGenerativeModel({
-    model: "models/gemini-2.0-flash",
+    model: "models/gemini-2.5-flash",
     safetySettings: [
       {
         category: "HARM_CATEGORY_HARASSMENT",
@@ -127,21 +121,6 @@ const extractSearchParams = async (query) => {
       },
     ],
   });
-
-  try {
-    const isValid = await validateModel(model);
-    if (!isValid) {
-      lastErrorTime = now;
-      geminiAvailable = false;
-      throw new Error(
-        "Model validation failed - Check if you're using Gemini 2.0 Flash API key"
-      );
-    }
-  } catch (error) {
-    lastErrorTime = now;
-    geminiAvailable = false;
-    throw error;
-  }
 
   const prompt = `
     Analyze this movie/TV search query: "${query}"
@@ -231,6 +210,13 @@ const extractSearchParams = async (query) => {
   } catch (error) {
     lastErrorTime = now;
     console.error("AI extraction error:", error);
+    if (
+      error?.message?.includes("API key") ||
+      error?.status === 403 ||
+      error?.status === 400
+    ) {
+      geminiAvailable = false;
+    }
 
     return {
       aiParams: {
@@ -253,8 +239,12 @@ const extractSearchParams = async (query) => {
 };
 
 const generateTrivia = async (movieTitle, movieOverview) => {
+  if (!geminiAvailable || !genAI) {
+    return null;
+  }
+
   const model = genAI.getGenerativeModel({
-    model: "models/gemini-2.0-flash",
+    model: "models/gemini-2.5-flash",
     safetySettings: [
       {
         category: "HARM_CATEGORY_HARASSMENT",
@@ -262,17 +252,6 @@ const generateTrivia = async (movieTitle, movieOverview) => {
       },
     ],
   });
-
-  try {
-    const isValid = await validateModel(model);
-    if (!isValid) {
-      throw new Error(
-        "Model validation failed - Check if you're using Gemini 2.0 Flash API key"
-      );
-    }
-  } catch (error) {
-    return null;
-  }
 
   const prompt = `
     Generate 5-8 interesting trivia facts, fun facts, and easter eggs about the movie/TV show "${movieTitle}".
@@ -345,6 +324,13 @@ const generateTrivia = async (movieTitle, movieOverview) => {
     };
   } catch (error) {
     console.error("Error generating trivia:", error);
+    if (
+      error?.message?.includes("API key") ||
+      error?.status === 403 ||
+      error?.status === 400
+    ) {
+      geminiAvailable = false;
+    }
     return null;
   }
 };
@@ -352,21 +338,19 @@ const generateTrivia = async (movieTitle, movieOverview) => {
 const generateMemorableQuotes = async (
   movieTitle,
   movieOverview,
-  genres = []
+  genres = [],
 ) => {
+  if (!geminiAvailable || !genAI) {
+    return null;
+  }
+
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "models/gemini-2.5-flash",
   });
 
-  try {
-    const isValid = await validateModel(model);
-    if (!isValid) {
-      throw new Error("Model validation failed");
-    }
+  const genreNames = genres.map((g) => g.name).join(", ");
 
-    const genreNames = genres.map((g) => g.name).join(", ");
-
-    const prompt = `
+  const prompt = `
 Generate 5-8 memorable and iconic quotes from the movie "${movieTitle}".
 Consider the movie's overview: "${movieOverview}"
 Genres: ${genreNames}
@@ -391,6 +375,7 @@ Ensure quotes are authentic and actually memorable from the movie. If you're not
 
 Response must be valid JSON array only.`;
 
+  try {
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text().trim();
@@ -419,13 +404,29 @@ Response must be valid JSON array only.`;
     };
   } catch (error) {
     console.error("Error generating memorable quotes:", error);
+    if (
+      error?.message?.includes("API key") ||
+      error?.status === 403 ||
+      error?.status === 400
+    ) {
+      geminiAvailable = false;
+    }
     return null;
   }
 };
 
-const generateAwards = async (title, overview, genres = [], omdbAwardsSummary = null) => {
+const generateAwards = async (
+  title,
+  overview,
+  genres = [],
+  omdbAwardsSummary = null,
+) => {
+  if (!geminiAvailable || !genAI) {
+    return null;
+  }
+
   const model = genAI.getGenerativeModel({
-    model: "models/gemini-2.0-flash",
+    model: "models/gemini-2.5-flash",
     safetySettings: [
       {
         category: "HARM_CATEGORY_HARASSMENT",
@@ -434,28 +435,22 @@ const generateAwards = async (title, overview, genres = [], omdbAwardsSummary = 
     ],
   });
 
-  try {
-    const isValid = await validateModel(model);
-    if (!isValid) {
-      throw new Error(
-        "Model validation failed - Check if you're using Gemini 2.0 Flash API key"
-      );
-    }
-  } catch (error) {
-    return null;
-  }
-
   const genreNames = genres.map((g) => g.name).join(", ");
 
   const prompt = `
     Generate information about major awards WON by the movie/TV show "${title}".
     Movie/TV overview: "${overview}"
     Genres: ${genreNames}
-    ${omdbAwardsSummary ? `REAL AWARDS DATA FROM IMDb: "${omdbAwardsSummary}"` : ''}
+    ${
+      omdbAwardsSummary
+        ? `REAL AWARDS DATA FROM IMDb: "${omdbAwardsSummary}"`
+        : ""
+    }
     
-    ${omdbAwardsSummary ? 
-      'IMPORTANT: Use the REAL AWARDS DATA above as your foundation. Generate detailed award information that matches and expands upon this verified data. Do not contradict the real awards summary.' :
-      'IMPORTANT: Only include awards that were ACTUALLY WON, not nominations. Focus on major awards like Oscars, Golden Globes, Emmys (for TV), BAFTAs, Cannes, etc.'
+    ${
+      omdbAwardsSummary
+        ? "IMPORTANT: Use the REAL AWARDS DATA above as your foundation. Generate detailed award information that matches and expands upon this verified data. Do not contradict the real awards summary."
+        : "IMPORTANT: Research and provide ACCURATE information about awards ACTUALLY WON by this movie/TV show. Only include verified wins from major awards like Oscars, Golden Globes, Emmys (for TV), BAFTAs, Cannes, etc. Do not invent awards or nominations."
     }
     
     Return ONLY a JSON object with this exact structure, no additional text:
@@ -481,9 +476,10 @@ const generateAwards = async (title, overview, genres = [], omdbAwardsSummary = 
       "summary": "Brief summary of the movie's major award wins"
     }
     
-    ${omdbAwardsSummary ? 
-      'Generate unique IDs for each award entry. Return only the JSON object, nothing else.' :
-      'If no major awards were won, return an empty awards array and appropriate summary. Make sure the information is accurate based on real knowledge. Generate unique IDs for each award entry. Return only the JSON object, nothing else.'
+    ${
+      omdbAwardsSummary
+        ? "Generate unique IDs for each award entry. Return only the JSON object, nothing else."
+        : "If no major awards were won, return an empty awards array and appropriate summary. Make sure the information is accurate based on real knowledge. Generate unique IDs for each award entry. Return only the JSON object, nothing else."
     }
   `;
 
@@ -518,224 +514,24 @@ const generateAwards = async (title, overview, genres = [], omdbAwardsSummary = 
     };
   } catch (error) {
     console.error("Error generating awards:", error);
-    return null;
-  }
-};
-
-const generateAIReview = async (
-  title,
-  overview,
-  tmdbReviews = [],
-  redditPosts = []
-) => {
-  const model = genAI.getGenerativeModel({
-    model: "models/gemini-2.0-flash",
-    safetySettings: [
-      {
-        category: "HARM_CATEGORY_HARASSMENT",
-        threshold: "BLOCK_NONE",
-      },
-    ],
-  });
-
-  try {
-    const isValid = await validateModel(model);
-    if (!isValid) {
-      throw new Error(
-        "Model validation failed - Check if you're using Gemini 2.0 Flash API key"
-      );
+    if (
+      error?.message?.includes("API key") ||
+      error?.status === 403 ||
+      error?.status === 400
+    ) {
+      geminiAvailable = false;
     }
-  } catch (error) {
-    return null;
-  }
-
-  const tmdbSnippets = (tmdbReviews || []).slice(0, 4).map((r) => ({
-    author: r?.author,
-    rating: r?.author_details?.rating ?? null,
-    content: (r?.content || "").slice(0, 500),
-  }));
-
-  const redditSnippets = (redditPosts || []).slice(0, 6).map((p) => ({
-    title: p?.title,
-    score: p?.score,
-    comments: p?.num_comments,
-    text: (p?.selftext || "").slice(0, 300),
-    subreddit: p?.subreddit,
-    type: p?.reviewType,
-  }));
-
-  const prompt = `
-You are a seasoned film/TV critic. Write a precise, decision-focused, and ACCURATE review for the title "${title}" using ONLY the inputs below. Do NOT invent facts (no unverified cast names, awards, box office, or plot specifics beyond the overview). If something isn't supported by inputs, omit it. Avoid spoilers.
-
-Inputs:
-- Official overview: ${overview ? JSON.stringify(overview) : ""}
-- Up to ${tmdbSnippets.length} TMDB snippets: ${JSON.stringify(tmdbSnippets)}
-- Up to ${redditSnippets.length} Reddit snippets: ${JSON.stringify(
-    redditSnippets
-  )}
-
-Guidelines:
-- Base conclusions strictly on evident patterns/themes across inputs.
-- If reception is mixed or insufficient, reflect uncertainty and lower confidence.
-- Keep it actionable so a user can decide quickly.
-
-Return ONLY a JSON object with this exact schema:
-{
-  "headline": string,
-  "tldr": string,                     // one-line takeaway (max 20 words)
-  "summary": string,                  // 3-5 sentences, no spoilers
-  "highlights": string[],             // strengths
-  "lowlights": string[],              // cons/considerations
-  "verdict": {                        // watch decision
-    "label": "Watch" | "Skip" | "Mixed",
-    "reason": string                 // concise rationale
-  },
-  "score": number,                    // 1-10 integer
-  "aspects": {                        // 1-10 integers; omit if unknown
-    "story": number,
-    "direction": number,
-    "acting": number,
-    "visuals": number,
-    "music": number,
-    "pacing": number,
-    "writing": number,
-    "rewatchValue": number,
-    "originality": number
-  },
-  "bestFor": string[],                // who will likely enjoy it
-  "avoidIf": string[],                // who should pass
-  "contentAdvisories": {              // severity from inputs only; use "unknown" if unclear
-    "violence": "none"|"low"|"moderate"|"high"|"unknown",
-    "gore": "none"|"low"|"moderate"|"high"|"unknown",
-    "language": "none"|"low"|"moderate"|"high"|"unknown",
-    "nudity": "none"|"low"|"moderate"|"high"|"unknown",
-    "matureThemes": "none"|"low"|"moderate"|"high"|"unknown",
-    "frighteningScenes": "none"|"low"|"moderate"|"high"|"unknown"
-  },
-  "comparableTitles": string[],       // only if clearly implied by inputs; else []
-  "confidence": "low"|"medium"|"high",
-  "sourcesUsed": { "tmdbCount": number, "redditCount": number }
-}
-
-Strict rules:
-- Do NOT add properties not listed.
-- If unsure about any field, choose conservative values or "unknown"/empty lists.
-- Output must be valid JSON only.`;
-
-  try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text().trim();
-    const cleaned = cleanJsonResponse(text);
-    const parsed = JSON.parse(cleaned);
-
-    if (!parsed || typeof parsed !== "object") {
-      throw new Error("Invalid AI review structure");
-    }
-
-    const score = Math.max(1, Math.min(10, Number(parsed.score) || 0));
-    const highlights = Array.isArray(parsed.highlights)
-      ? parsed.highlights
-      : [];
-    const lowlights = Array.isArray(parsed.lowlights) ? parsed.lowlights : [];
-
-    let verdictLabel = "Mixed";
-    let verdictText = "";
-    if (parsed.verdict && typeof parsed.verdict === "object") {
-      verdictLabel = ["Watch", "Skip", "Mixed"].includes(parsed.verdict.label)
-        ? parsed.verdict.label
-        : "Mixed";
-      verdictText = parsed.verdict.reason || "";
-    } else if (typeof parsed.verdict === "string") {
-      verdictText = parsed.verdict;
-      const v = parsed.verdict.toLowerCase();
-      verdictLabel = v.includes("watch")
-        ? "Watch"
-        : v.includes("skip")
-        ? "Skip"
-        : "Mixed";
-    }
-
-    const defaultAspects = {
-      story: null,
-      direction: null,
-      acting: null,
-      visuals: null,
-      music: null,
-      pacing: null,
-      writing: null,
-      rewatchValue: null,
-      originality: null,
-    };
-    const rawAspects =
-      parsed.aspects && typeof parsed.aspects === "object"
-        ? parsed.aspects
-        : {};
-    const aspects = Object.keys(defaultAspects).reduce((acc, key) => {
-      const val = Number(rawAspects[key]);
-      acc[key] = Number.isFinite(val)
-        ? Math.max(1, Math.min(10, Math.round(val)))
-        : null;
-      return acc;
-    }, {});
-
-    const severities = new Set(["none", "low", "moderate", "high", "unknown"]);
-    const defaultAdvisories = {
-      violence: "unknown",
-      gore: "unknown",
-      language: "unknown",
-      nudity: "unknown",
-      matureThemes: "unknown",
-      frighteningScenes: "unknown",
-    };
-    const rawAdvisories =
-      parsed.contentAdvisories && typeof parsed.contentAdvisories === "object"
-        ? parsed.contentAdvisories
-        : {};
-    const contentAdvisories = Object.keys(defaultAdvisories).reduce(
-      (acc, key) => {
-        const val = String(rawAdvisories[key] ?? "unknown").toLowerCase();
-        acc[key] = severities.has(val) ? val : "unknown";
-        return acc;
-      },
-      {}
-    );
-
-    const bestFor = Array.isArray(parsed.bestFor) ? parsed.bestFor : [];
-    const avoidIf = Array.isArray(parsed.avoidIf) ? parsed.avoidIf : [];
-    const comparableTitles = Array.isArray(parsed.comparableTitles)
-      ? parsed.comparableTitles
-      : [];
-
-    return {
-      headline: parsed.headline || `${title} — Review`,
-      tldr: parsed.tldr || "",
-      summary: parsed.summary || "",
-      highlights,
-      lowlights,
-      verdict: verdictText,
-      verdictLabel,
-      score,
-      aspects,
-      bestFor,
-      avoidIf,
-      contentAdvisories,
-      comparableTitles,
-      confidence: parsed.confidence || "medium",
-      sourcesUsed: {
-        tmdbCount: parsed.sourcesUsed?.tmdbCount ?? tmdbSnippets.length,
-        redditCount: parsed.sourcesUsed?.redditCount ?? redditSnippets.length,
-      },
-    };
-  } catch (error) {
-    console.error("Error generating AI review:", error);
     return null;
   }
 };
 
 const generateActorTimeline = async (actorName, biography, credits) => {
+  if (!geminiAvailable || !genAI) {
+    return null;
+  }
+
   const model = genAI.getGenerativeModel({
-    model: "models/gemini-2.0-flash",
+    model: "models/gemini-2.5-flash",
     safetySettings: [
       {
         category: "HARM_CATEGORY_HARASSMENT",
@@ -743,17 +539,6 @@ const generateActorTimeline = async (actorName, biography, credits) => {
       },
     ],
   });
-
-  try {
-    const isValid = await validateModel(model);
-    if (!isValid) {
-      throw new Error(
-        "Model validation failed - Check if you're using Gemini 2.0 Flash API key"
-      );
-    }
-  } catch (error) {
-    return null;
-  }
 
   const movies = (credits?.cast || [])
     .filter((item) => item.media_type === "movie")
@@ -860,34 +645,28 @@ Return only the JSON array, nothing else.
     };
   } catch (error) {
     console.error("Error generating actor timeline:", error);
+    if (
+      error?.message?.includes("API key") ||
+      error?.status === 403 ||
+      error?.status === 400
+    ) {
+      geminiAvailable = false;
+    }
     return null;
   }
 };
 
-export {
-  extractSearchParams,
-  correctSpelling,
-  generateTrivia,
-  generateMemorableQuotes,
-  generateAwards,
-  generateAIReview,
-  generateActorTimeline,
-};
+const generateUserInsights = async (summary) => {
+  if (!geminiAvailable || !genAI) {
+    return null;
+  }
 
-export const generateUserInsights = async (summary) => {
   const model = genAI.getGenerativeModel({
-    model: "models/gemini-2.0-flash",
+    model: "models/gemini-2.5-flash",
     safetySettings: [
       { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
     ],
   });
-
-  try {
-    const isValid = await validateModel(model);
-    if (!isValid) throw new Error("Model validation failed");
-  } catch (e) {
-    return null;
-  }
 
   const genreNames = (summary.topGenresById || [])
     .map((id) => summary.genreIdToName?.[id] || String(id))
@@ -902,7 +681,7 @@ ${JSON.stringify({
   counts: summary.counts,
   topGenresById: summary.topGenresById,
   topGenresByName: (summary.topGenresById || []).map(
-    (id) => summary.genreIdToName?.[id] || id
+    (id) => summary.genreIdToName?.[id] || id,
   ),
   sampleTitles: summary.titlesSample?.slice(0, 15) || [],
 })}
@@ -957,6 +736,23 @@ Return ONLY valid JSON with this exact schema:
     return insights;
   } catch (error) {
     console.error("Error generating user insights:", error);
+    if (
+      error?.message?.includes("API key") ||
+      error?.status === 403 ||
+      error?.status === 400
+    ) {
+      geminiAvailable = false;
+    }
     return null;
   }
+};
+
+export {
+  extractSearchParams,
+  correctSpelling,
+  generateTrivia,
+  generateMemorableQuotes,
+  generateAwards,
+  generateActorTimeline,
+  generateUserInsights,
 };

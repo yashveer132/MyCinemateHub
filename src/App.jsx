@@ -20,6 +20,7 @@ import TopMovies from "./pages/topMovies/TopMovies";
 import TopShows from "./pages/topShows/TopShows";
 import Profile from "./pages/profile/Profile";
 import MovieComparison from "./pages/movieComparison/MovieComparison";
+import SeriesComparison from "./pages/seriesComparison/SeriesComparison";
 import Collection from "./pages/collection/Collection";
 import WatchProvidersPage from "./pages/watchProviders/WatchProvidersPage";
 function App() {
@@ -34,9 +35,9 @@ function App() {
   const fetchApiConfig = () => {
     fetchDataFromApi("/configuration").then((res) => {
       const url = {
-        backdrop: res.images.secure_base_url + "original",
-        poster: res.images.secure_base_url + "original",
-        profile: res.images.secure_base_url + "original",
+        backdrop: res.images.secure_base_url + "w1280",
+        poster: res.images.secure_base_url + "w500",
+        profile: res.images.secure_base_url + "w185",
       };
       dispatch(getApiConfiguration(url));
     });
@@ -50,8 +51,12 @@ function App() {
       promises.push(fetchDataFromApi(`/genre/${url}/list`));
     });
     const data = await Promise.all(promises);
-    data.map(({ genres }) => {
-      return genres.map((item) => (allGenres[item.id] = item));
+    data.forEach((res) => {
+      if (res && res.genres) {
+        res.genres.forEach((item) => {
+          allGenres[item.id] = item;
+        });
+      }
     });
     dispatch(getGenres(allGenres));
   };
@@ -78,6 +83,7 @@ function App() {
         <Route path="/top-shows" element={<TopShows />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/compare" element={<MovieComparison />} />
+        <Route path="/series-comparison" element={<SeriesComparison />} />
         <Route path="/watch-providers" element={<WatchProvidersPage />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>

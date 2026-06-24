@@ -1,71 +1,186 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { generateActorTimeline } from "../../utils/gemini";
 import ContentWrapper from "../contentWrapper/ContentWrapper";
 import "./style.scss";
 
-const CACHE_KEY = "cinemate_actor_timeline_cache_v1";
+const generateDeterministicTimeline = (actorName, credits) => {
+  if (!credits) return { milestones: [] };
+
+  const cast = credits.cast || [];
+  const crew = credits.crew || [];
+
+  const allItems = [];
+  const seenIds = new Set();
+
+  const addItems = (list, roleType) => {
+    list.forEach((item) => {
+      const id = `${item.media_type || "movie"}_${item.id}`;
+      if (seenIds.has(id)) return;
+      seenIds.add(id);
+
+      const dateStr = item.release_date || item.first_air_date;
+      if (!dateStr) return;
+
+      const year = parseInt(dateStr.split("-")[0]);
+      if (isNaN(year)) return;
+
+      allItems.push({
+        id: item.id,
+        title: item.title || item.name || "Untitled",
+        mediaType: item.media_type || "movie",
+        year: year,
+        rating: item.vote_average || 0,
+        votes: item.vote_count || 0,
+        popularity: item.popularity || 0,
+        role:
+          roleType === "cast"
+            ? item.character
+              ? `as ${item.character}`
+              : "Actor"
+            : item.job || "Crew",
+        link: `/${item.media_type || "movie"}/${item.id}`,
+      });
+    });
+  };
+
+  addItems(cast, "cast");
+  addItems(crew, "crew");
+
+  if (allItems.length === 0) return { milestones: [] };
+
+  allItems.sort((a, b) => a.year - b.year);
+
+  const milestones = [];
+
+  const debut = allItems[0];
+  milestones.push({
+    year: debut.year.toString(),
+    title: `Career Debut: ${debut.title}`,
+    description: `Marked the official entry of ${actorName} into the industry, working ${debut.role}.`,
+    type: "milestone",
+    link: debut.link,
+  });
+
+  let peakPopularityItem = null;
+  allItems.forEach((item) => {
+    if (item.id === debut.id && item.mediaType === debut.mediaType) return;
+    if (
+      !peakPopularityItem ||
+      item.popularity > peakPopularityItem.popularity
+    ) {
+      peakPopularityItem = item;
+    }
+  });
+
+  let criticalAcclaimItem = null;
+  allItems.forEach((item) => {
+    if (item.id === debut.id && item.mediaType === debut.mediaType) return;
+    if (
+      peakPopularityItem &&
+      item.id === peakPopularityItem.id &&
+      item.mediaType === peakPopularityItem.mediaType
+    )
+      return;
+    if (item.votes > 100) {
+      if (!criticalAcclaimItem || item.rating > criticalAcclaimItem.rating) {
+        criticalAcclaimItem = item;
+      }
+    }
+  });
+
+  if (!criticalAcclaimItem) {
+    allItems.forEach((item) => {
+      if (item.id === debut.id && item.mediaType === debut.mediaType) return;
+      if (
+        peakPopularityItem &&
+        item.id === peakPopularityItem.id &&
+        item.mediaType === peakPopularityItem.mediaType
+      )
+        return;
+      if (!criticalAcclaimItem || item.rating > criticalAcclaimItem.rating) {
+        criticalAcclaimItem = item;
+      }
+    });
+  }
+
+  let transitionItem = null;
+  if (crew.length > 0) {
+    const sortedCrew = [...allItems]
+      .filter((item) => crew.some((c) => c.id === item.id))
+      .sort((a, b) => a.year - b.year);
+
+    if (sortedCrew.length > 0 && sortedCrew[0].year > debut.year) {
+      transitionItem = sortedCrew[0];
+    }
+  }
+
+  if (peakPopularityItem) {
+    milestones.push({
+      year: peakPopularityItem.year.toString(),
+      title: `Global Blockbuster: ${peakPopularityItem.title}`,
+      description: `Reached a major commercial peak, starring ${peakPopularityItem.role}. The project gained immense global popularity.`,
+      type: "peak",
+      link: peakPopularityItem.link,
+    });
+  }
+
+  if (criticalAcclaimItem && criticalAcclaimItem.rating > 6.5) {
+    milestones.push({
+      year: criticalAcclaimItem.year.toString(),
+      title: `Critical Acclaim: ${criticalAcclaimItem.title}`,
+      description: `Received stellar reviews from critics and audiences alike, holding an outstanding user rating of ${criticalAcclaimItem.rating.toFixed(1)}/10.`,
+      type: "achievement",
+      link: criticalAcclaimItem.link,
+    });
+  }
+
+  if (transitionItem) {
+    milestones.push({
+      year: transitionItem.year.toString(),
+      title: `Behind-the-Scenes Debut: ${transitionItem.title}`,
+      description: `Expanded their creative footprint, taking on a key behind-the-scenes role as a member of the crew (${transitionItem.role}).`,
+      type: "milestone",
+      link: transitionItem.link,
+    });
+  }
+
+  const currentYear = new Date().getFullYear();
+  const pastOrPresentItems = allItems.filter(
+    (item) => item.year <= currentYear,
+  );
+  if (pastOrPresentItems.length > 0) {
+    const recent = pastOrPresentItems[pastOrPresentItems.length - 1];
+    const alreadyAdded = milestones.some((m) => m.link === recent.link);
+    if (!alreadyAdded) {
+      milestones.push({
+        year: recent.year.toString(),
+        title: `Recent Highlight: ${recent.title}`,
+        description: `Continues to deliver strong performances, starring ${recent.role} in this recent release.`,
+        type: "movie",
+        link: recent.link,
+      });
+    }
+  }
+
+  milestones.sort((a, b) => parseInt(a.year) - parseInt(b.year));
+
+  return { milestones };
+};
 
 const CareerTimeline = ({ actorName, biography, credits }) => {
   const [timeline, setTimeline] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
   const scrollRef = useRef(null);
 
   useEffect(() => {
     if (!actorName || !credits) return;
 
-    const fetchTimeline = async () => {
-      setLoading(true);
-      setError(null);
-
-      const cacheKey = `${actorName}_${credits.id || "unknown"}`;
-      const cache = readCache();
-      if (cache[cacheKey]) {
-        setTimeline(cache[cacheKey]);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const result = await generateActorTimeline(
-          actorName,
-          biography,
-          credits
-        );
-        if (result) {
-          setTimeline(result);
-          cache[cacheKey] = result;
-          writeCache(cache);
-        } else {
-          setError("Failed to generate timeline");
-        }
-      } catch (err) {
-        setError("Error loading timeline");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTimeline();
-  }, [actorName, biography, credits]);
-
-  const readCache = () => {
-    try {
-      const raw = localStorage.getItem(CACHE_KEY);
-      return raw ? JSON.parse(raw) : {};
-    } catch {
-      return {};
-    }
-  };
-
-  const writeCache = (obj) => {
-    try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify(obj));
-    } catch {}
-  };
+    setLoading(true);
+    const result = generateDeterministicTimeline(actorName, credits);
+    setTimeline(result);
+    setLoading(false);
+  }, [actorName, credits]);
 
   const handleItemClick = (item) => {
     if (item.link) {
@@ -126,20 +241,6 @@ const CareerTimeline = ({ actorName, biography, credits }) => {
                 </div>
               </div>
             ))}
-          </div>
-        </ContentWrapper>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="careerTimeline">
-        <ContentWrapper>
-          <div className="sectionHeading">Career Timeline</div>
-          <div className="errorMessage">
-            <span className="errorIcon">⚠️</span>
-            {error}
           </div>
         </ContentWrapper>
       </div>

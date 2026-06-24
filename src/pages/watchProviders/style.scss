@@ -13,7 +13,7 @@
   .pageHeader {
     text-align: center;
     margin-bottom: 40px;
-    margin-top: 80px; // Reduced from 100px to bring it up
+    margin-top: 80px;
 
     h1 {
       font-size: 36px;
@@ -221,7 +221,7 @@
       }
     }
     .pageHeader {
-      margin-top: 60px; // Reduced from 80px for mobile
+      margin-top: 60px;
       h1 {
         font-size: 28px;
       }
@@ -312,14 +312,14 @@
           width: 100%;
           min-width: auto;
           padding: 12px;
-          font-size: 16px; // Prevent zoom on iOS
+          font-size: 16px;
         }
 
         .searchInput {
           width: 100%;
           min-width: auto;
           padding: 12px 15px;
-          font-size: 16px; // Prevent zoom on iOS
+          font-size: 16px;
         }
       }
     }
@@ -380,7 +380,7 @@
 
       .pageInfo {
         font-size: 14px;
-        order: -1; // Show page info at top on mobile
+        order: -1;
       }
     }
   }

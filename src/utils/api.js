@@ -1,7 +1,9 @@
 import axios from "axios";
 
 const BASE_URL = "https://api.themoviedb.org/3";
-const OMDB_BASE_URL = "https://www.omdbapi.com/";
+const OMDB_BASE_URL = import.meta.env.DEV
+  ? "/api/omdb"
+  : "https://www.omdbapi.com/";
 
 const TMDB_TOKEN = import.meta.env.VITE_APP_TMDB_TOKEN;
 const OMDB_API_KEY = import.meta.env.VITE_OMDB_API_KEY;
@@ -199,7 +201,7 @@ export const getSimilarityResults = async (titles, mediaType) => {
           const filtered = recData.results.filter(
             (r) =>
               r.media_type === mediaType ||
-              (!r.media_type && mediaType === "movie")
+              (!r.media_type && mediaType === "movie"),
           );
           allResults.push(...filtered);
         }
@@ -207,7 +209,8 @@ export const getSimilarityResults = async (titles, mediaType) => {
     }
     const unique = allResults
       .filter(
-        (item, index, self) => self.findIndex((i) => i.id === item.id) === index
+        (item, index, self) =>
+          self.findIndex((i) => i.id === item.id) === index,
       )
       .slice(0, 20);
     return { results: unique, total_results: unique.length };
@@ -232,8 +235,8 @@ export const getMoviesByPerson = async (personName, mediaType, sort, role) => {
       sort === "rating"
         ? "vote_average.desc"
         : sort === "date"
-        ? "primary_release_date.desc"
-        : "popularity.desc";
+          ? "primary_release_date.desc"
+          : "popularity.desc";
     const params = {
       sort_by: sortBy,
       page: 1,
@@ -274,89 +277,6 @@ export const getTopRatedTVShows = async (page = 1) => {
   }
 };
 
-export const getAIRecommendations = async (
-  titles,
-  mediaType,
-  originalQuery
-) => {
-  try {
-    if (!Array.isArray(titles) || titles.length === 0) {
-      return null;
-    }
-
-    const allRecommendations = [];
-    const seenIds = new Set();
-
-    for (const title of titles.slice(0, 3)) {
-      const searchEndpoint =
-        mediaType === "tv" ? "/search/tv" : "/search/movie";
-      const searchData = await fetchDataFromApi(searchEndpoint, {
-        query: title,
-        page: 1,
-      });
-
-      if (searchData?.results?.length > 0) {
-        const item = searchData.results[0];
-        const itemMediaType = item.media_type || mediaType;
-        const recEndpoint =
-          itemMediaType === "tv"
-            ? `/tv/${item.id}/recommendations`
-            : `/movie/${item.id}/recommendations`;
-
-        const recData = await fetchDataFromApi(recEndpoint, { page: 1 });
-
-        if (recData?.results) {
-          recData.results.forEach((rec) => {
-            if (!seenIds.has(rec.id)) {
-              seenIds.add(rec.id);
-              allRecommendations.push({
-                ...rec,
-                media_type: itemMediaType,
-                source_title: title,
-              });
-            }
-          });
-        }
-
-        const similarEndpoint =
-          itemMediaType === "tv"
-            ? `/tv/${item.id}/similar`
-            : `/movie/${item.id}/similar`;
-        const similarData = await fetchDataFromApi(similarEndpoint, {
-          page: 1,
-        });
-
-        if (similarData?.results) {
-          similarData.results.forEach((sim) => {
-            if (!seenIds.has(sim.id)) {
-              seenIds.add(sim.id);
-              allRecommendations.push({
-                ...sim,
-                media_type: itemMediaType,
-                source_title: title,
-              });
-            }
-          });
-        }
-      }
-    }
-
-    allRecommendations.sort(
-      (a, b) => (b.popularity || 0) - (a.popularity || 0)
-    );
-
-    return {
-      results: allRecommendations.slice(0, 20),
-      total_results: allRecommendations.length,
-      ai_powered: true,
-      source_titles: titles,
-    };
-  } catch (error) {
-    console.error("AI recommendations error:", error);
-    return null;
-  }
-};
-
 export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
   try {
     const cacheKey = `${mediaType}-${tmdbId}`;
@@ -367,12 +287,12 @@ export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
     }
 
     const externalIds = await fetchDataFromApi(
-      `/${mediaType}/${tmdbId}/external_ids`
+      `/${mediaType}/${tmdbId}/external_ids`,
     );
 
     if (!externalIds?.imdb_id) {
       console.log(
-        `[IMDB] No IMDB ID found for ${mediaType} ${tmdbId}, trying title search`
+        `[IMDB] No IMDB ID found for ${mediaType} ${tmdbId}, trying title search`,
       );
 
       const movieDetails = await fetchDataFromApi(`/${mediaType}/${tmdbId}`);
@@ -430,7 +350,7 @@ export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
           console.log(
             `[IMDB] Title search failed for ${title}: ${
               fallbackResponse.data?.Error || "Unknown error"
-            }`
+            }`,
           );
         }
       }
@@ -477,7 +397,7 @@ export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
       }
     } else {
       console.log(
-        `[IMDB] OMDb API error: ${response.data?.Error || "Unknown error"}`
+        `[IMDB] OMDb API error: ${response.data?.Error || "Unknown error"}`,
       );
     }
 
@@ -492,7 +412,7 @@ export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
   } catch (error) {
     console.error(
       `[IMDB] Error fetching rating for ${mediaType} ${tmdbId}:`,
-      error.message
+      error.message,
     );
     return { rating: null, votes: null, error: error.message };
   }
@@ -501,7 +421,7 @@ export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
 export const fetchAwardsFromOMDb = async (tmdbId, mediaType = "movie") => {
   try {
     const externalIds = await fetchDataFromApi(
-      `/${mediaType}/${tmdbId}/external_ids`
+      `/${mediaType}/${tmdbId}/external_ids`,
     );
 
     let omdbData = null;
@@ -551,16 +471,28 @@ export const fetchAwardsFromOMDb = async (tmdbId, mediaType = "movie") => {
         summary: omdbData.Awards,
         rawAwards: omdbData.Awards,
         source: "omdb",
+        imdbId: externalIds?.imdb_id || omdbData.imdbID || null,
       };
       return result;
     }
 
-    return { awards: [], summary: null, source: "omdb" };
+    return {
+      awards: [],
+      summary: null,
+      source: "omdb",
+      imdbId: externalIds?.imdb_id || omdbData?.imdbID || null,
+    };
   } catch (error) {
     console.error(
       `[AWARDS] Error fetching awards for ${mediaType} ${tmdbId}:`,
-      error.message
+      error.message,
     );
-    return { awards: [], summary: null, error: error.message, source: "omdb" };
+    return {
+      awards: [],
+      summary: null,
+      error: error.message,
+      source: "omdb",
+      imdbId: null,
+    };
   }
 };

@@ -27,14 +27,14 @@ const Details = () => {
   const navigate = useNavigate();
   const { data, loading } = useFetch(`/${mediaType}/${id}/videos`);
   const { data: credits, loading: creditsLoading } = useFetch(
-    `/${mediaType}/${id}/credits`
+    `/${mediaType}/${id}/credits`,
   );
   const { data: watchProviders } = useFetch(
-    `/${mediaType}/${id}/watch/providers`
+    `/${mediaType}/${id}/watch/providers`,
   );
   const { data: reviews } = useFetch(`/${mediaType}/${id}/reviews`);
   const { data: details, loading: detailsLoading } = useFetch(
-    `/${mediaType}/${id}`
+    `/${mediaType}/${id}`,
   );
 
   return (
@@ -71,6 +71,36 @@ const Details = () => {
           </button>
         </div>
       )}
+      {mediaType === "tv" && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            margin: "20px 0",
+          }}
+        >
+          <button
+            style={{
+              padding: "12px 24px",
+              background: "var(--pink)",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontSize: "1rem",
+              fontWeight: "bold",
+              transition: "background 0.3s",
+            }}
+            onClick={() => navigate(`/series-comparison?series1=${id}`)}
+            onMouseOver={(e) =>
+              (e.target.style.background = "var(--pink-hover)")
+            }
+            onMouseOut={(e) => (e.target.style.background = "var(--pink)")}
+          >
+            Compare Series
+          </button>
+        </div>
+      )}
       <WatchProviders data={watchProviders?.results?.IN} />
       <Cast data={credits?.cast} loading={creditsLoading} />
       <ChartsSection data={details} mediaType={mediaType} />
@@ -82,17 +112,20 @@ const Details = () => {
         mediaTitle={details?.title || details?.name}
         overview={details?.overview}
       />
-      <SongsSection mediaTitle={details?.title || details?.name} />
+      <SongsSection
+        mediaTitle={details?.title || details?.name}
+        movieDetails={details}
+      />
       {mediaType === "tv" && (
         <Seasons data={details} loading={detailsLoading} />
       )}
-      <TranslationsSection mediaType={mediaType} id={id} />
-      <ProductionInsights data={details} loading={detailsLoading} />
       <AwardsSection movieDetails={details} mediaType={mediaType} />
       <TriviaSection movieDetails={details} mediaType={mediaType} />
-      {mediaType === "tv" && <ScreenedTheatricallySection id={id} />}
+      <MemorableQuotesSection movieDetails={details} mediaType={mediaType} />
+      <ProductionInsights data={details} loading={detailsLoading} />
       {mediaType === "movie" && <ReleaseDatesSection id={id} />}
-      <MemorableQuotesSection movieDetails={details} />
+      {mediaType === "tv" && <ScreenedTheatricallySection id={id} />}
+      <TranslationsSection mediaType={mediaType} id={id} />
       <Similar mediaType={mediaType} id={id} />
       <div>
         <Recommendation mediaType={mediaType} id={id} />

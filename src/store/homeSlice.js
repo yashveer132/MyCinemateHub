@@ -5,10 +5,6 @@ export const homeSlice = createSlice({
   initialState: {
     url: {},
     genres: {},
-    aiSearch: {
-      query: "",
-      results: null,
-    },
   },
   reducers: {
     getApiConfiguration: (state, action) => {
@@ -17,20 +13,9 @@ export const homeSlice = createSlice({
     getGenres: (state, action) => {
       state.genres = action.payload;
     },
-    setAiSearchQuery: (state, action) => {
-      state.aiSearch.query = action.payload;
-    },
-    setAiSearchResults: (state, action) => {
-      state.aiSearch.results = action.payload;
-    },
   },
 });
 
-export const {
-  getApiConfiguration,
-  getGenres,
-  setAiSearchQuery,
-  setAiSearchResults,
-} = homeSlice.actions;
+export const { getApiConfiguration, getGenres } = homeSlice.actions;
 
 export default homeSlice.reducer;

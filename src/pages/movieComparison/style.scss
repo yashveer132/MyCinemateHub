@@ -87,7 +87,9 @@
       border-radius: 16px;
       padding: 20px;
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
       border: 1px solid rgba(255, 255, 255, 0.05);
       min-width: 0;
       width: 100%;
@@ -677,7 +679,7 @@
             gap: 8px;
 
             .bar {
-              height: 35px;
+              height: 25px;
               border-radius: 8px;
               display: flex;
               align-items: center;
@@ -855,7 +857,9 @@
       cursor: pointer;
       font-weight: 700;
       font-size: 0.95rem;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 
       &:hover {
         transform: translateY(-2px);
@@ -935,5 +939,162 @@
     border-radius: 12px;
     max-width: 600px;
     margin: 50px auto;
+  }
+
+  .awardsComparison {
+    margin-bottom: 40px;
+
+    .awardsStats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .statCard {
+        background: var(--black2);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+
+        .statLabel {
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: white;
+          margin-bottom: 15px;
+        }
+
+        .statValues {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 5px;
+          margin-bottom: 10px;
+
+          .statValue {
+            font-size: 2rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.8);
+
+            &.winner {
+              color: var(--pink);
+              text-shadow: 0 0 10px rgba(218, 47, 104, 0.5);
+            }
+          }
+
+          .statMovie {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            word-wrap: break-word;
+            hyphens: auto;
+            line-height: 1.2;
+            max-width: 100%;
+          }
+
+          .dataSource {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 2px;
+            font-style: italic;
+          }
+        }
+
+        .vs {
+          font-size: 1.2rem;
+          font-weight: 600;
+          color: var(--pink);
+          margin: 10px 0;
+        }
+      }
+    }
+
+    .awardsDetails {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .movieAwards {
+        background: var(--black2);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+
+        h4 {
+          color: white;
+          font-size: 1.2rem;
+          margin-bottom: 15px;
+          text-align: center;
+
+          .sectionSource {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: normal;
+            font-style: italic;
+          }
+        }
+
+        .awardsList {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+
+          .awardItem {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            .awardName {
+              font-weight: 600;
+              color: white;
+              font-size: 0.9rem;
+            }
+
+            .awardResult {
+              font-size: 0.8rem;
+              font-weight: 600;
+              padding: 2px 6px;
+              border-radius: 4px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+
+              &.won {
+                background: linear-gradient(135deg, #4caf50, #45a049);
+                color: white;
+              }
+
+              &.nominated {
+                background: linear-gradient(135deg, #ff9800, #f57c00);
+                color: white;
+              }
+            }
+
+            .awardCategory {
+              font-size: 0.8rem;
+              color: rgba(255, 255, 255, 0.7);
+            }
+
+            .awardYear {
+              font-size: 0.8rem;
+              color: rgba(255, 255, 255, 0.6);
+              font-weight: 500;
+            }
+          }
+        }
+      }
+    }
   }
 }

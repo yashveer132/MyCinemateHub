@@ -110,6 +110,7 @@ const Explore = () => {
   const [language, setLanguage] = useState(null);
   const [certification, setCertification] = useState(null);
   const [runtime, setRuntime] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
   const { mediaType } = useParams();
 
   const { data: genresData } = useFetch(`/genre/${mediaType}/list`);
@@ -173,6 +174,7 @@ const Explore = () => {
     setLanguage(null);
     setCertification(null);
     setRuntime(null);
+    setShowFilters(false);
     fetchInitialData();
   }, [mediaType]);
 
@@ -298,7 +300,13 @@ const Explore = () => {
           <div className="pageTitle">
             {mediaType === "tv" ? "Explore TV Shows" : "Explore Movies"}
           </div>
-          <div className="filters">
+          <button
+            className={`filterToggleBtn ${showFilters ? "active" : ""}`}
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            {showFilters ? "Hide Filters ✕" : "Filter & Sort 🎛️"}
+          </button>
+          <div className={`filters ${showFilters ? "show" : ""}`}>
             <div className="filtersRow fiveColumns">
               <Select
                 isMulti

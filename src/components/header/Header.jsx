@@ -103,7 +103,6 @@ const Header = () => {
           <div className="headerTitle">
             <span className="brand">Cinemate</span>
             <div className="subtitle">
-              <span className="ai">AI</span>
               <span className="platform">Movie Platform</span>
             </div>
           </div>
@@ -112,7 +111,10 @@ const Header = () => {
         <ul className="menuItems">
           <li
             className={`menuItem ${location.pathname === "/" ? "active" : ""}`}
-            onClick={() => navigate("/")}
+            onClick={() => {
+              navigate("/");
+              setMobileMenu(false);
+            }}
           >
             Home
           </li>
@@ -132,16 +134,29 @@ const Header = () => {
             className={`menuItem dropdown ${
               isActive("top-rated") ? "active" : ""
             }`}
-            onMouseEnter={() => setShowTopRatedDropdown(true)}
-            onMouseLeave={() => setShowTopRatedDropdown(false)}
+            onMouseEnter={() => !mobileMenu && setShowTopRatedDropdown(true)}
+            onMouseLeave={() => !mobileMenu && setShowTopRatedDropdown(false)}
+            onClick={() =>
+              mobileMenu && setShowTopRatedDropdown(!showTopRatedDropdown)
+            }
           >
-            Top Rated
+            <div className="dropdownTrigger">
+              Top Rated
+              {mobileMenu && (
+                <span
+                  className={`dropdown-arrow ${showTopRatedDropdown ? "open" : ""}`}
+                >
+                  ▼
+                </span>
+              )}
+            </div>
             <ul
               className={`dropdown-menu ${showTopRatedDropdown ? "show" : ""}`}
             >
               <li
                 className="dropdown-item"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   navigate("/top-movies");
                   setShowTopRatedDropdown(false);
                   setMobileMenu(false);
@@ -151,7 +166,8 @@ const Header = () => {
               </li>
               <li
                 className="dropdown-item"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   navigate("/top-shows");
                   setShowTopRatedDropdown(false);
                   setMobileMenu(false);
@@ -163,19 +179,28 @@ const Header = () => {
           </li>
           <li
             className={`menuItem ${isActive("searchPeople") ? "active" : ""}`}
-            onClick={() => navigate("/searchPeople")}
+            onClick={() => {
+              navigate("/searchPeople");
+              setMobileMenu(false);
+            }}
           >
             People
           </li>
           <li
             className={`menuItem ${isActive("ai-playlists") ? "active" : ""}`}
-            onClick={() => navigate("/ai-playlists")}
+            onClick={() => {
+              navigate("/ai-playlists");
+              setMobileMenu(false);
+            }}
           >
-            AI Playlists
+            Smart Playlists
           </li>
           <li
             className={`menuItem ${isActive("profile") ? "active" : ""}`}
-            onClick={() => navigate("/profile")}
+            onClick={() => {
+              navigate("/profile");
+              setMobileMenu(false);
+            }}
           >
             My Profile
           </li>
@@ -189,46 +214,6 @@ const Header = () => {
           )}
         </div>
       </ContentWrapper>
-
-      {mobileMenu && (
-        <div className="mobileDropdown">
-          <div
-            className="mobileDropdownHeader"
-            onClick={() => setShowTopRatedDropdown(!showTopRatedDropdown)}
-          >
-            Top Rated
-            <span
-              className={`dropdown-arrow ${showTopRatedDropdown ? "open" : ""}`}
-            >
-              ▼
-            </span>
-          </div>
-          {showTopRatedDropdown && (
-            <div className="mobileDropdownMenu">
-              <div
-                className="mobileDropdownItem"
-                onClick={() => {
-                  navigate("/top-movies");
-                  setMobileMenu(false);
-                  setShowTopRatedDropdown(false);
-                }}
-              >
-                Movies
-              </div>
-              <div
-                className="mobileDropdownItem"
-                onClick={() => {
-                  navigate("/top-shows");
-                  setMobileMenu(false);
-                  setShowTopRatedDropdown(false);
-                }}
-              >
-                TV Shows
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </header>
   );
 };

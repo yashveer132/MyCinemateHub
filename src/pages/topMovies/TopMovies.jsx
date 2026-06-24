@@ -94,6 +94,7 @@ const TopMovies = () => {
   const [language, setLanguage] = useState(null);
   const [certification, setCertification] = useState(null);
   const [runtime, setRuntime] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
 
   const { data: genresData } = useFetch(`/genre/movie/list`);
 
@@ -151,6 +152,7 @@ const TopMovies = () => {
     };
     setData(null);
     setPageNum(1);
+    setShowFilters(false);
     fetchInitialData();
   }, []);
 
@@ -258,7 +260,13 @@ const TopMovies = () => {
       <ContentWrapper>
         <div className="pageHeader">
           <div className="pageTitle">🎬 Top Rated Movies</div>
-          <div className="filters">
+          <button 
+            className={`filterToggleBtn ${showFilters ? "active" : ""}`}
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            {showFilters ? "Hide Filters ✕" : "Filter & Sort 🎛️"}
+          </button>
+          <div className={`filters ${showFilters ? "show" : ""}`}>
             <div className="filtersRow fiveColumns">
               <Select
                 isMulti

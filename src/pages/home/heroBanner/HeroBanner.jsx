@@ -5,12 +5,10 @@ import "./style.scss";
 import useFetch from "../../../hooks/useFetch";
 import Img from "../../../components/lazyLoadImage/Img";
 import ContentWrapper from "../../../components/contentWrapper/ContentWrapper";
-import SmartSearch from "../../../components/aiSearch/SmartSearch";
 
 const HeroBanner = () => {
   const [background, setBackground] = useState("");
   const [query, setQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("simple");
 
   const recentIndicesRef = useRef([]);
 
@@ -82,48 +80,21 @@ const HeroBanner = () => {
 
       <ContentWrapper>
         <div className="heroBannerContent">
-          {activeTab === "simple" && (
-            <>
-              <span className="title">Welcome</span>
-              <span className="subTitle">
-                Millions of movies, TV shows and people to discover
-              </span>
-            </>
-          )}
+          <span className="title">Welcome</span>
+          <span className="subTitle">
+            Millions of movies, TV shows and people to discover
+          </span>
           <div className="searchContainer">
-            <div
-              className={`searchTabs ${activeTab === "ai" ? "aiActive" : ""}`}
-            >
-              <span
-                className={`tab ${activeTab === "simple" ? "active" : ""}`}
-                onClick={() => setActiveTab("simple")}
-              >
-                Simple Search
-              </span>
-              <span
-                className={`tab ${activeTab === "ai" ? "active" : ""}`}
-                onClick={() => setActiveTab("ai")}
-              >
-                AI Search
-              </span>
-            </div>
-
             <div className="searchContent">
-              {activeTab === "simple" ? (
-                <div className="searchInput">
-                  <input
-                    type="text"
-                    placeholder="Search for a Movie or a TV show.."
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyUp={searchQueryHandle}
-                  />
-                  <button onClick={clickMeHandle}>Search</button>
-                </div>
-              ) : (
-                <div className="aiSearchWrapper">
-                  <SmartSearch />
-                </div>
-              )}
+              <div className="searchInput">
+                <input
+                  type="text"
+                  placeholder="Search for a Movie or a TV show.."
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyUp={searchQueryHandle}
+                />
+                <button onClick={clickMeHandle}>Search</button>
+              </div>
             </div>
           </div>
         </div>

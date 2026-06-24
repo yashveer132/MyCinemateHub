@@ -21,7 +21,7 @@ const SearchResult = () => {
   const fetchInitialData = async () => {
     setLoading(true);
 
-    const corrected = await correctSpelling(query);
+    const corrected = query;
     setCorrectedQuery(corrected);
 
     fetchDataFromApi(`/search/multi?query=${corrected}&page=${pageNum}`).then(

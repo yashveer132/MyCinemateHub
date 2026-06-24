@@ -10,13 +10,13 @@ const AdditionalRatings = ({ ratings, showTooltip = false }) => {
   const parseRottenTomatoes = (value) => {
     if (!value) return null;
     const match = value.match(/(\d+)%/);
-    return match ? parseInt(match[1]) / 10 : null; // Convert to 0-10 scale
+    return match ? parseInt(match[1]) / 10 : null; 
   };
 
   const parseMetacritic = (value) => {
     if (!value) return null;
     const match = value.match(/(\d+)/);
-    return match ? parseInt(match[1]) / 10 : null; // Convert to 0-10 scale
+    return match ? parseInt(match[1]) / 10 : null; 
   };
 
   const rtRating = parseRottenTomatoes(ratings.rottenTomatoes);

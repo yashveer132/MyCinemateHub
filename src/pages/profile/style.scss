@@ -67,8 +67,13 @@
 
     .profileStats {
       display: flex;
-      gap: 30px;
+      flex-wrap: wrap;
+      gap: 10px;
       justify-content: center;
+
+      @media only screen and (min-width: 480px) {
+        gap: 20px;
+      }
 
       @include md {
         gap: 40px;
@@ -78,13 +83,17 @@
         text-align: center;
         transition: all 0.3s ease;
         cursor: pointer;
-        padding: 12px 14px;
+        padding: 10px 12px;
         border-radius: 12px;
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
         display: flex;
         flex-direction: column;
         align-items: center;
+
+        @include md {
+          padding: 12px 14px;
+        }
 
         &:hover {
           transform: translateY(-5px);
@@ -99,7 +108,7 @@
 
         .statNumber {
           display: block;
-          font-size: 24px;
+          font-size: 20px;
           font-weight: 700;
           color: #ff6b6b;
           margin-bottom: 6px;
@@ -110,7 +119,7 @@
         }
 
         .statLabel {
-          font-size: 14px;
+          font-size: 12px;
           color: rgba(255, 255, 255, 0.7);
           text-transform: uppercase;
           letter-spacing: 0.5px;
@@ -126,11 +135,13 @@
           color: rgba(255, 255, 255, 0.9);
         }
 
-        &:hover .statLabel::after {
-          content: " ↓";
-          font-size: 12px;
-          opacity: 0.7;
-          margin-left: 4px;
+        @media (hover: hover) {
+          &:hover .statLabel::after {
+            content: " ↓";
+            font-size: 12px;
+            opacity: 0.7;
+            margin-left: 4px;
+          }
         }
       }
 
@@ -139,11 +150,16 @@
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 36px;
-          height: 36px;
+          width: 32px;
+          height: 32px;
           border-radius: 50%;
           background: linear-gradient(135deg, #6b8cff, #9b6bff);
           color: #fff;
+
+          @include md {
+            width: 36px;
+            height: 36px;
+          }
         }
       }
     }
@@ -327,9 +343,14 @@
 
     .statsGrid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
       margin-bottom: 40px;
+
+      @include sm {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 20px;
+      }
 
       .statCard {
         background: rgba(255, 255, 255, 0.06);
@@ -618,12 +639,18 @@
   z-index: 1;
   .aiInsightsToolbar {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 16px;
+    gap: 12px;
     margin: 0 20px 20px 20px;
     position: relative;
     z-index: 2;
+
+    @include sm {
+      flex-direction: row;
+      gap: 16px;
+    }
 
     .generateBtn {
       background: linear-gradient(135deg, #6b8cff, #9b6bff);
@@ -771,15 +798,20 @@
 
     .diversity {
       display: flex;
-      gap: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
       justify-content: center;
       .diversityBox {
         background: rgba(255, 255, 255, 0.06);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
         padding: 14px 18px;
-        min-width: 160px;
+        min-width: 130px;
         text-align: center;
+
+        @include sm {
+          min-width: 160px;
+        }
       }
       .diversityLabel {
         color: rgba(255, 255, 255, 0.8);

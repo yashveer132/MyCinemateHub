@@ -77,6 +77,11 @@
         transform: translateY(0);
       }
 
+      @media only screen and (max-width: 767px) {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
       .actionBtn {
         width: 36px;
         height: 36px;

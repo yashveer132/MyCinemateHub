@@ -22,23 +22,72 @@
     text-align: center;
   }
 
+  .quotesCarouselWrapper {
+    position: relative;
+    width: 100%;
+    padding: 0 40px;
+
+    .arrow {
+      font-size: 36px;
+      color: #ff2a74; 
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      z-index: 20; 
+      transition: all 0.3s ease;
+      display: none; 
+
+      @include md {
+        display: block;
+      }
+
+      &:hover {
+        transform: translateY(-50%) scale(1.2);
+        filter: drop-shadow(0 0 12px rgba(255, 42, 116, 0.8));
+        color: #ff0055;
+      }
+
+      &.disabled {
+        display: none !important; 
+      }
+
+      &.carouselLeftNav {
+        left: 0;
+      }
+
+      &.carouselRighttNav {
+        right: 0;
+      }
+    }
+  }
+
   .quotes {
     display: flex;
-    flex-direction: column;
-    gap: 24px;
-    margin-right: -20px;
-    margin-left: -20px;
-    padding: 0 20px;
+    flex-direction: row;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 10px 0;
 
-    @include md {
-      margin: 0;
-      padding: 0;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-      gap: 30px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
     }
 
     .quoteItem {
+      flex: 0 0 100%;
+      scroll-snap-align: start;
+
+      @include md {
+        flex: 0 0 calc(50% - 10px);
+      }
+
+      @include lg {
+        flex: 0 0 calc(33.333% - 14px);
+      }
+
       background: linear-gradient(
         135deg,
         rgba(255, 255, 255, 0.08) 0%,
@@ -83,7 +132,8 @@
           rgba(255, 255, 255, 0.08) 100%
         );
         border-color: rgba(255, 255, 255, 0.2);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25),
+        box-shadow:
+          0 12px 40px rgba(0, 0, 0, 0.25),
           0 0 20px rgba(255, 107, 157, 0.1);
 
         &::before {
@@ -121,12 +171,16 @@
       }
 
       .quoteMeta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+
         .quoteCharacter {
           font-size: 16px;
           color: var(--pink);
           font-weight: 600;
           text-align: right;
-          margin-bottom: 12px;
 
           @include md {
             font-size: 18px;
@@ -134,49 +188,31 @@
 
           &.skeleton {
             height: 18px;
+            width: 120px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 4px;
             animation: pulse 1.5s ease-in-out infinite;
-            margin-bottom: 8px;
           }
         }
 
-        .quoteContext {
-          font-size: 14px;
-          color: rgba(255, 255, 255, 0.8);
-          line-height: 1.5;
-          margin-bottom: 12px;
-          font-weight: 400;
-
-          @include md {
-            font-size: 16px;
-          }
+        .quoteBadge {
+          font-size: 12px;
+          color: #10b981;
+          background: rgba(16, 185, 129, 0.08);
+          border: 1px solid rgba(16, 185, 129, 0.2);
+          border-radius: 12px;
+          padding: 4px 10px;
+          font-weight: 600;
+          letter-spacing: 0.3px;
+          display: inline-flex;
+          align-items: center;
 
           &.skeleton {
+            width: 100px;
             height: 16px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            animation: pulse 1.5s ease-in-out infinite;
-            margin-bottom: 8px;
-          }
-        }
-
-        .quoteSignificance {
-          font-size: 13px;
-          color: rgba(255, 255, 255, 0.6);
-          line-height: 1.4;
-          font-style: italic;
-          border-left: 3px solid var(--pink);
-          padding-left: 12px;
-
-          @include md {
-            font-size: 15px;
-          }
-
-          &.skeleton {
-            height: 14px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
+            border: none;
+            border-radius: 12px;
             animation: pulse 1.5s ease-in-out infinite;
           }
         }
@@ -242,90 +278,6 @@
 
       @include md {
         font-size: 16px;
-      }
-    }
-  }
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  margin-top: 40px;
-  padding: 20px 0;
-
-  .pageBtn {
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.08) 0%,
-      rgba(255, 255, 255, 0.05) 100%
-    );
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: white;
-    padding: 10px 16px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &:hover:not(:disabled) {
-      background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.15) 0%,
-        rgba(255, 255, 255, 0.1) 100%
-      );
-      border-color: rgba(255, 255, 255, 0.2);
-      transform: translateY(-2px);
-    }
-
-    &:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    &.active {
-      background: var(--pink);
-      border-color: var(--pink);
-      color: white;
-      font-weight: 600;
-    }
-
-    &.navBtn {
-      font-weight: 600;
-      padding: 12px 20px;
-      min-width: 100px;
-    }
-  }
-
-  .pageNumbers {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .ellipsis {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 16px;
-    padding: 0 8px;
-  }
-
-  @include md {
-    gap: 20px;
-
-    .pageBtn {
-      padding: 12px 18px;
-      font-size: 15px;
-
-      &.navBtn {
-        padding: 14px 24px;
-        min-width: 120px;
       }
     }
   }

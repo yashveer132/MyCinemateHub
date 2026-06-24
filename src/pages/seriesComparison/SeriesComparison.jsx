@@ -18,12 +18,12 @@ import PosterFallback from "../../assets/no-poster.png";
 import "./style.scss";
 import formatDate from "../../utils/formatDate";
 
-const MovieComparison = () => {
+const SeriesComparison = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedMovie2, setSelectedMovie2] = useState(null);
-  const [similarMovies, setSimilarMovies] = useState([]);
+  const [selectedSeries2, setSelectedSeries2] = useState(null);
+  const [similarSeries, setSimilarSeries] = useState([]);
   const [imdbData1, setImdbData1] = useState(null);
   const [imdbData2, setImdbData2] = useState(null);
   const [awardsData1, setAwardsData1] = useState(null);
@@ -31,25 +31,25 @@ const MovieComparison = () => {
 
   const { url } = useSelector((state) => state.home);
 
-  const id1 = searchParams.get("movie1");
-  const id2 = searchParams.get("movie2") || selectedMovie2;
+  const id1 = searchParams.get("series1");
+  const id2 = searchParams.get("series2") || selectedSeries2;
 
-  const { data: movie1, loading: loading1 } = useFetch(
-    id1 ? `/movie/${id1}` : null,
+  const { data: series1, loading: loading1 } = useFetch(
+    id1 ? `/tv/${id1}` : null,
   );
   const { data: credits1, loading: creditsLoading1 } = useFetch(
-    id1 ? `/movie/${id1}/credits` : null,
+    id1 ? `/tv/${id1}/credits` : null,
   );
 
-  const { data: movie2, loading: loading2 } = useFetch(
-    id2 ? `/movie/${id2}` : null,
+  const { data: series2, loading: loading2 } = useFetch(
+    id2 ? `/tv/${id2}` : null,
   );
   const { data: credits2, loading: creditsLoading2 } = useFetch(
-    id2 ? `/movie/${id2}/credits` : null,
+    id2 ? `/tv/${id2}/credits` : null,
   );
 
   const { data: searchResults, loading: searchLoading } = useFetch(
-    searchQuery ? `/search/movie?query=${searchQuery}&page=1` : null,
+    searchQuery ? `/search/tv?query=${searchQuery}&page=1` : null,
   );
 
   const loading = loading1 || loading2 || creditsLoading1 || creditsLoading2;
@@ -59,34 +59,34 @@ const MovieComparison = () => {
     }
   };
 
-  const selectMovie2 = (movie) => {
-    setSelectedMovie2(movie.id);
-    setSearchParams({ movie1: id1, movie2: movie.id });
+  const selectSeries2 = (series) => {
+    setSelectedSeries2(series.id);
+    setSearchParams({ series1: id1, series2: series.id });
   };
 
   React.useEffect(() => {
-    if (!movie1?.genres?.length) return;
-    const genreIds = movie1.genres.map((g) => g.id).join(",");
+    if (!series1?.genres?.length) return;
+    const genreIds = series1.genres.map((g) => g.id).join(",");
     fetchDataFromApi(
-      `/discover/movie?with_genres=${genreIds}&sort_by=popularity.desc&page=1`,
+      `/discover/tv?with_genres=${genreIds}&sort_by=popularity.desc&page=1`,
     )
       .then((res) => {
         const list = (res.results || [])
-          .filter((m) => m.id !== movie1.id)
+          .filter((s) => s.id !== series1.id)
           .slice(0, 10);
-        setSimilarMovies(list);
+        setSimilarSeries(list);
       })
-      .catch(() => setSimilarMovies([]));
-  }, [movie1]);
+      .catch(() => setSimilarSeries([]));
+  }, [series1]);
 
   React.useEffect(() => {
     let isMounted = true;
     const loadAwards1 = async () => {
-      if (movie1 && movie1.id) {
+      if (series1 && series1.id) {
         try {
           const initialData = await fetchAwardsData({
-            id: movie1.id,
-            media_type: "movie",
+            id: series1.id,
+            media_type: "tv",
           });
 
           if (!isMounted) return;
@@ -94,8 +94,8 @@ const MovieComparison = () => {
 
           if (!initialData.isComplete && initialData.imdbId) {
             const enrichedData = await fetchWikidataBackground(
-              movie1.id,
-              "movie",
+              series1.id,
+              "tv",
               initialData.imdbId,
               initialData,
             );
@@ -105,7 +105,7 @@ const MovieComparison = () => {
             }
           }
         } catch (error) {
-          console.error("Failed to load awards for movie 1:", error);
+          console.error("Failed to load awards for series 1:", error);
           if (isMounted) setAwardsData1(null);
         }
       }
@@ -114,16 +114,16 @@ const MovieComparison = () => {
     return () => {
       isMounted = false;
     };
-  }, [movie1]);
+  }, [series1]);
 
   React.useEffect(() => {
     let isMounted = true;
     const loadAwards2 = async () => {
-      if (movie2 && movie2.id) {
+      if (series2 && series2.id) {
         try {
           const initialData = await fetchAwardsData({
-            id: movie2.id,
-            media_type: "movie",
+            id: series2.id,
+            media_type: "tv",
           });
 
           if (!isMounted) return;
@@ -131,8 +131,8 @@ const MovieComparison = () => {
 
           if (!initialData.isComplete && initialData.imdbId) {
             const enrichedData = await fetchWikidataBackground(
-              movie2.id,
-              "movie",
+              series2.id,
+              "tv",
               initialData.imdbId,
               initialData,
             );
@@ -142,7 +142,7 @@ const MovieComparison = () => {
             }
           }
         } catch (error) {
-          console.error("Failed to load awards for movie 2:", error);
+          console.error("Failed to load awards for series 2:", error);
           if (isMounted) setAwardsData2(null);
         }
       }
@@ -151,13 +151,13 @@ const MovieComparison = () => {
     return () => {
       isMounted = false;
     };
-  }, [movie2]);
+  }, [series2]);
 
   if (!id1) {
     return (
       <ContentWrapper>
         <div className="errorMessage">
-          No first movie selected. Go back and select a movie to compare.
+          No first series selected. Go back and select a series to compare.
         </div>
       </ContentWrapper>
     );
@@ -167,10 +167,10 @@ const MovieComparison = () => {
     return <Spinner />;
   }
 
-  if (!movie1) {
+  if (!series1) {
     return (
       <ContentWrapper>
-        <div className="errorMessage">Unable to load first movie data.</div>
+        <div className="errorMessage">Unable to load first series data.</div>
       </ContentWrapper>
     );
   }
@@ -178,12 +178,12 @@ const MovieComparison = () => {
   if (!id2) {
     return (
       <ContentWrapper>
-        <div className="movieComparison">
-          <h1 className="pageTitle">Compare {movie1.title} with...</h1>
+        <div className="seriesComparison">
+          <h1 className="pageTitle">Compare {series1.name} with...</h1>
           <div className="searchSection">
             <input
               type="text"
-              placeholder="Search for a movie to compare"
+              placeholder="Search for a series to compare"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleSearch()}
@@ -197,35 +197,35 @@ const MovieComparison = () => {
           )}
           {searchResults?.results && (
             <div className="searchResults">
-              {searchResults.results.slice(0, 10).map((movie) => (
+              {searchResults.results.slice(0, 10).map((series) => (
                 <div
-                  key={movie.id}
+                  key={series.id}
                   className="searchResultItem"
-                  onClick={() => selectMovie2(movie)}
+                  onClick={() => selectSeries2(series)}
                 >
                   <Img
                     src={
-                      movie.poster_path
-                        ? url.poster + movie.poster_path
+                      series.poster_path
+                        ? url.poster + series.poster_path
                         : PosterFallback
                     }
                   />
                   <div className="info">
-                    <h3>{movie.title}</h3>
-                    <p>{formatDate(movie.release_date)}</p>
+                    <h3>{series.name}</h3>
+                    <p>{formatDate(series.first_air_date)}</p>
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          {similarMovies.length > 0 && (
+          {similarSeries.length > 0 && (
             <Carousel
               title="Similar Genre Picks"
-              data={similarMovies}
+              data={similarSeries}
               loading={false}
-              endpoint="movie"
-              onCardClick={selectMovie2}
+              endpoint="tv"
+              onCardClick={selectSeries2}
             />
           )}
         </div>
@@ -241,18 +241,11 @@ const MovieComparison = () => {
 
   const getTopCast = (cast, limit = 5) => cast?.slice(0, limit) || [];
 
-  const getDirector = (crew) => {
-    return crew?.find((person) => person.job === "Director");
-  };
-
-  const formatCurrency = (amount) => {
-    if (!amount) return "N/A";
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      notation: "compact",
-      maximumFractionDigits: 1,
-    }).format(amount);
+  const getCreator = (crew) => {
+    return crew?.find(
+      (person) =>
+        person.job === "Creator" || person.job === "Executive Producer",
+    );
   };
 
   const formatNumber = (num) => {
@@ -263,18 +256,22 @@ const MovieComparison = () => {
     }).format(num);
   };
 
-  const commonGenres = getCommonGenres(movie1.genres, movie2.genres);
+  const commonGenres = getCommonGenres(series1.genres, series2.genres);
   const cast1 = getTopCast(credits1?.cast);
   const cast2 = getTopCast(credits2?.cast);
-  const director1 = getDirector(credits1?.crew);
-  const director2 = getDirector(credits2?.crew);
+  const creator1 = getCreator(credits1?.crew);
+  const creator2 = getCreator(credits2?.crew);
 
   const sharedCast = cast1.filter((actor1) =>
     cast2.some((actor2) => actor1.id === actor2.id),
   );
 
-  const profit1 = (movie1.revenue || 0) - (movie1.budget || 0);
-  const profit2 = (movie2.revenue || 0) - (movie2.budget || 0);
+  const getWinner = (value1, value2) => {
+    if (!value1 && !value2) return null;
+    if (!value1) return 2;
+    if (!value2) return 1;
+    return value1 > value2 ? 1 : value1 < value2 ? 2 : null;
+  };
 
   const parseOMDBSummary = (summary) => {
     if (!summary) return { wins: 0, nominations: 0 };
@@ -331,11 +328,7 @@ const MovieComparison = () => {
 
   const getDataSourceLabel = (source) => {
     if (!source) return "";
-    if (
-      source === "omdb_wikidata" ||
-      source === "local_db" ||
-      source === "wikidata"
-    ) {
+    if (source === "omdb_wikidata" || source === "local_db" || source === "wikidata") {
       return "(IMDb + Wikidata)";
     }
     return "(IMDb Data)";
@@ -344,54 +337,48 @@ const MovieComparison = () => {
   const awards1 = getAwardsStats(awardsData1);
   const awards2 = getAwardsStats(awardsData2);
 
-  const getWinner = (value1, value2) => {
-    if (!value1 && !value2) return null;
-    if (!value1) return 2;
-    if (!value2) return 1;
-    return value1 > value2 ? 1 : value1 < value2 ? 2 : null;
-  };
-
   return (
     <ContentWrapper>
-      <div className="movieComparison">
-        <h1 className="pageTitle">Movie Comparison</h1>
+      <div className="seriesComparison">
+        <h1 className="pageTitle">Series Comparison</h1>
         <div className="comparisonContainer">
-          <div className="movieCard">
+          <div className="seriesCard">
             <div className="posterSection">
               <div className="poster">
                 <Img
                   src={
-                    movie1.poster_path
-                      ? url.poster + movie1.poster_path
+                    series1.poster_path
+                      ? url.poster + series1.poster_path
                       : PosterFallback
                   }
                 />
-                {getWinner(movie1.vote_average, movie2.vote_average) === 1 && (
-                  <div className="winnerBadge">👑 Higher Rated</div>
-                )}
+                {getWinner(series1.vote_average, series2.vote_average) ===
+                  1 && <div className="winnerBadge">👑 Higher Rated</div>}
               </div>
               <div className="headerInfo">
-                <h2>{movie1.title}</h2>
-                {movie1.tagline && (
-                  <p className="tagline">"{movie1.tagline}"</p>
+                <h2>{series1.name}</h2>
+                {series1.tagline && (
+                  <p className="tagline">"{series1.tagline}"</p>
                 )}
                 <div className="ratingsContainer">
                   <div className="rating">
                     <CircleRating
                       rating={
-                        movie1.vote_average ? movie1.vote_average.toFixed(1) : 0
+                        series1.vote_average
+                          ? series1.vote_average.toFixed(1)
+                          : 0
                       }
-                      voteCount={movie1.vote_count}
+                      voteCount={series1.vote_count}
                       showTooltip={false}
                     />
                     <span className="ratingText">
-                      ({movie1.vote_count?.toLocaleString() || 0} votes)
+                      ({series1.vote_count?.toLocaleString() || 0} votes)
                     </span>
                   </div>
                   <div className="rating">
                     <ImdbRating
-                      tmdbId={movie1.id}
-                      mediaType="movie"
+                      tmdbId={series1.id}
+                      mediaType="tv"
                       showTooltip={false}
                       onDataLoaded={setImdbData1}
                     />
@@ -405,52 +392,77 @@ const MovieComparison = () => {
                 <div className="metaInfo">
                   <div className="metaItem">
                     <span className="icon">📅</span>
-                    <span>{formatDate(movie1.release_date)}</span>
+                    <span>{formatDate(series1.first_air_date)}</span>
                   </div>
                   <div className="metaItem">
-                    <span className="icon">⏱️</span>
-                    <span>{movie1.runtime || "N/A"} min</span>
-                  </div>
-                  <div className="metaItem">
-                    <span className="icon">🌍</span>
+                    <span className="icon">📺</span>
                     <span>
-                      {movie1.original_language?.toUpperCase() || "N/A"}
+                      {series1.number_of_seasons || "N/A"} Season
+                      {series1.number_of_seasons !== 1 ? "s" : ""}
                     </span>
                   </div>
                   <div className="metaItem">
+                    <span className="icon">🎬</span>
+                    <span>{series1.number_of_episodes || "N/A"} Episodes</span>
+                  </div>
+                  <div className="metaItem">
+                    <span className="icon">🌍</span>
+                    <span>{series1.origin_country?.[0] || "N/A"}</span>
+                  </div>
+                  <div className="metaItem">
                     <span className="icon">📊</span>
-                    <span>Popularity: {formatNumber(movie1.popularity)}</span>
+                    <span>Popularity: {formatNumber(series1.popularity)}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <p className="overview">{movie1.overview}</p>
+            <p className="overview">{series1.overview}</p>
 
-            {director1 && (
-              <div className="directorSection">
-                <h4>🎬 Director</h4>
+            {creator1 && (
+              <div className="creatorSection">
+                <h4>🎬 Creator</h4>
                 <div
-                  className={`directorName ${
-                    director2 && director1.id === director2.id
-                      ? "sharedDirector"
+                  className={`creatorName ${
+                    creator2 && creator1.id === creator2.id
+                      ? "sharedCreator"
                       : ""
                   }`}
                 >
-                  {director1.name}
+                  {creator1.name}
                 </div>
               </div>
             )}
 
-            {movie1.production_companies?.length > 0 && (
+            {series1.networks?.length > 0 && (
+              <div className="networkSection">
+                <h4>📺 Networks</h4>
+                <div className="networksList">
+                  {series1.networks.slice(0, 3).map((network) => (
+                    <span
+                      key={network.id}
+                      className={
+                        series2.networks?.some((n) => n.id === network.id)
+                          ? "network sharedNetwork"
+                          : "network"
+                      }
+                    >
+                      {network.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {series1.production_companies?.length > 0 && (
               <div className="productionSection">
                 <h4>🏢 Production Companies</h4>
                 <div className="companiesList">
-                  {movie1.production_companies.slice(0, 3).map((company) => (
+                  {series1.production_companies.slice(0, 3).map((company) => (
                     <span
                       key={company.id}
                       className={
-                        movie2.production_companies?.some(
+                        series2.production_companies?.some(
                           (c) => c.id === company.id,
                         )
                           ? "company sharedCompany"
@@ -464,33 +476,27 @@ const MovieComparison = () => {
               </div>
             )}
 
-            <div className="financialSection">
-              <h4>💰 Financial Performance</h4>
-              <div className="financialGrid">
-                <div className="financialItem">
-                  <span className="label">Budget</span>
-                  <span className="value">{formatCurrency(movie1.budget)}</span>
+            <div className="seriesInfo">
+              <h4>📊 Series Details</h4>
+              <div className="seriesGrid">
+                <div className="seriesItem">
+                  <span className="label">Status</span>
+                  <span className="value">{series1.status || "N/A"}</span>
                 </div>
-                <div className="financialItem">
-                  <span className="label">Revenue</span>
-                  <span
-                    className={`value ${
-                      getWinner(movie1.revenue, movie2.revenue) === 1
-                        ? "winner"
-                        : ""
-                    }`}
-                  >
-                    {formatCurrency(movie1.revenue)}
+                <div className="seriesItem">
+                  <span className="label">Type</span>
+                  <span className="value">{series1.type || "N/A"}</span>
+                </div>
+                <div className="seriesItem">
+                  <span className="label">Language</span>
+                  <span className="value">
+                    {series1.original_language?.toUpperCase() || "N/A"}
                   </span>
                 </div>
-                <div className="financialItem">
-                  <span className="label">Profit</span>
-                  <span
-                    className={`value ${
-                      getWinner(profit1, profit2) === 1 ? "winner" : ""
-                    }`}
-                  >
-                    {formatCurrency(profit1)}
+                <div className="seriesItem">
+                  <span className="label">Last Air Date</span>
+                  <span className="value">
+                    {formatDate(series1.last_air_date) || "N/A"}
                   </span>
                 </div>
               </div>
@@ -499,7 +505,7 @@ const MovieComparison = () => {
             <div className="genresSection">
               <h4>Genres</h4>
               <div className="genresList">
-                {movie1.genres?.map((g) => (
+                {series1.genres?.map((g) => (
                   <span
                     key={g.id}
                     className={
@@ -539,42 +545,43 @@ const MovieComparison = () => {
             <div className="vsLine"></div>
           </div>
 
-          <div className="movieCard">
+          <div className="seriesCard">
             <div className="posterSection">
               <div className="poster">
                 <Img
                   src={
-                    movie2.poster_path
-                      ? url.poster + movie2.poster_path
+                    series2.poster_path
+                      ? url.poster + series2.poster_path
                       : PosterFallback
                   }
                 />
-                {getWinner(movie2.vote_average, movie1.vote_average) === 1 && (
-                  <div className="winnerBadge">👑 Higher Rated</div>
-                )}
+                {getWinner(series2.vote_average, series1.vote_average) ===
+                  1 && <div className="winnerBadge">👑 Higher Rated</div>}
               </div>
               <div className="headerInfo">
-                <h2>{movie2.title}</h2>
-                {movie2.tagline && (
-                  <p className="tagline">"{movie2.tagline}"</p>
+                <h2>{series2.name}</h2>
+                {series2.tagline && (
+                  <p className="tagline">"{series2.tagline}"</p>
                 )}
                 <div className="ratingsContainer">
                   <div className="rating">
                     <CircleRating
                       rating={
-                        movie2.vote_average ? movie2.vote_average.toFixed(1) : 0
+                        series2.vote_average
+                          ? series2.vote_average.toFixed(1)
+                          : 0
                       }
-                      voteCount={movie2.vote_count}
+                      voteCount={series2.vote_count}
                       showTooltip={false}
                     />
                     <span className="ratingText">
-                      ({movie2.vote_count?.toLocaleString() || 0} votes)
+                      ({series2.vote_count?.toLocaleString() || 0} votes)
                     </span>
                   </div>
                   <div className="rating">
                     <ImdbRating
-                      tmdbId={movie2.id}
-                      mediaType="movie"
+                      tmdbId={series2.id}
+                      mediaType="tv"
                       showTooltip={false}
                       onDataLoaded={setImdbData2}
                     />
@@ -588,52 +595,77 @@ const MovieComparison = () => {
                 <div className="metaInfo">
                   <div className="metaItem">
                     <span className="icon">📅</span>
-                    <span>{formatDate(movie2.release_date)}</span>
+                    <span>{formatDate(series2.first_air_date)}</span>
                   </div>
                   <div className="metaItem">
-                    <span className="icon">⏱️</span>
-                    <span>{movie2.runtime || "N/A"} min</span>
-                  </div>
-                  <div className="metaItem">
-                    <span className="icon">🌍</span>
+                    <span className="icon">📺</span>
                     <span>
-                      {movie2.original_language?.toUpperCase() || "N/A"}
+                      {series2.number_of_seasons || "N/A"} Season
+                      {series2.number_of_seasons !== 1 ? "s" : ""}
                     </span>
                   </div>
                   <div className="metaItem">
+                    <span className="icon">🎬</span>
+                    <span>{series2.number_of_episodes || "N/A"} Episodes</span>
+                  </div>
+                  <div className="metaItem">
+                    <span className="icon">🌍</span>
+                    <span>{series2.origin_country?.[0] || "N/A"}</span>
+                  </div>
+                  <div className="metaItem">
                     <span className="icon">📊</span>
-                    <span>Popularity: {formatNumber(movie2.popularity)}</span>
+                    <span>Popularity: {formatNumber(series2.popularity)}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <p className="overview">{movie2.overview}</p>
+            <p className="overview">{series2.overview}</p>
 
-            {director2 && (
-              <div className="directorSection">
-                <h4>🎬 Director</h4>
+            {creator2 && (
+              <div className="creatorSection">
+                <h4>🎬 Creator</h4>
                 <div
-                  className={`directorName ${
-                    director1 && director1.id === director2.id
-                      ? "sharedDirector"
+                  className={`creatorName ${
+                    creator1 && creator1.id === creator2.id
+                      ? "sharedCreator"
                       : ""
                   }`}
                 >
-                  {director2.name}
+                  {creator2.name}
                 </div>
               </div>
             )}
 
-            {movie2.production_companies?.length > 0 && (
+            {series2.networks?.length > 0 && (
+              <div className="networkSection">
+                <h4>📺 Networks</h4>
+                <div className="networksList">
+                  {series2.networks.slice(0, 3).map((network) => (
+                    <span
+                      key={network.id}
+                      className={
+                        series1.networks?.some((n) => n.id === network.id)
+                          ? "network sharedNetwork"
+                          : "network"
+                      }
+                    >
+                      {network.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {series2.production_companies?.length > 0 && (
               <div className="productionSection">
                 <h4>🏢 Production Companies</h4>
                 <div className="companiesList">
-                  {movie2.production_companies.slice(0, 3).map((company) => (
+                  {series2.production_companies.slice(0, 3).map((company) => (
                     <span
                       key={company.id}
                       className={
-                        movie1.production_companies?.some(
+                        series1.production_companies?.some(
                           (c) => c.id === company.id,
                         )
                           ? "company sharedCompany"
@@ -647,33 +679,27 @@ const MovieComparison = () => {
               </div>
             )}
 
-            <div className="financialSection">
-              <h4>💰 Financial Performance</h4>
-              <div className="financialGrid">
-                <div className="financialItem">
-                  <span className="label">Budget</span>
-                  <span className="value">{formatCurrency(movie2.budget)}</span>
+            <div className="seriesInfo">
+              <h4>📊 Series Details</h4>
+              <div className="seriesGrid">
+                <div className="seriesItem">
+                  <span className="label">Status</span>
+                  <span className="value">{series2.status || "N/A"}</span>
                 </div>
-                <div className="financialItem">
-                  <span className="label">Revenue</span>
-                  <span
-                    className={`value ${
-                      getWinner(movie2.revenue, movie1.revenue) === 1
-                        ? "winner"
-                        : ""
-                    }`}
-                  >
-                    {formatCurrency(movie2.revenue)}
+                <div className="seriesItem">
+                  <span className="label">Type</span>
+                  <span className="value">{series2.type || "N/A"}</span>
+                </div>
+                <div className="seriesItem">
+                  <span className="label">Language</span>
+                  <span className="value">
+                    {series2.original_language?.toUpperCase() || "N/A"}
                   </span>
                 </div>
-                <div className="financialItem">
-                  <span className="label">Profit</span>
-                  <span
-                    className={`value ${
-                      getWinner(profit2, profit1) === 1 ? "winner" : ""
-                    }`}
-                  >
-                    {formatCurrency(profit2)}
+                <div className="seriesItem">
+                  <span className="label">Last Air Date</span>
+                  <span className="value">
+                    {formatDate(series2.last_air_date) || "N/A"}
                   </span>
                 </div>
               </div>
@@ -682,7 +708,7 @@ const MovieComparison = () => {
             <div className="genresSection">
               <h4>Genres</h4>
               <div className="genresList">
-                {movie2.genres?.map((g) => (
+                {series2.genres?.map((g) => (
                   <span
                     key={g.id}
                     className={
@@ -731,7 +757,7 @@ const MovieComparison = () => {
                   >
                     {awards1.wins}
                   </div>
-                  <div className="statMovie">{movie1.title}</div>
+                  <div className="statMovie">{series1.name}</div>
                   {awardsData1?.source && (
                     <div className="dataSource">
                       {getDataSourceLabel(awardsData1.source)}
@@ -745,7 +771,7 @@ const MovieComparison = () => {
                   >
                     {awards2.wins}
                   </div>
-                  <div className="statMovie">{movie2.title}</div>
+                  <div className="statMovie">{series2.name}</div>
                   {awardsData2?.source && (
                     <div className="dataSource">
                       {getDataSourceLabel(awardsData2.source)}
@@ -762,7 +788,7 @@ const MovieComparison = () => {
                   >
                     {awards1.nominations}
                   </div>
-                  <div className="statMovie">{movie1.title}</div>
+                  <div className="statMovie">{series1.name}</div>
                   {awardsData1?.source && (
                     <div className="dataSource">
                       {getDataSourceLabel(awardsData1.source)}
@@ -776,7 +802,7 @@ const MovieComparison = () => {
                   >
                     {awards2.nominations}
                   </div>
-                  <div className="statMovie">{movie2.title}</div>
+                  <div className="statMovie">{series2.name}</div>
                   {awardsData2?.source && (
                     <div className="dataSource">
                       {getDataSourceLabel(awardsData2.source)}
@@ -786,72 +812,41 @@ const MovieComparison = () => {
               </div>
             </div>
 
-            {(awardsData1?.awards?.length > 0 ||
-              awardsData2?.awards?.length > 0) && (
+            {(awardsData1?.summary || awardsData2?.summary) && (
               <div className="awardsDetails">
-                {awardsData1?.awards?.length > 0 && (
-                  <div className="movieAwards">
+                {awardsData1?.summary && (
+                  <div className="seriesAwards">
                     <h4>
-                      {movie1.title} Awards
+                      {series1.name} Awards
                       {awardsData1?.source && (
                         <span className="sectionSource">
-                          {" "}
-                          {getDataSourceLabel(awardsData1.source)}
+                          {" "}{getDataSourceLabel(awardsData1.source)}
                         </span>
                       )}
                     </h4>
-                    <div className="awardsList">
-                      {awardsData1.awards.slice(0, 5).map((award, index) => (
-                        <div key={index} className="awardItem">
-                          <div className="awardName">{award.award}</div>
-                          <div
-                            className={`awardResult ${award.result.toLowerCase()}`}
-                          >
-                            {award.result}
-                          </div>
-                          <div className="awardCategory">{award.category}</div>
-                          <div className="awardYear">{award.year}</div>
-                        </div>
-                      ))}
-                    </div>
+                    <div className="awardsSummary">{awardsData1.summary}</div>
                   </div>
                 )}
 
-                {awardsData2?.awards?.length > 0 && (
-                  <div className="movieAwards">
+                {awardsData2?.summary && (
+                  <div className="seriesAwards">
                     <h4>
-                      {movie2.title} Awards
+                      {series2.name} Awards
                       {awardsData2?.source && (
                         <span className="sectionSource">
-                          {" "}
-                          {getDataSourceLabel(awardsData2.source)}
+                          {" "}{getDataSourceLabel(awardsData2.source)}
                         </span>
                       )}
                     </h4>
-                    <div className="awardsList">
-                      {awardsData2.awards.slice(0, 5).map((award, index) => (
-                        <div key={index} className="awardItem">
-                          <div className="awardName">{award.award}</div>
-                          <div
-                            className={`awardResult ${award.result.toLowerCase()}`}
-                          >
-                            {award.result}
-                          </div>
-                          <div className="awardCategory">{award.category}</div>
-                          <div className="awardYear">{award.year}</div>
-                        </div>
-                      ))}
-                    </div>
+                    <div className="awardsSummary">{awardsData2.summary}</div>
                   </div>
                 )}
               </div>
             )}
           </div>
 
-          <h3>Performance Metrics</h3>
-
+          <h3>Series Performance Metrics</h3>
           <div className="visualComparison">
-            <h4>Performance Metrics</h4>
             <div className="comparisonBars">
               <div className="metricBar">
                 <span className="metricName">Rating</span>
@@ -859,21 +854,21 @@ const MovieComparison = () => {
                   <div
                     className="bar bar1"
                     style={{
-                      width: `${(movie1.vote_average / 10) * 100}%`,
+                      width: `${(series1.vote_average / 10) * 100}%`,
                     }}
                   >
                     <span className="barLabel">
-                      {movie1.vote_average?.toFixed(1)}
+                      {series1.vote_average?.toFixed(1)}
                     </span>
                   </div>
                   <div
                     className="bar bar2"
                     style={{
-                      width: `${(movie2.vote_average / 10) * 100}%`,
+                      width: `${(series2.vote_average / 10) * 100}%`,
                     }}
                   >
                     <span className="barLabel">
-                      {movie2.vote_average?.toFixed(1)}
+                      {series2.vote_average?.toFixed(1)}
                     </span>
                   </div>
                 </div>
@@ -886,30 +881,134 @@ const MovieComparison = () => {
                     className="bar bar1"
                     style={{
                       width: `${Math.min(
-                        (movie1.popularity /
-                          Math.max(movie1.popularity, movie2.popularity)) *
+                        (series1.popularity /
+                          Math.max(series1.popularity, series2.popularity)) *
                           100,
                         100,
                       )}%`,
                     }}
                   >
                     <span className="barLabel">
-                      {formatNumber(movie1.popularity)}
+                      {formatNumber(series1.popularity)}
                     </span>
                   </div>
                   <div
                     className="bar bar2"
                     style={{
                       width: `${Math.min(
-                        (movie2.popularity /
-                          Math.max(movie1.popularity, movie2.popularity)) *
+                        (series2.popularity /
+                          Math.max(series1.popularity, series2.popularity)) *
                           100,
                         100,
                       )}%`,
                     }}
                   >
                     <span className="barLabel">
-                      {formatNumber(movie2.popularity)}
+                      {formatNumber(series2.popularity)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="metricBar">
+                <span className="metricName">Seasons</span>
+                <div className="barContainer">
+                  <div
+                    className="bar bar1"
+                    style={{
+                      width:
+                        series1.number_of_seasons && series2.number_of_seasons
+                          ? `${Math.min(
+                              (series1.number_of_seasons /
+                                Math.max(
+                                  series1.number_of_seasons,
+                                  series2.number_of_seasons,
+                                )) *
+                                100,
+                              100,
+                            )}%`
+                          : series1.number_of_seasons
+                            ? "100%"
+                            : "0%",
+                    }}
+                  >
+                    <span className="barLabel">
+                      {series1.number_of_seasons || 0}
+                    </span>
+                  </div>
+                  <div
+                    className="bar bar2"
+                    style={{
+                      width:
+                        series1.number_of_seasons && series2.number_of_seasons
+                          ? `${Math.min(
+                              (series2.number_of_seasons /
+                                Math.max(
+                                  series1.number_of_seasons,
+                                  series2.number_of_seasons,
+                                )) *
+                                100,
+                              100,
+                            )}%`
+                          : series2.number_of_seasons
+                            ? "100%"
+                            : "0%",
+                    }}
+                  >
+                    <span className="barLabel">
+                      {series2.number_of_seasons || 0}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="metricBar">
+                <span className="metricName">Episodes</span>
+                <div className="barContainer">
+                  <div
+                    className="bar bar1"
+                    style={{
+                      width:
+                        series1.number_of_episodes && series2.number_of_episodes
+                          ? `${Math.min(
+                              (series1.number_of_episodes /
+                                Math.max(
+                                  series1.number_of_episodes,
+                                  series2.number_of_episodes,
+                                )) *
+                                100,
+                              100,
+                            )}%`
+                          : series1.number_of_episodes
+                            ? "100%"
+                            : "0%",
+                    }}
+                  >
+                    <span className="barLabel">
+                      {formatNumber(series1.number_of_episodes)}
+                    </span>
+                  </div>
+                  <div
+                    className="bar bar2"
+                    style={{
+                      width:
+                        series1.number_of_episodes && series2.number_of_episodes
+                          ? `${Math.min(
+                              (series2.number_of_episodes /
+                                Math.max(
+                                  series1.number_of_episodes,
+                                  series2.number_of_episodes,
+                                )) *
+                                100,
+                              100,
+                            )}%`
+                          : series2.number_of_episodes
+                            ? "100%"
+                            : "0%",
+                    }}
+                  >
+                    <span className="barLabel">
+                      {formatNumber(series2.number_of_episodes)}
                     </span>
                   </div>
                 </div>
@@ -922,207 +1021,31 @@ const MovieComparison = () => {
                     className="bar bar1"
                     style={{
                       width: `${Math.min(
-                        (movie1.vote_count /
-                          Math.max(movie1.vote_count, movie2.vote_count)) *
+                        (series1.vote_count /
+                          Math.max(series1.vote_count, series2.vote_count)) *
                           100,
                         100,
                       )}%`,
                     }}
                   >
                     <span className="barLabel">
-                      {formatNumber(movie1.vote_count)}
+                      {formatNumber(series1.vote_count)}
                     </span>
                   </div>
                   <div
                     className="bar bar2"
                     style={{
                       width: `${Math.min(
-                        (movie2.vote_count /
-                          Math.max(movie1.vote_count, movie2.vote_count)) *
+                        (series2.vote_count /
+                          Math.max(series1.vote_count, series2.vote_count)) *
                           100,
                         100,
                       )}%`,
                     }}
                   >
                     <span className="barLabel">
-                      {formatNumber(movie2.vote_count)}
+                      {formatNumber(series2.vote_count)}
                     </span>
-                  </div>
-                </div>
-              </div>
-
-              {movie1.revenue > 0 && movie2.revenue > 0 && (
-                <div className="metricBar">
-                  <span className="metricName">Revenue</span>
-                  <div className="barContainer">
-                    <div
-                      className="bar bar1"
-                      style={{
-                        width: `${Math.min(
-                          (movie1.revenue /
-                            Math.max(movie1.revenue, movie2.revenue)) *
-                            100,
-                          100,
-                        )}%`,
-                      }}
-                    >
-                      <span className="barLabel">
-                        {formatCurrency(movie1.revenue)}
-                      </span>
-                    </div>
-                    <div
-                      className="bar bar2"
-                      style={{
-                        width: `${Math.min(
-                          (movie2.revenue /
-                            Math.max(movie1.revenue, movie2.revenue)) *
-                            100,
-                          100,
-                        )}%`,
-                      }}
-                    >
-                      <span className="barLabel">
-                        {formatCurrency(movie2.revenue)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {profit1 > 0 && profit2 > 0 && (
-                <div className="metricBar">
-                  <span className="metricName">Profit</span>
-                  <div className="barContainer">
-                    <div
-                      className="bar bar1"
-                      style={{
-                        width: `${Math.min(
-                          (profit1 / Math.max(profit1, profit2)) * 100,
-                          100,
-                        )}%`,
-                      }}
-                    >
-                      <span className="barLabel">
-                        {formatCurrency(profit1)}
-                      </span>
-                    </div>
-                    <div
-                      className="bar bar2"
-                      style={{
-                        width: `${Math.min(
-                          (profit2 / Math.max(profit1, profit2)) * 100,
-                          100,
-                        )}%`,
-                      }}
-                    >
-                      <span className="barLabel">
-                        {formatCurrency(profit2)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="barLegend">
-                <div className="legendItem">
-                  <span className="legendColor bar1Color"></span>
-                  <span>{movie1.title}</span>
-                </div>
-                <div className="legendItem">
-                  <span className="legendColor bar2Color"></span>
-                  <span>{movie2.title}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <h3>Additional Performance Metrics</h3>
-          <div className="visualComparison">
-            <div className="comparisonBars">
-              <div className="metricBar">
-                <span className="metricName">Budget</span>
-                <div className="barContainer">
-                  <div
-                    className="bar bar1"
-                    style={{
-                      width:
-                        movie1.budget && movie2.budget
-                          ? `${Math.min(
-                              (movie1.budget /
-                                Math.max(movie1.budget, movie2.budget)) *
-                                100,
-                              100,
-                            )}%`
-                          : movie1.budget
-                            ? "100%"
-                            : "0%",
-                    }}
-                  >
-                    <span className="barLabel">
-                      {formatCurrency(movie1.budget)}
-                    </span>
-                  </div>
-                  <div
-                    className="bar bar2"
-                    style={{
-                      width:
-                        movie1.budget && movie2.budget
-                          ? `${Math.min(
-                              (movie2.budget /
-                                Math.max(movie1.budget, movie2.budget)) *
-                                100,
-                              100,
-                            )}%`
-                          : movie2.budget
-                            ? "100%"
-                            : "0%",
-                    }}
-                  >
-                    <span className="barLabel">
-                      {formatCurrency(movie2.budget)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="metricBar">
-                <span className="metricName">Runtime</span>
-                <div className="barContainer">
-                  <div
-                    className="bar bar1"
-                    style={{
-                      width:
-                        movie1.runtime && movie2.runtime
-                          ? `${Math.min(
-                              (movie1.runtime /
-                                Math.max(movie1.runtime, movie2.runtime)) *
-                                100,
-                              100,
-                            )}%`
-                          : movie1.runtime
-                            ? "100%"
-                            : "0%",
-                    }}
-                  >
-                    <span className="barLabel">{movie1.runtime} min</span>
-                  </div>
-                  <div
-                    className="bar bar2"
-                    style={{
-                      width:
-                        movie1.runtime && movie2.runtime
-                          ? `${Math.min(
-                              (movie2.runtime /
-                                Math.max(movie1.runtime, movie2.runtime)) *
-                                100,
-                              100,
-                            )}%`
-                          : movie2.runtime
-                            ? "100%"
-                            : "0%",
-                    }}
-                  >
-                    <span className="barLabel">{movie2.runtime} min</span>
                   </div>
                 </div>
               </div>
@@ -1130,11 +1053,11 @@ const MovieComparison = () => {
               <div className="barLegend">
                 <div className="legendItem">
                   <span className="legendColor bar1Color"></span>
-                  <span>{movie1.title}</span>
+                  <span>{series1.name}</span>
                 </div>
                 <div className="legendItem">
                   <span className="legendColor bar2Color"></span>
-                  <span>{movie2.title}</span>
+                  <span>{series2.name}</span>
                 </div>
               </div>
             </div>
@@ -1144,21 +1067,21 @@ const MovieComparison = () => {
             <div className="metricCard">
               <div className="metricLabel">⭐ Rating Comparison</div>
               <div className="metricValue">
-                {movie1.vote_average && movie2.vote_average ? (
-                  movie1.vote_average > movie2.vote_average ? (
+                {series1.vote_average && series2.vote_average ? (
+                  series1.vote_average > series2.vote_average ? (
                     <>
-                      <span className="highlight">{movie1.title}</span> leads by{" "}
-                      {(movie1.vote_average - movie2.vote_average).toFixed(1)}{" "}
+                      <span className="highlight">{series1.name}</span> leads by{" "}
+                      {(series1.vote_average - series2.vote_average).toFixed(1)}{" "}
                       points
                     </>
-                  ) : movie2.vote_average > movie1.vote_average ? (
+                  ) : series2.vote_average > series1.vote_average ? (
                     <>
-                      <span className="highlight">{movie2.title}</span> leads by{" "}
-                      {(movie2.vote_average - movie1.vote_average).toFixed(1)}{" "}
+                      <span className="highlight">{series2.name}</span> leads by{" "}
+                      {(series2.vote_average - series1.vote_average).toFixed(1)}{" "}
                       points
                     </>
                   ) : (
-                    "Both movies are rated equally"
+                    "Both series are rated equally"
                   )
                 ) : (
                   "Rating data not available"
@@ -1170,7 +1093,7 @@ const MovieComparison = () => {
               <div className="metricLabel">🎭 Common Genres</div>
               <div className="metricValue">
                 {commonGenres.length > 0
-                  ? movie1.genres
+                  ? series1.genres
                       .filter((g) => commonGenres.includes(g.id))
                       .map((g) => g.name)
                       .join(", ")
@@ -1189,18 +1112,18 @@ const MovieComparison = () => {
               </div>
             </div>
 
-            {director1 && director2 && (
+            {creator1 && creator2 && (
               <div className="metricCard">
-                <div className="metricLabel">🎬 Directors</div>
+                <div className="metricLabel">🎬 Creators</div>
                 <div className="metricValue">
-                  {director1.id === director2.id ? (
+                  {creator1.id === creator2.id ? (
                     <>
-                      <span className="highlight">Same director!</span>{" "}
-                      {director1.name}
+                      <span className="highlight">Same creator!</span>{" "}
+                      {creator1.name}
                     </>
                   ) : (
                     <>
-                      {director1.name} vs {director2.name}
+                      {creator1.name} vs {creator2.name}
                     </>
                   )}
                 </div>
@@ -1210,23 +1133,23 @@ const MovieComparison = () => {
             <div className="metricCard">
               <div className="metricLabel">📊 Popularity Comparison</div>
               <div className="metricValue">
-                {movie1.popularity && movie2.popularity ? (
-                  movie1.popularity > movie2.popularity ? (
+                {series1.popularity && series2.popularity ? (
+                  series1.popularity > series2.popularity ? (
                     <>
-                      <span className="highlight">{movie1.title}</span> is more
+                      <span className="highlight">{series1.name}</span> is more
                       popular by{" "}
                       {(
-                        (movie1.popularity / movie2.popularity - 1) *
+                        (series1.popularity / series2.popularity - 1) *
                         100
                       ).toFixed(0)}
                       %
                     </>
-                  ) : movie2.popularity > movie1.popularity ? (
+                  ) : series2.popularity > series1.popularity ? (
                     <>
-                      <span className="highlight">{movie2.title}</span> is more
+                      <span className="highlight">{series2.name}</span> is more
                       popular by{" "}
                       {(
-                        (movie2.popularity / movie1.popularity - 1) *
+                        (series2.popularity / series1.popularity - 1) *
                         100
                       ).toFixed(0)}
                       %
@@ -1240,67 +1163,107 @@ const MovieComparison = () => {
               </div>
             </div>
 
-            {movie1.production_companies?.length > 0 &&
-              movie2.production_companies?.length > 0 && (
-                <div className="metricCard">
-                  <div className="metricLabel">🏢 Production Companies</div>
-                  <div className="metricValue">
-                    {movie1.production_companies.some((c1) =>
-                      movie2.production_companies.some((c2) => c2.id === c1.id),
-                    )
-                      ? `Shared: ${movie1.production_companies
-                          .filter((c1) =>
-                            movie2.production_companies.some(
-                              (c2) => c2.id === c1.id,
-                            ),
-                          )
-                          .map((c) => c.name)
-                          .join(", ")}`
-                      : "Different production companies"}
-                  </div>
-                </div>
-              )}
-
-            {profit1 > 0 && profit2 > 0 && (
+            {series1.networks?.length > 0 && series2.networks?.length > 0 && (
               <div className="metricCard">
-                <div className="metricLabel">💵 Profit Comparison</div>
+                <div className="metricLabel">📺 Networks</div>
                 <div className="metricValue">
-                  {profit1 > profit2 ? (
-                    <>
-                      <span className="highlight">{movie1.title}</span> earned{" "}
-                      {formatCurrency(profit1 - profit2)} more
-                    </>
-                  ) : profit2 > profit1 ? (
-                    <>
-                      <span className="highlight">{movie2.title}</span> earned{" "}
-                      {formatCurrency(profit2 - profit1)} more
-                    </>
-                  ) : (
-                    "Both earned equal profit"
-                  )}
+                  {series1.networks.some((n1) =>
+                    series2.networks.some((n2) => n2.id === n1.id),
+                  )
+                    ? `Shared: ${series1.networks
+                        .filter((n1) =>
+                          series2.networks.some((n2) => n2.id === n1.id),
+                        )
+                        .map((n) => n.name)
+                        .join(", ")}`
+                    : "Different networks"}
                 </div>
               </div>
             )}
 
             <div className="metricCard">
-              <div className="metricLabel">⏱️ Runtime Difference</div>
+              <div className="metricLabel">📺 Seasons Difference</div>
               <div className="metricValue">
-                {movie1.runtime && movie2.runtime ? (
-                  movie1.runtime > movie2.runtime ? (
+                {series1.number_of_seasons && series2.number_of_seasons ? (
+                  series1.number_of_seasons > series2.number_of_seasons ? (
                     <>
-                      <span className="highlight">{movie1.title}</span> is{" "}
-                      {movie1.runtime - movie2.runtime} minutes longer
+                      <span className="highlight">{series1.name}</span> has{" "}
+                      {series1.number_of_seasons - series2.number_of_seasons}{" "}
+                      more season
+                      {series1.number_of_seasons - series2.number_of_seasons !==
+                      1
+                        ? "s"
+                        : ""}
                     </>
-                  ) : movie2.runtime > movie1.runtime ? (
+                  ) : series2.number_of_seasons > series1.number_of_seasons ? (
                     <>
-                      <span className="highlight">{movie2.title}</span> is{" "}
-                      {movie2.runtime - movie1.runtime} minutes longer
+                      <span className="highlight">{series2.name}</span> has{" "}
+                      {series2.number_of_seasons - series1.number_of_seasons}{" "}
+                      more season
+                      {series2.number_of_seasons - series1.number_of_seasons !==
+                      1
+                        ? "s"
+                        : ""}
                     </>
                   ) : (
-                    "Both have the same runtime"
+                    "Both have the same number of seasons"
                   )
                 ) : (
-                  "Runtime data not available"
+                  "Season data not available"
+                )}
+              </div>
+            </div>
+
+            <div className="metricCard">
+              <div className="metricLabel">🎬 Episodes Difference</div>
+              <div className="metricValue">
+                {series1.number_of_episodes && series2.number_of_episodes ? (
+                  series1.number_of_episodes > series2.number_of_episodes ? (
+                    <>
+                      <span className="highlight">{series1.name}</span> has{" "}
+                      {series1.number_of_episodes - series2.number_of_episodes}{" "}
+                      more episode
+                      {series1.number_of_episodes -
+                        series2.number_of_episodes !==
+                      1
+                        ? "s"
+                        : ""}
+                    </>
+                  ) : series2.number_of_episodes >
+                    series1.number_of_episodes ? (
+                    <>
+                      <span className="highlight">{series2.name}</span> has{" "}
+                      {series2.number_of_episodes - series1.number_of_episodes}{" "}
+                      more episode
+                      {series2.number_of_episodes -
+                        series1.number_of_episodes !==
+                      1
+                        ? "s"
+                        : ""}
+                    </>
+                  ) : (
+                    "Both have the same number of episodes"
+                  )
+                ) : (
+                  "Episode data not available"
+                )}
+              </div>
+            </div>
+
+            <div className="metricCard">
+              <div className="metricLabel">📅 Series Status</div>
+              <div className="metricValue">
+                {series1.status && series2.status ? (
+                  series1.status === series2.status ? (
+                    <>Both series are {series1.status.toLowerCase()}</>
+                  ) : (
+                    <>
+                      {series1.name}: {series1.status} | {series2.name}:{" "}
+                      {series2.status}
+                    </>
+                  )
+                ) : (
+                  "Status data not available"
                 )}
               </div>
             </div>
@@ -1311,4 +1274,4 @@ const MovieComparison = () => {
   );
 };
 
-export default MovieComparison;
+export default SeriesComparison;

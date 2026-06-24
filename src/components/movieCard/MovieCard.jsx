@@ -181,12 +181,12 @@ const MovieCard = ({
                 <CircleRating
                   rating={(data.vote_average || 0).toFixed(1)}
                   voteCount={data.vote_count}
-                  showTooltip={true}
+                  showTooltip={false}
                 />
                 <ImdbRating
                   tmdbId={data.id}
                   mediaType={data.media_type || mediaType || "movie"}
-                  showTooltip={true}
+                  showTooltip={false}
                 />
               </div>
               <Genres data={data.genre_ids?.slice(0, 2) || []} />

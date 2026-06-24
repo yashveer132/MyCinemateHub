@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import dayjs from "dayjs";
 import ContentWrapper from "../../components/contentWrapper/ContentWrapper";
@@ -10,6 +10,7 @@ import "./style.scss";
 
 const Collection = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [collection, setCollection] = useState(null);
   const [loading, setLoading] = useState(true);
   const { url } = useSelector((state) => state.home);

@@ -98,7 +98,8 @@
       &:hover {
         transform: translateY(-4px);
         border-color: rgba(255, 107, 157, 0.4);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25),
+        box-shadow:
+          0 8px 30px rgba(0, 0, 0, 0.25),
           0 0 20px rgba(255, 107, 157, 0.2);
 
         &::before {
@@ -234,24 +235,73 @@
     }
   }
 
-  .triviaGrid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 24px;
-    margin-top: 20px;
-    padding: 0 20px;
+  .triviaCarouselWrapper {
+    position: relative;
+    width: 100%;
+    padding: 0 40px;
 
-    @include md {
-      grid-template-columns: repeat(2, 1fr);
-      padding: 0;
-      gap: 30px;
+    .arrow {
+      font-size: 36px;
+      color: #ff2a74; 
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      z-index: 20; 
+      transition: all 0.3s ease;
+      display: none; 
+
+      @include md {
+        display: block;
+      }
+
+      &:hover {
+        transform: translateY(-50%) scale(1.2);
+        filter: drop-shadow(0 0 12px rgba(255, 42, 116, 0.8));
+        color: #ff0055;
+      }
+
+      &.disabled {
+        display: none !important; 
+      }
+
+      &.carouselLeftNav {
+        left: 0;
+      }
+
+      &.carouselRighttNav {
+        right: 0;
+      }
     }
+  }
 
-    @media (min-width: 1024px) {
-      grid-template-columns: repeat(3, 1fr);
+  .triviaGrid {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 10px 0;
+    margin-top: 20px;
+
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
     }
 
     .triviaItem {
+      flex: 0 0 100%;
+      scroll-snap-align: start;
+
+      @include md {
+        flex: 0 0 calc(50% - 10px);
+      }
+
+      @include lg {
+        flex: 0 0 calc(33.333% - 14px);
+      }
+
       background: linear-gradient(
         135deg,
         rgba(255, 255, 255, 0.08) 0%,
@@ -289,7 +339,8 @@
           rgba(255, 255, 255, 0.08) 100%
         );
         border-color: rgba(255, 255, 255, 0.2);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25),
+        box-shadow:
+          0 12px 40px rgba(0, 0, 0, 0.25),
           0 0 20px rgba(255, 107, 157, 0.1);
 
         &::before {

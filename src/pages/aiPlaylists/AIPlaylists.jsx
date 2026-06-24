@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
 import ContentWrapper from "../../components/contentWrapper/ContentWrapper";
 import Carousel from "../../components/carousel/Carousel";
-import { extractSearchParams } from "../../utils/gemini";
 import {
   fetchDataFromApi,
   getFallbackResults,
   getSimilarityResults,
   getMoviesByPerson,
-  getAIRecommendations,
 } from "../../utils/api";
 import { playlistStorage } from "../../utils/playlistStorage";
 import "./style.scss";
@@ -19,8 +17,6 @@ const SUGGESTIONS = [
   "mind-bending sci-fi",
   "korean thrillers",
   "Christopher Nolan movies",
-  "movies like inception",
-  "best animated films",
 ];
 
 const LANGUAGE_MAP = {
@@ -36,90 +32,191 @@ const LANGUAGE_MAP = {
   chinese: "zh",
 };
 
-const detectLanguageCode = (q) => {
-  const lower = q.toLowerCase();
-  for (const [word, code] of Object.entries(LANGUAGE_MAP)) {
-    if (lower.includes(word)) return code;
-  }
-  return null;
-};
+const parseQueryLocal = async (q) => {
+  const lowerQ = q.toLowerCase().trim();
+  const result = {
+    mediaType: "movie",
+    isSimilarity: false,
+    similarTitles: [],
+    person: null,
+    tmdbParams: {},
+  };
 
-const detectMediaType = (ai, q) => {
-  const lower = q.toLowerCase();
-  if (ai?.aiParams?.mediaType === "tv") return "tv";
   if (
-    lower.includes("tv show") ||
-    lower.includes("tv ") ||
-    lower.includes("series")
-  )
-    return "tv";
-  return "movie";
-};
-
-const applyDateParams = (params, mediaType, year) => {
-  const p = { ...params };
-  if (mediaType === "tv") {
-    if (p.primary_release_date_gte) {
-      p.first_air_date_gte = p.primary_release_date_gte;
-      delete p.primary_release_date_gte;
-    }
-    if (p.primary_release_date_lte) {
-      p.first_air_date_lte = p.primary_release_date_lte;
-      delete p.primary_release_date_lte;
-    }
-    if (year) {
-      p.first_air_date_year = year;
-    }
-  } else if (mediaType === "movie" && year) {
-    p.primary_release_year = year;
-  }
-  return p;
-};
-
-const buildDiscoverParams = (ai, mediaType, rawQuery) => {
-  let params = ai?.tmdbParams ? { ...ai.tmdbParams } : {};
-
-  const q = rawQuery.toLowerCase();
-  if (
-    q.match(
-      /best|top|highest rated|rating|imdb|award|oscar|academy|golden globe/
-    )
+    lowerQ.includes("tv show") ||
+    lowerQ.includes("tv series") ||
+    lowerQ.includes("show") ||
+    lowerQ.includes("series") ||
+    lowerQ.includes("episode")
   ) {
-    params.sort_by = "vote_average.desc";
-    params["vote_count.gte"] = 200;
-  } else if (q.match(/trending|popular|hot|buzz/)) {
-    params.sort_by = "popularity.desc";
+    result.mediaType = "tv";
   }
 
-  const yearMatch = rawQuery.match(/\b(19|20)\d{2}\b/);
-  const year = yearMatch ? parseInt(yearMatch[0]) : null;
+  const similarityRegex =
+    /(?:movies?|shows?|series)?\s*(?:like|similar to|recommendations for)\s+(.+)/i;
+  const simMatch = q.match(similarityRegex);
+  if (simMatch && simMatch[1]) {
+    result.isSimilarity = true;
+    result.similarTitles = [simMatch[1].trim()];
+    return result;
+  }
 
-  const decadeMatch = rawQuery.match(/\b(19|20)?\d{1,2}s\b/);
+  let personName = null;
+  const byRegex = /(?:directed by|starring|by|with|featuring)\s+([a-zA-Z\s]+)/i;
+  const moviesByRegex = /\b([a-zA-Z\s]+?)\s+(?:movies|shows|films|series)\b/i;
+
+  const byMatch = q.match(byRegex);
+  const moviesByMatch = q.match(moviesByRegex);
+
+  if (byMatch && byMatch[1]) {
+    personName = byMatch[1].trim();
+  } else if (
+    moviesByMatch &&
+    moviesByMatch[1] &&
+    ![
+      "top",
+      "best",
+      "new",
+      "horror",
+      "scifi",
+      "sci-fi",
+      "action",
+      "comedy",
+      "romance",
+      "romantic",
+      "thriller",
+      "drama",
+      "animated",
+      "animation",
+      "fantasy",
+      "family",
+      "korean",
+      "japanese",
+      "french",
+      "spanish",
+      "hindi",
+    ].includes(moviesByMatch[1].toLowerCase().trim())
+  ) {
+    personName = moviesByMatch[1].trim();
+  }
+
+  if (personName) {
+    try {
+      const searchRes = await fetchDataFromApi("/search/person", {
+        query: personName,
+        page: 1,
+      });
+      if (searchRes?.results?.length > 0) {
+        result.person = searchRes.results[0].name;
+        return result;
+      }
+    } catch (e) {
+      console.warn("Error searching person:", e);
+    }
+  }
+
+  const params = {};
+
+  const genreKeywords = {
+    28: ["action", "fight", "warrior", "explosive"],
+    12: ["adventure", "quest", "exploration", "journey"],
+    16: ["animation", "animated", "anime", "cartoon"],
+    35: ["comedy", "funny", "humor", "hilarious", "laugh"],
+    80: ["crime", "heist", "gangster", "mafia", "police", "detective"],
+    99: ["documentary", "real life", "biography"],
+    18: ["drama", "sad", "emotional", "touching", "intense"],
+    10751: ["family", "kids", "children"],
+    14: ["fantasy", "magic", "mythology"],
+    36: ["history", "historical"],
+    27: ["horror", "scary", "spooky", "ghost", "creepy", "slasher"],
+    9648: ["mystery", "puzzle", "clue"],
+    10749: ["romance", "romantic", "love", "cozy"],
+    878: ["sci-fi", "scifi", "science fiction", "space", "alien", "future"],
+    53: ["thriller", "suspense", "tension"],
+    10752: ["war", "battle", "military"],
+    37: ["western", "cowboy"],
+  };
+
+  const tvGenreKeywords = {
+    10759: ["action", "adventure", "quest"],
+    16: ["animation", "animated", "anime", "cartoon"],
+    35: ["comedy", "funny", "humor"],
+    80: ["crime", "police", "heist"],
+    99: ["documentary"],
+    18: ["drama", "sad", "emotional"],
+    10751: ["family", "kids"],
+    10762: ["kids"],
+    9648: ["mystery"],
+    10765: ["sci-fi", "scifi", "science fiction", "fantasy", "magic", "space"],
+    10768: ["war", "politics"],
+  };
+
+  const detectedGenres = [];
+  const genreMapToUse =
+    result.mediaType === "tv" ? tvGenreKeywords : genreKeywords;
+
+  for (const [id, keywords] of Object.entries(genreMapToUse)) {
+    if (keywords.some((kw) => lowerQ.includes(kw))) {
+      detectedGenres.push(id);
+    }
+  }
+
+  if (detectedGenres.length > 0) {
+    params.with_genres = detectedGenres.join(",");
+  }
+
+  const yearMatch = q.match(/\b(19|20)\d{2}\b/);
+  if (yearMatch) {
+    const yr = yearMatch[0];
+    if (result.mediaType === "tv") {
+      params.first_air_date_year = yr;
+    } else {
+      params.primary_release_year = yr;
+    }
+  }
+
+  const decadeMatch = q.match(/\b(19|20)?\d{1,2}s\b/);
   if (decadeMatch) {
     const decadeStr = decadeMatch[0];
     const decadeNum = parseInt(decadeStr.replace("s", ""));
-    const startYear = decadeNum < 100 ? 1900 + decadeNum : decadeNum;
+    const startYear =
+      decadeNum < 100
+        ? decadeNum >= 70
+          ? 1900 + decadeNum
+          : 2000 + decadeNum
+        : decadeNum;
     const endYear = startYear + 9;
-    if (mediaType === "movie") {
+    if (result.mediaType === "movie") {
       params.primary_release_date_gte = `${startYear}-01-01`;
       params.primary_release_date_lte = `${endYear}-12-31`;
     } else {
       params.first_air_date_gte = `${startYear}-01-01`;
       params.first_air_date_lte = `${endYear}-12-31`;
     }
-  } else if (year) {
-    params = applyDateParams(params, mediaType, year);
   }
 
-  const lang = detectLanguageCode(rawQuery);
-  if (lang) params.with_original_language = lang;
+  for (const [word, code] of Object.entries(LANGUAGE_MAP)) {
+    if (lowerQ.includes(word)) {
+      params.with_original_language = code;
+      break;
+    }
+  }
 
-  delete params.query;
-  delete params.with_keywords;
+  if (lowerQ.match(/best|top|highest rated|rating|imdb|award|oscar|academy/)) {
+    params.sort_by = "vote_average.desc";
+    params["vote_count.gte"] = 100;
+  } else if (lowerQ.match(/new|latest|recent/)) {
+    if (result.mediaType === "tv") {
+      params.sort_by = "first_air_date.desc";
+    } else {
+      params.sort_by = "release_date.desc";
+    }
+  } else {
+    params.sort_by = "popularity.desc";
+  }
 
-  if (!params.sort_by) params.sort_by = "popularity.desc";
-
-  return params;
+  result.tmdbParams = params;
+  return result;
 };
 
 const AIPlaylists = () => {
@@ -131,69 +228,41 @@ const AIPlaylists = () => {
   const [showSavedPlaylists, setShowSavedPlaylists] = useState(false);
   const [saveDialog, setSaveDialog] = useState({ show: false, name: "" });
   const [playlistTitle, setPlaylistTitle] = useState(
-    "Sample Playlist: Horror Movies 2024"
+    "Sample Playlist: Horror Movies 2024",
   );
-  const pageTitle = "AI Playlists";
+  const pageTitle = "Smart Playlists";
 
   const runSearch = async (q) => {
     setLoading(true);
     setResults([]);
 
     try {
-      let ai = null;
-
-      try {
-        ai = await extractSearchParams(q);
-      } catch (aiError) {
-        console.warn("AI extraction failed, using fallback:", aiError);
-      }
-
-      const mt = detectMediaType(ai, q);
+      const parsed = await parseQueryLocal(q);
+      const mt = parsed.mediaType;
       setMediaType(mt);
 
       let data = null;
 
-      if (ai?.aiParams?.person) {
+      if (parsed.person) {
         data = await getMoviesByPerson(
-          ai.aiParams.person,
+          parsed.person,
           mt,
-          ai.aiParams.sort || "popularity",
-          ai.aiParams.role || "director"
+          "popularity",
+          "director",
         );
-      } else if (
-        ai?.aiParams?.isSimilarity &&
-        ai.aiParams.similarTitles.length > 0
-      ) {
-        try {
-          const similarityData = await getAIRecommendations(
-            ai.aiParams.similarTitles,
-            mt,
-            q
-          );
-          if (similarityData?.results?.length > 0) {
-            data = similarityData;
-          }
-        } catch (e) {
-          console.warn("AI recommendations failed, using TMDB similarity:", e);
-        }
-
-        if (!data || !data.results || data.results.length === 0) {
-          data = await getSimilarityResults(ai.aiParams.similarTitles, mt);
-        }
-      } else if (ai?.aiParams) {
-        const discoverParams = buildDiscoverParams(ai, mt, q);
+      } else if (parsed.isSimilarity && parsed.similarTitles.length > 0) {
+        data = await getSimilarityResults(parsed.similarTitles, mt);
+      } else {
         const endpoint = mt === "tv" ? "/discover/tv" : "/discover/movie";
-
         data = await fetchDataFromApi(endpoint, {
-          ...discoverParams,
+          ...parsed.tmdbParams,
           page: 1,
         });
 
         if (!data || (data.results || []).length < 6) {
-          const searchText = ai?.tmdbParams?.query || q;
           const searchEndpoint = mt === "tv" ? "/search/tv" : "/search/movie";
           const searchData = await fetchDataFromApi(searchEndpoint, {
-            query: searchText,
+            query: q,
             page: 1,
           });
           if (searchData?.results?.length) {
@@ -211,7 +280,7 @@ const AIPlaylists = () => {
       if (items.length > 0) {
         setResults(items.map((i) => ({ ...i, media_type: mt })));
         setPlaylistTitle(
-          q ? `Playlist: ${q}` : "Sample Playlist: Horror Movies 2024"
+          q ? `Playlist: ${q}` : "Sample Playlist: Horror Movies 2024",
         );
       } else {
         runSearch("horror movies 2024");
@@ -248,7 +317,7 @@ const AIPlaylists = () => {
         name,
         results,
         query,
-        mediaType
+        mediaType,
       );
       setSaveDialog({ show: false, name: "" });
       loadSavedPlaylists();
@@ -282,7 +351,6 @@ const AIPlaylists = () => {
   useEffect(() => {
     runSearch("horror movies 2024");
     loadSavedPlaylists();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

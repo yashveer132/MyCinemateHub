@@ -1,51 +1,118 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  BsFillArrowLeftCircleFill,
+  BsFillArrowRightCircleFill,
+} from "react-icons/bs";
 
 import "./style.scss";
 
 import ContentWrapper from "../../../components/contentWrapper/ContentWrapper";
-import { generateMemorableQuotes } from "../../../utils/gemini";
+import { fetchQuotesFromWikiquote } from "../../../utils/wikiquote";
+import {
+  getQuotesFromCache,
+  saveQuotesToCache,
+} from "../../../utils/quotesCache";
 
-const MemorableQuotesSection = ({ movieDetails }) => {
-  const [aiQuotes, setAiQuotes] = useState(null);
+const MemorableQuotesSection = ({ movieDetails, mediaType }) => {
+  const [quotes, setQuotes] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const quotesPerPage = 4;
+
+  const carouselContainer = useRef();
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+
+  const checkScrollPosition = () => {
+    const container = carouselContainer.current;
+    if (container) {
+      const { scrollLeft, scrollWidth, clientWidth } = container;
+      setShowLeftArrow(scrollLeft > 5);
+      setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 5);
+    }
+  };
 
   useEffect(() => {
-    const loadAiQuotes = async () => {
-      if (movieDetails && (movieDetails.title || movieDetails.name)) {
+    let isMounted = true;
+
+    const loadQuotes = async () => {
+      if (movieDetails && movieDetails.id) {
         setLoading(true);
         try {
-          const generated = await generateMemorableQuotes(
-            movieDetails.title || movieDetails.name,
-            movieDetails.overview,
-            movieDetails.genres || []
+          const cachedQuotes = getQuotesFromCache(movieDetails.id);
+          if (cachedQuotes && isMounted) {
+            setQuotes(cachedQuotes);
+            setLoading(false);
+            return;
+          }
+
+          const title = movieDetails.title || movieDetails.name;
+          const releaseDate =
+            movieDetails.release_date || movieDetails.first_air_date;
+          const releaseYear = releaseDate
+            ? new Date(releaseDate).getFullYear()
+            : new Date().getFullYear();
+
+          const fetchedQuotes = await fetchQuotesFromWikiquote(
+            title,
+            releaseYear,
+            mediaType || "movie",
           );
-          setAiQuotes(generated);
+
+          if (isMounted) {
+            const top10Quotes = fetchedQuotes.slice(0, 10);
+            setQuotes(top10Quotes);
+
+            if (top10Quotes.length > 0) {
+              saveQuotesToCache(movieDetails.id, top10Quotes);
+            }
+          }
         } catch (error) {
-          console.error("Failed to generate memorable quotes:", error);
+          console.error("[MEMORABLE QUOTES] Failed to load quotes:", error);
+          if (isMounted) {
+            setQuotes([]);
+          }
         } finally {
-          setLoading(false);
+          if (isMounted) {
+            setLoading(false);
+          }
         }
       }
     };
 
-    loadAiQuotes();
-  }, [movieDetails]);
+    loadQuotes();
 
-  const quotesData = aiQuotes;
+    return () => {
+      isMounted = false;
+    };
+  }, [movieDetails, mediaType]);
 
-  const totalQuotes = quotesData?.results?.length || 0;
-  const totalPages = Math.ceil(totalQuotes / quotesPerPage);
-  const startIndex = (currentPage - 1) * quotesPerPage;
-  const endIndex = startIndex + quotesPerPage;
-  const currentQuotes = quotesData?.results?.slice(startIndex, endIndex) || [];
+  useEffect(() => {
+    const container = carouselContainer.current;
+    if (container && quotes && quotes.length > 0) {
+      const timer = setTimeout(checkScrollPosition, 100);
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    const section = document.querySelector('.memorableQuotesSection');
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      container.addEventListener("scroll", checkScrollPosition);
+      window.addEventListener("resize", checkScrollPosition);
+
+      return () => {
+        clearTimeout(timer);
+        container.removeEventListener("scroll", checkScrollPosition);
+        window.removeEventListener("resize", checkScrollPosition);
+      };
+    }
+  }, [quotes, loading]);
+
+  const navigate = (direction) => {
+    const container = carouselContainer.current;
+    if (container) {
+      const scrollAmount =
+        direction === "left"
+          ? container.scrollLeft - container.clientWidth
+          : container.scrollLeft + container.clientWidth;
+
+      container.scrollTo({
+        left: scrollAmount,
+        behavior: "smooth",
+      });
     }
   };
 
@@ -55,85 +122,7 @@ const MemorableQuotesSection = ({ movieDetails }) => {
         <div className="quoteText skeleton"></div>
         <div className="quoteMeta">
           <div className="quoteCharacter skeleton"></div>
-          <div className="quoteContext skeleton"></div>
         </div>
-      </div>
-    );
-  };
-
-  const renderPagination = () => {
-    if (totalPages <= 1) return null;
-
-    const pages = [];
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    if (startPage > 1) {
-      pages.push(
-        <button
-          key={1}
-          className="pageBtn"
-          onClick={() => handlePageChange(1)}
-        >
-          1
-        </button>
-      );
-      if (startPage > 2) {
-        pages.push(<span key="start-ellipsis" className="ellipsis">...</span>);
-      }
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <button
-          key={i}
-          className={`pageBtn ${currentPage === i ? 'active' : ''}`}
-          onClick={() => handlePageChange(i)}
-        >
-          {i}
-        </button>
-      );
-    }
-
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
-        pages.push(<span key="end-ellipsis" className="ellipsis">...</span>);
-      }
-      pages.push(
-        <button
-          key={totalPages}
-          className="pageBtn"
-          onClick={() => handlePageChange(totalPages)}
-        >
-          {totalPages}
-        </button>
-      );
-    }
-
-    return (
-      <div className="pagination">
-        <button
-          className="pageBtn navBtn"
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          ‹ Previous
-        </button>
-        <div className="pageNumbers">
-          {pages}
-        </div>
-        <button
-          className="pageBtn navBtn"
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-        >
-          Next ›
-        </button>
       </div>
     );
   };
@@ -141,30 +130,29 @@ const MemorableQuotesSection = ({ movieDetails }) => {
   return (
     <div className="memorableQuotesSection">
       <ContentWrapper>
-        <div className="sectionHeading">Memorable Quotes</div>
+        <div className="sectionHeading">💬 Memorable Quotes</div>
         {!loading ? (
-          quotesData?.results && quotesData.results.length > 0 ? (
-            <>
-              <div className="quotes">
-                {currentQuotes.map((quote, index) => (
-                  <div key={startIndex + index} className="quoteItem">
+          quotes && quotes.length > 0 ? (
+            <div className="quotesCarouselWrapper">
+              <BsFillArrowLeftCircleFill
+                className={`carouselLeftNav arrow ${!showLeftArrow ? "disabled" : ""}`}
+                onClick={() => navigate("left")}
+              />
+              <BsFillArrowRightCircleFill
+                className={`carouselRighttNav arrow ${!showRightArrow ? "disabled" : ""}`}
+                onClick={() => navigate("right")}
+              />
+              <div className="quotes" ref={carouselContainer}>
+                {quotes.map((quote, index) => (
+                  <div key={index} className="quoteItem">
                     <div className="quoteText">"{quote.quote}"</div>
                     <div className="quoteMeta">
-                      <div className="quoteCharacter">
-                        {quote.character !== "Unknown"
-                          ? `— ${quote.character}`
-                          : ""}
-                      </div>
-                      <div className="quoteContext">{quote.context}</div>
-                      <div className="quoteSignificance">
-                        {quote.significance}
-                      </div>
+                      <div className="quoteCharacter">— {quote.character}</div>
                     </div>
                   </div>
                 ))}
               </div>
-              {renderPagination()}
-            </>
+            </div>
           ) : (
             <div className="quotesEmpty">
               <div className="noQuotes">

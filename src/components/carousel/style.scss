@@ -86,9 +86,16 @@
     margin-left: -20px;
     padding: 0 20px;
     scroll-behavior: smooth;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
     @include md {
       gap: 20px;
-      overflow: hidden;
+      overflow-x: auto;
       margin: 0;
       padding: 0;
     }

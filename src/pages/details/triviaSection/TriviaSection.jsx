@@ -1,47 +1,133 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  BsFillArrowLeftCircleFill,
+  BsFillArrowRightCircleFill,
+} from "react-icons/bs";
 
 import "./style.scss";
 
 import ContentWrapper from "../../../components/contentWrapper/ContentWrapper";
-import { generateTrivia } from "../../../utils/gemini";
+import { fetchTriviaFromWikipedia } from "../../../utils/imdbTrivia";
+import {
+  getTriviaFromCache,
+  saveTriviaToCache,
+} from "../../../utils/triviaCache";
 
 const TriviaSection = ({ movieDetails, mediaType }) => {
-  const [aiTrivia, setAiTrivia] = useState(null);
+  const [triviaData, setTriviaData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [hasWatched, setHasWatched] = useState(false);
   const [showTrivia, setShowTrivia] = useState(false);
 
+  const carouselContainer = useRef();
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+
+  const checkScrollPosition = () => {
+    const container = carouselContainer.current;
+    if (container) {
+      const { scrollLeft, scrollWidth, clientWidth } = container;
+      setShowLeftArrow(scrollLeft > 5);
+      setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 5);
+    }
+  };
+
   useEffect(() => {
-    const loadAiTrivia = async () => {
-      if (
-        hasWatched &&
-        movieDetails &&
-        (movieDetails.title || movieDetails.name)
-      ) {
+    let isMounted = true;
+
+    const loadTrivia = async () => {
+      if (hasWatched && movieDetails && movieDetails.id) {
         setLoading(true);
         try {
-          const generated = await generateTrivia(
-            movieDetails.title || movieDetails.name,
-            movieDetails.overview
+          const title = movieDetails.title || movieDetails.name;
+          const releaseDate =
+            movieDetails.release_date || movieDetails.first_air_date;
+          const releaseYear = releaseDate
+            ? new Date(releaseDate).getFullYear()
+            : new Date().getFullYear();
+
+          const cachedTrivia = getTriviaFromCache(movieDetails.id);
+          if (cachedTrivia && isMounted) {
+            setTriviaData({ results: cachedTrivia });
+            setShowTrivia(true);
+            setLoading(false);
+            return;
+          }
+
+          const scrapedTrivia = await fetchTriviaFromWikipedia(
+            title,
+            releaseYear,
+            mediaType,
           );
-          setAiTrivia(generated);
-          setShowTrivia(true);
+
+          if (isMounted) {
+            setTriviaData({ results: scrapedTrivia });
+            setShowTrivia(true);
+
+            if (scrapedTrivia && scrapedTrivia.length > 0) {
+              saveTriviaToCache(movieDetails.id, scrapedTrivia);
+            }
+          }
         } catch (error) {
-          console.error("Failed to generate trivia:", error);
+          console.error("Failed to load trivia:", error);
+          if (isMounted) {
+            setTriviaData({ results: [] });
+            setShowTrivia(true);
+          }
         } finally {
-          setLoading(false);
+          if (isMounted) {
+            setLoading(false);
+          }
         }
       }
     };
 
-    if (hasWatched && !aiTrivia) {
-      loadAiTrivia();
+    if (hasWatched && !triviaData) {
+      loadTrivia();
     }
-  }, [hasWatched, movieDetails, aiTrivia]);
 
-  const triviaData = aiTrivia;
+    return () => {
+      isMounted = false;
+    };
+  }, [hasWatched, movieDetails, mediaType, triviaData]);
 
-  const triviaItems = (triviaData?.results || []).slice(0, 6);
+  useEffect(() => {
+    const container = carouselContainer.current;
+    if (
+      container &&
+      triviaData?.results &&
+      triviaData.results.length > 0 &&
+      showTrivia
+    ) {
+      const timer = setTimeout(checkScrollPosition, 100);
+
+      container.addEventListener("scroll", checkScrollPosition);
+      window.addEventListener("resize", checkScrollPosition);
+
+      return () => {
+        clearTimeout(timer);
+        container.removeEventListener("scroll", checkScrollPosition);
+        window.removeEventListener("resize", checkScrollPosition);
+      };
+    }
+  }, [triviaData, loading, showTrivia]);
+
+  const navigate = (direction) => {
+    const container = carouselContainer.current;
+    if (container) {
+      const scrollAmount =
+        direction === "left"
+          ? container.scrollLeft - container.clientWidth
+          : container.scrollLeft + container.clientWidth;
+
+      container.scrollTo({
+        left: scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const triviaItems = triviaData?.results || [];
 
   const handleCheckboxChange = (e) => {
     setHasWatched(e.target.checked);
@@ -60,13 +146,17 @@ const TriviaSection = ({ movieDetails, mediaType }) => {
 
   const getIconForType = (type) => {
     switch (type) {
-      case "easter_egg":
-        return "🥚";
-      case "fun_fact":
-        return "🎉";
-      case "trivia":
-      default:
+      case "development":
         return "💡";
+      case "casting":
+        return "👥";
+      case "music":
+        return "🎵";
+      case "legacy":
+        return "🌟";
+      case "filming":
+      default:
+        return "🎬";
     }
   };
 
@@ -84,7 +174,7 @@ const TriviaSection = ({ movieDetails, mediaType }) => {
     <div className="triviaSection">
       <ContentWrapper>
         <div className="sectionHeading">
-          {getMediaTypeText()} Trivia, Fun Facts & Easter Eggs
+          🎬 {getMediaTypeText()} Behind the Scenes
         </div>
 
         <div className="watchedCheckboxContainer">
@@ -130,22 +220,36 @@ const TriviaSection = ({ movieDetails, mediaType }) => {
           <>
             {!loading ? (
               showTrivia && triviaItems.length > 0 ? (
-                <div className="triviaGrid">
-                  {triviaItems.map((item) => (
-                    <div key={item.id} className="triviaItem">
-                      <div className="triviaIcon">
-                        {getIconForType(item.type)}
+                <div className="triviaCarouselWrapper">
+                  <BsFillArrowLeftCircleFill
+                    className={`carouselLeftNav arrow ${!showLeftArrow ? "disabled" : ""}`}
+                    onClick={() => navigate("left")}
+                  />
+                  <BsFillArrowRightCircleFill
+                    className={`carouselRighttNav arrow ${!showRightArrow ? "disabled" : ""}`}
+                    onClick={() => navigate("right")}
+                  />
+                  <div className="triviaGrid" ref={carouselContainer}>
+                    {triviaItems.map((item) => (
+                      <div key={item.id} className="triviaItem">
+                        <div className="triviaIcon">
+                          {getIconForType(item.type)}
+                        </div>
+                        <div className="triviaText">{item.text}</div>
+                        <div className="triviaType">
+                          {item.type === "development"
+                            ? "Development"
+                            : item.type === "casting"
+                              ? "Casting"
+                              : item.type === "music"
+                                ? "Music & Sound"
+                                : item.type === "legacy"
+                                  ? "Legacy & Impact"
+                                  : "Filming & Production"}
+                        </div>
                       </div>
-                      <div className="triviaText">{item.text}</div>
-                      <div className="triviaType">
-                        {item.type === "easter_egg"
-                          ? "Easter Egg"
-                          : item.type === "fun_fact"
-                          ? "Fun Fact"
-                          : "Trivia"}
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               ) : (
                 showTrivia && (
@@ -162,9 +266,9 @@ const TriviaSection = ({ movieDetails, mediaType }) => {
               )
             ) : (
               <div className="triviaGrid">
-                {[...Array(6)].map((_, index) => (
+                {[...Array(4)].map((_, index) => (
                   <div key={index} className="triviaItem">
-                    <div className="triviaText skeleton"></div>
+                    {skeleton()}
                   </div>
                 ))}
               </div>
