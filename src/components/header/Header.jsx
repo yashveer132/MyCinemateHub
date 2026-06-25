@@ -102,9 +102,6 @@ const Header = () => {
           </div>
           <div className="headerTitle">
             <span className="brand">Cinemate</span>
-            <div className="subtitle">
-              <span className="platform">Movie Platform</span>
-            </div>
           </div>
         </div>
 
