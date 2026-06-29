@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import dayjs from "dayjs";
@@ -9,12 +9,13 @@ import ContentWrapper from "../../../components/contentWrapper/ContentWrapper";
 import useFetch from "../../../hooks/useFetch";
 import Genres from "../../../components/genres/Genres";
 import CircleRating from "../../../components/circleRating/CircleRating";
-import ImdbRating from "../../../components/imdbRating/ImdbRating";
+import { fetchImdbRating } from "../../../utils/api";
 import AdditionalRatings from "../../../components/additionalRatings/AdditionalRatings";
 import Img from "../../../components/lazyLoadImage/Img.jsx";
 import PosterFallback from "../../../assets/no-poster.png";
 import { PlayIcon } from "../Playbtn";
 import VideoPopup from "../../../components/videoPopup/VideoPopup";
+import { generateGoogleCalendarLink } from "../../../utils/calendar";
 
 const DetailsBanner = ({ video, crew }) => {
   const [show, setShow] = useState(false);
@@ -22,15 +23,44 @@ const DetailsBanner = ({ video, crew }) => {
   const [imdbData, setImdbData] = useState(null);
 
   const { mediaType, id } = useParams();
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadImdb = async () => {
+      if (id) {
+        setImdbData(null);
+        try {
+          const res = await fetchImdbRating(id, mediaType);
+          if (isMounted) {
+            setImdbData(res);
+          }
+        } catch (error) {
+          console.error("Failed to load IMDb rating:", error);
+          if (isMounted) {
+            setImdbData({ rating: null });
+          }
+        }
+      }
+    };
+    loadImdb();
+    return () => {
+      isMounted = false;
+    };
+  }, [id, mediaType]);
   const navigate = useNavigate();
   const { data, loading } = useFetch(`/${mediaType}/${id}`);
   const { url } = useSelector((state) => state.home);
+
+  const releaseDate = data?.release_date || data?.first_air_date;
+  const isComingSoon = releaseDate
+    ? dayjs(releaseDate).isAfter(dayjs())
+    : false;
 
   const _genres = data?.genres?.map((g) => g.id);
 
   const director = crew?.filter((f) => f.job === "Director");
   const writer = crew?.filter(
-    (f) => f.job === "Screenplay" || f.job === "Story" || f.job === "Writer"
+    (f) => f.job === "Screenplay" || f.job === "Story" || f.job === "Writer",
   );
 
   const toHoursAndMinutes = (totalMinutes) => {
@@ -68,7 +98,7 @@ const DetailsBanner = ({ video, crew }) => {
                   <div className="right">
                     <div className="title">
                       {`${data.name || data.title} (${dayjs(
-                        data?.first_air_date || data?.release_date
+                        data?.first_air_date || data?.release_date,
                       ).format("YYYY")})`}
                     </div>
                     <div className="subtitle">{data.tagline}</div>
@@ -76,48 +106,83 @@ const DetailsBanner = ({ video, crew }) => {
                     <Genres data={_genres} />
 
                     <div className="row">
-                      <div className="ratingsSection">
-                        <CircleRating
-                          rating={
-                            data.vote_average
-                              ? data.vote_average.toFixed(1)
-                              : "0.0"
-                          }
-                          voteCount={data.vote_count}
-                          showTooltip={false}
-                        />
-                        <div className="ratingInfo">
-                          <div className="ratingLabel">TMDB</div>
-                          <div className="voteCount">
-                            {data.vote_count?.toLocaleString() || "0"} votes
+                      {!isComingSoon && (
+                        <>
+                          <div className="ratingsSection">
+                            <CircleRating
+                              rating={
+                                data.vote_average
+                                  ? data.vote_average.toFixed(1)
+                                  : "0.0"
+                              }
+                              voteCount={data.vote_count}
+                              showTooltip={false}
+                            />
+                            <div className="ratingInfo">
+                              <div className="ratingLabel">TMDB</div>
+                              <div className="voteCount">
+                                {data.vote_count?.toLocaleString() || "0"} votes
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
 
-                      <div className="ratingsSection">
-                        <ImdbRating
-                          tmdbId={id}
-                          mediaType={mediaType}
-                          onDataLoaded={setImdbData}
-                          showTooltip={false}
-                        />
-                        <div className="ratingInfo">
-                          <div className="ratingLabel">IMDb</div>
-                          <div className="voteCount">
-                            {imdbData
-                              ? imdbData.votes
-                                ? `${imdbData.votes} votes`
-                                : "N/A votes"
-                              : "Loading..."}
-                          </div>
-                        </div>
-                      </div>
+                          {imdbData?.rating && imdbData.rating !== "N/A" && (
+                            <div className="ratingsSection">
+                              <div className="imdbRating">
+                                <span className="ratingText">
+                                  {imdbData.rating}
+                                </span>
+                              </div>
+                              <div className="ratingInfo">
+                                <div className="ratingLabel">IMDb</div>
+                                <div className="voteCount">
+                                  {imdbData.votes
+                                    ? `${imdbData.votes} votes`
+                                    : "N/A votes"}
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
-                      {imdbData?.additionalRatings && (
-                        <AdditionalRatings
-                          ratings={imdbData.additionalRatings}
-                          showTooltip={false}
-                        />
+                          {imdbData?.additionalRatings && (
+                            <AdditionalRatings
+                              ratings={imdbData.additionalRatings}
+                              showTooltip={false}
+                            />
+                          )}
+                        </>
+                      )}
+
+                      {isComingSoon && (
+                        <button
+                          type="button"
+                          className="calendarSyncBtn"
+                          onClick={() => {
+                            const dateStr =
+                              data.release_date || data.first_air_date;
+                            const titleStr =
+                              mediaType === "movie"
+                                ? `🎬 Premiere: ${data.title}`
+                                : `📺 Premiere: ${data.name}`;
+                            const description =
+                              `${data.title || data.name} Premiere!\n\n` +
+                              `• Release Date: ${dayjs(dateStr).format("MMMM D, YYYY")}\n` +
+                              `• Overview: ${data.overview || "No overview available."}\n\n` +
+                              `Synced via Cinemate. Mark your calendar! 🍿`;
+
+                            const link = generateGoogleCalendarLink({
+                              title: titleStr,
+                              description,
+                              location: window.location.href,
+                              startDate: dateStr,
+                              allDay: true,
+                            });
+
+                            if (link) window.open(link, "_blank");
+                          }}
+                        >
+                          📅 Add Premiere to Calendar
+                        </button>
                       )}
 
                       {video?.key && (

@@ -170,6 +170,7 @@ const WatchedItemCard = ({ data, mediaType, url }) => {
                 tmdbId={data.id}
                 mediaType={data.media_type || mediaType || "movie"}
                 showTooltip={false}
+                onlyFromCache={true}
               />
             </div>
             <Genres data={data.genre_ids?.slice(0, 2) || []} />

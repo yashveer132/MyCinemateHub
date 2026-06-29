@@ -176,8 +176,8 @@ export const fetchTriviaFromWikipedia = async (
 
   const searchQuery =
     mediaType === "tv"
-      ? `${title} ${year} television series`
-      : `${title} ${year} film`;
+      ? `intitle:"${title}" television series`
+      : `intitle:"${title}" film`;
 
   console.log(`[WIKIPEDIA TRIVIA] Searching Wikipedia for: "${searchQuery}"`);
 
@@ -195,7 +195,15 @@ export const fetchTriviaFromWikipedia = async (
       return [];
     }
 
-    const pageTitle = searchResults[0].title;
+    const bestResult =
+      searchResults.find(
+        (res) =>
+          !res.title.startsWith("List of") &&
+          !res.title.toLowerCase().includes("list of") &&
+          !res.title.toLowerCase().includes("season"),
+      ) || searchResults[0];
+
+    const pageTitle = bestResult.title;
     console.log(`[WIKIPEDIA TRIVIA] Found page: "${pageTitle}"`);
 
     const parseUrl = `https://en.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(pageTitle)}&prop=text&format=json&origin=*`;

@@ -6,24 +6,142 @@ const OMDB_BASE_URL = import.meta.env.DEV
   : "https://www.omdbapi.com/";
 
 const TMDB_TOKEN = import.meta.env.VITE_APP_TMDB_TOKEN;
-const OMDB_API_KEY = import.meta.env.VITE_OMDB_API_KEY;
 
-const headers = {
-  Authorization: "bearer " + TMDB_TOKEN,
+const OMDB_API_KEYS = (import.meta.env.VITE_OMDB_API_KEY || "")
+  .split(",")
+  .map((key) => key.trim())
+  .filter(Boolean);
+
+let currentOmdbKeyIndex = 0;
+const rateLimitedKeys = new Set();
+
+const getOmdbApiKey = () => {
+  const activeKeys = OMDB_API_KEYS.filter((key) => !rateLimitedKeys.has(key));
+  if (activeKeys.length === 0) return null;
+  const key = activeKeys[currentOmdbKeyIndex % activeKeys.length];
+  currentOmdbKeyIndex = (currentOmdbKeyIndex + 1) % activeKeys.length;
+  return key;
 };
 
-const imdbRatingsCache = new Map();
+const fetchFromOmdb = async (params) => {
+  const activeKeysCount = OMDB_API_KEYS.filter(
+    (key) => !rateLimitedKeys.has(key),
+  ).length;
+  if (activeKeysCount === 0) {
+    return {
+      data: { Response: "False", Error: "All OMDb API keys are rate-limited" },
+    };
+  }
+
+  for (let i = 0; i < activeKeysCount; i++) {
+    const apikey = getOmdbApiKey();
+    if (!apikey) break;
+    try {
+      const response = await axios.get(OMDB_BASE_URL, {
+        params: {
+          ...params,
+          apikey,
+        },
+      });
+
+      if (
+        response.data?.Response === "False" &&
+        response.data?.Error?.toLowerCase().includes("limit reached")
+      ) {
+        console.warn(
+          `[OMDB] Key ${apikey} reached rate limit. Disabling it for this session.`,
+        );
+        rateLimitedKeys.add(apikey);
+        continue;
+      }
+      return response;
+    } catch (error) {
+      console.error(
+        `[OMDB] Error fetching from OMDb with key ${apikey}:`,
+        error.message,
+      );
+    }
+  }
+
+  return {
+    data: {
+      Response: "False",
+      Error: "All OMDb API keys are rate-limited or failed",
+    },
+  };
+};
+
+const extractApiKey = (token) => {
+  if (!token || token === "undefined") return null;
+  try {
+    const parts = token.split(".");
+    if (parts.length === 3) {
+      const payload = JSON.parse(
+        atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")),
+      );
+      return payload.aud;
+    }
+  } catch (e) {
+    console.error("[TMDB] Failed to parse JWT token to extract API key:", e);
+  }
+  return null;
+};
+
+const TMDB_API_KEY =
+  import.meta.env.VITE_APP_TMDB_API_KEY || extractApiKey(TMDB_TOKEN);
+
+const loadCache = () => {
+  try {
+    const saved = localStorage.getItem("imdb_ratings_cache");
+    if (saved) {
+      return new Map(JSON.parse(saved));
+    }
+  } catch (e) {
+    console.error("[IMDB] Failed to load ratings cache from localStorage:", e);
+  }
+  return new Map();
+};
+
+const imdbRatingsCache = loadCache();
+
+const saveCache = () => {
+  try {
+    localStorage.setItem(
+      "imdb_ratings_cache",
+      JSON.stringify(Array.from(imdbRatingsCache.entries())),
+    );
+  } catch (e) {
+    console.error("[IMDB] Failed to save ratings cache to localStorage:", e);
+  }
+};
+
+const setCacheItem = (key, value) => {
+  imdbRatingsCache.set(key, value);
+  saveCache();
+};
 
 export const clearImdbRatingsCache = () => {
   imdbRatingsCache.clear();
+  try {
+    localStorage.removeItem("imdb_ratings_cache");
+  } catch (e) {}
   console.log("[IMDB] Cache cleared");
 };
 
 export const fetchDataFromApi = async (url, params) => {
   try {
+    const queryParams = { ...params };
+    const requestHeaders = {};
+
+    if (TMDB_API_KEY) {
+      queryParams.api_key = TMDB_API_KEY;
+    } else if (TMDB_TOKEN && TMDB_TOKEN !== "undefined") {
+      requestHeaders.Authorization = "bearer " + TMDB_TOKEN;
+    }
+
     const { data } = await axios.get(BASE_URL + url, {
-      headers,
-      params,
+      headers: requestHeaders,
+      params: queryParams,
     });
     return data;
   } catch (error) {
@@ -302,13 +420,10 @@ export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
           movieDetails.release_date || movieDetails.first_air_date;
         const year = releaseDate ? new Date(releaseDate).getFullYear() : null;
 
-        const fallbackResponse = await axios.get(OMDB_BASE_URL, {
-          params: {
-            t: title,
-            y: year,
-            type: mediaType === "tv" ? "series" : "movie",
-            apikey: OMDB_API_KEY,
-          },
+        const fallbackResponse = await fetchFromOmdb({
+          t: title,
+          y: year,
+          type: mediaType === "tv" ? "series" : "movie",
         });
 
         if (
@@ -341,7 +456,7 @@ export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
               imdbId: fallbackResponse.data.imdbID,
               additionalRatings,
             };
-            imdbRatingsCache.set(cacheKey, result);
+            setCacheItem(cacheKey, result);
             return result;
           } else {
             console.log(`[IMDB] Title search returned N/A for ${title}`);
@@ -360,15 +475,12 @@ export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
         votes: null,
         error: "No IMDB ID found and title search failed",
       };
-      imdbRatingsCache.set(cacheKey, result);
+      setCacheItem(cacheKey, result);
       return result;
     }
 
-    const response = await axios.get(OMDB_BASE_URL, {
-      params: {
-        i: externalIds.imdb_id,
-        apikey: OMDB_API_KEY,
-      },
+    const response = await fetchFromOmdb({
+      i: externalIds.imdb_id,
     });
 
     if (response.data && response.data.Response === "True") {
@@ -390,7 +502,7 @@ export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
           imdbId: externalIds.imdb_id,
           additionalRatings,
         };
-        imdbRatingsCache.set(cacheKey, result);
+        setCacheItem(cacheKey, result);
         return result;
       } else {
         console.log(`[IMDB] Rating not available for ${externalIds.imdb_id}`);
@@ -407,7 +519,7 @@ export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
       error: "Rating not available",
       imdbId: externalIds.imdb_id,
     };
-    imdbRatingsCache.set(cacheKey, result);
+    setCacheItem(cacheKey, result);
     return result;
   } catch (error) {
     console.error(
@@ -427,11 +539,8 @@ export const fetchAwardsFromOMDb = async (tmdbId, mediaType = "movie") => {
     let omdbData = null;
 
     if (externalIds?.imdb_id) {
-      const response = await axios.get(OMDB_BASE_URL, {
-        params: {
-          i: externalIds.imdb_id,
-          apikey: OMDB_API_KEY,
-        },
+      const response = await fetchFromOmdb({
+        i: externalIds.imdb_id,
       });
 
       if (response.data && response.data.Response === "True") {
@@ -447,13 +556,10 @@ export const fetchAwardsFromOMDb = async (tmdbId, mediaType = "movie") => {
           movieDetails.release_date || movieDetails.first_air_date;
         const year = releaseDate ? new Date(releaseDate).getFullYear() : null;
 
-        const fallbackResponse = await axios.get(OMDB_BASE_URL, {
-          params: {
-            t: title,
-            y: year,
-            type: mediaType === "tv" ? "series" : "movie",
-            apikey: OMDB_API_KEY,
-          },
+        const fallbackResponse = await fetchFromOmdb({
+          t: title,
+          y: year,
+          type: mediaType === "tv" ? "series" : "movie",
         });
 
         if (

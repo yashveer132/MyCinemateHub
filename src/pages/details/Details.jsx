@@ -37,9 +37,22 @@ const Details = () => {
     `/${mediaType}/${id}`,
   );
 
+  const getOfficialTrailer = (results) => {
+    if (!results || !results.length) return null;
+    const official = results.find(
+      (v) => v.type === "Trailer" && v.name?.toLowerCase().includes("official")
+    );
+    if (official) return official;
+    const trailer = results.find((v) => v.type === "Trailer");
+    if (trailer) return trailer;
+    const teaser = results.find((v) => v.type === "Teaser");
+    if (teaser) return teaser;
+    return results[0];
+  };
+
   return (
     <div>
-      <DetailsBanner video={data?.results?.[0]} crew={credits?.crew} />
+      <DetailsBanner video={getOfficialTrailer(data?.results)} crew={credits?.crew} />
       {mediaType === "tv" && <BingeCalculator showId={id} showData={details} />}
       {mediaType === "movie" && (
         <div

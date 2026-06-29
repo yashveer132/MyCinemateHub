@@ -5,18 +5,11 @@ import Carousel from "../../../components/carousel/Carousel";
 import "./style.scss";
 
 const MovieByYear = () => {
-  const [selectedYear, setSelectedYear] = useState("2025");
+  const [selectedYear, setSelectedYear] = useState("2026");
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
 
   const yearCategories = [
-    {
-      id: "2020",
-      year: "2020",
-      icon: "🎬",
-      gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      tagline: "Pandemic Era",
-    },
     {
       id: "2021",
       year: "2021",
@@ -48,6 +41,13 @@ const MovieByYear = () => {
     {
       id: "2025",
       year: "2025",
+      icon: "🎬",
+      gradient: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+      tagline: "Recent Blockbusters",
+    },
+    {
+      id: "2026",
+      year: "2026",
       icon: "🚀",
       gradient: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
       tagline: "Current Year",

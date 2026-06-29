@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { fetchDataFromApi } from "../../../utils/api";
 import ContentWrapper from "../../../components/contentWrapper/ContentWrapper";
+import { generateGoogleCalendarLink } from "../../../utils/calendar";
 import "./style.scss";
 
 const BingeCalculator = ({ showId, showData }) => {
@@ -19,11 +20,11 @@ const BingeCalculator = ({ showId, showData }) => {
       setLoading(true);
       try {
         const seasonsToFetch = showData.seasons.filter(
-          (season) => season.season_number > 0
+          (season) => season.season_number > 0,
         );
 
         const seasonPromises = seasonsToFetch.map((season) =>
-          fetchDataFromApi(`/tv/${showId}/season/${season.season_number}`)
+          fetchDataFromApi(`/tv/${showId}/season/${season.season_number}`),
         );
 
         const seasonsDetails = await Promise.all(seasonPromises);
@@ -52,7 +53,7 @@ const BingeCalculator = ({ showId, showData }) => {
 
         const grandTotal = processedSeasons.reduce(
           (sum, season) => sum + season.totalMinutes,
-          0
+          0,
         );
         setTotalMinutes(grandTotal);
       } catch (error) {
@@ -196,6 +197,41 @@ const BingeCalculator = ({ showId, showData }) => {
                 </span>
                 <span className="statLabel">Days (3h/day)</span>
               </div>
+            </div>
+            <div className="calendarSyncAction">
+              <button
+                type="button"
+                className="calendarSyncBtn"
+                onClick={() => {
+                  const totalEpisodes = seasonData.reduce(
+                    (sum, s) => sum + s.episodeCount,
+                    0,
+                  );
+                  const estimatedDays = getEstimatedCompletionTime(
+                    totalMinutes,
+                    selectedSpeed,
+                  );
+                  const description =
+                    `Binge-watching plan for ${showData.name}!\n\n` +
+                    `• Seasons: ${seasonData.length}\n` +
+                    `• Total Episodes: ${totalEpisodes}\n` +
+                    `• Total Runtime: ${formatDetailedTime(totalMinutes, selectedSpeed)}\n` +
+                    `• Binge Pace: ${estimatedDays} days (estimated at 3 hours/day)\n\n` +
+                    `Generated via Cinemate. Happy Bingeing! 🍿`;
+
+                  const link = generateGoogleCalendarLink({
+                    title: `🍿 Binge Session: ${showData.name}`,
+                    description,
+                    location: window.location.href,
+                    startDate: new Date().toISOString().split("T")[0],
+                    allDay: true,
+                  });
+
+                  if (link) window.open(link, "_blank");
+                }}
+              >
+                📅 Schedule Binge Session
+              </button>
             </div>
           </div>
         </div>

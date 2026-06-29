@@ -180,6 +180,34 @@
         margin-bottom: 25px;
         flex-wrap: wrap;
 
+        .calendarSyncBtn {
+          background: rgba(255, 255, 255, 0.08);
+          color: white;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          padding: 10px 24px;
+          border-radius: 30px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: all 0.3s ease;
+          backdrop-filter: blur(5px);
+
+          &:hover {
+            background: var(--pink);
+            color: white;
+            border-color: var(--pink);
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(218, 47, 104, 0.3);
+          }
+
+          &:active {
+            transform: scale(1);
+          }
+        }
+
         .ratingsSection {
           display: flex;
           align-items: center;

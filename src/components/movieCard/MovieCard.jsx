@@ -131,13 +131,6 @@ const MovieCard = ({
         <div className="posterBlock">
           <Img className="posterImg" src={posterUrl} />
 
-          {hasReview && (
-            <div className="reviewBadge">
-              <FaStar />
-              <span>{watchedItem.review.rating}</span>
-            </div>
-          )}
-
           <div className={`actionButtons ${showActions ? "show" : ""}`}>
             <button
               className={`actionBtn favoriteBtn ${isFavorite ? "active" : ""}`}
@@ -166,7 +159,7 @@ const MovieCard = ({
               onClick={(e) =>
                 handleActionClick(
                   e,
-                  isWatched ? moveToWatchLaterAction : toggleWatched
+                  isWatched ? moveToWatchLaterAction : toggleWatched,
                 )
               }
               title={isWatched ? "Move to Watch Later" : "Mark as Watched"}
@@ -175,8 +168,8 @@ const MovieCard = ({
             </button>
           </div>
 
-          {!fromSearch && (
-            <React.Fragment>
+          <React.Fragment>
+            {!(data.release_date || data.first_air_date ? dayjs(data.release_date || data.first_air_date).isAfter(dayjs()) : false) && (
               <div className="ratingsWrapper">
                 <CircleRating
                   rating={(data.vote_average || 0).toFixed(1)}
@@ -187,11 +180,18 @@ const MovieCard = ({
                   tmdbId={data.id}
                   mediaType={data.media_type || mediaType || "movie"}
                   showTooltip={false}
+                  onlyFromCache={true}
                 />
+                {hasReview && (
+                  <div className="reviewBadge">
+                    <FaStar />
+                    <span>{watchedItem.review.rating}</span>
+                  </div>
+                )}
               </div>
-              <Genres data={data.genre_ids?.slice(0, 2) || []} />
-            </React.Fragment>
-          )}
+            )}
+            {!fromSearch && <Genres data={data.genre_ids?.slice(0, 2) || []} />}
+          </React.Fragment>
         </div>
         <div className="textBlock">
           <span className="title">{data.title || data.name}</span>
@@ -199,7 +199,7 @@ const MovieCard = ({
             {showWatchedDate && data.watchedAt
               ? `Watched ${dayjs(data.watchedAt).format("MMM D, YYYY")}`
               : dayjs(data.release_date || data.first_air_date).format(
-                  "MMM D, YYYY"
+                  "MMM D, YYYY",
                 )}
           </span>
         </div>

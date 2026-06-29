@@ -1,35 +1,39 @@
-import React, { useState } from "react";
+import React from "react";
 import ReactPlayer from "react-player/youtube";
-import { FaUsers } from "react-icons/fa";
-import WatchParty from "../watchParty/WatchParty";
+import { useSelector } from "react-redux";
 import "./style.scss";
 
 const VideoPopup = ({ show, setShow, videoId, setVideoId, movieData }) => {
-  const [isWatchParty, setIsWatchParty] = useState(false);
+  const { url } = useSelector((state) => state.home);
 
   const hidePopup = () => {
     setShow(false);
     setVideoId(null);
-    setIsWatchParty(false);
   };
+
+  const backdropUrl = movieData?.backdrop_path
+    ? url.backdrop + movieData.backdrop_path
+    : movieData?.poster_path
+      ? url.poster + movieData.poster_path
+      : "";
 
   return (
     <div className={`videoPopup ${show ? "visible" : ""}`}>
       <div className="opacityLayer" onClick={hidePopup}></div>
       <div className="videoContainer">
         <div className="videoPlayer">
-          {isWatchParty ? (
-            <WatchParty
-              videoId={videoId}
-              movieData={movieData}
-              onClose={() => setIsWatchParty(false)}
-            />
-          ) : (
-            <>
-              <span className="closeBtn" onClick={hidePopup}>
-                Close
-              </span>
-              {videoId ? (
+          <span className="closeBtn" onClick={hidePopup}>
+            Close
+          </span>
+          {videoId ? (
+            <div className="ambilightWrapper">
+              {backdropUrl && (
+                <div
+                  className="ambilightGlow"
+                  style={{ backgroundImage: `url(${backdropUrl})` }}
+                />
+              )}
+              <div className="videoPlayerContainer">
                 <ReactPlayer
                   url={`https://www.youtube.com/watch?v=${videoId}`}
                   controls
@@ -37,28 +41,18 @@ const VideoPopup = ({ show, setShow, videoId, setVideoId, movieData }) => {
                   height="100%"
                   playing={true}
                 />
-              ) : (
-                <div className="noVideo">
-                  <div className="noVideoIcon">🎥</div>
-                  <div className="noVideoText">No video available</div>
-                  <div className="noVideoSubtext">
-                    This trailer or video is not available at the moment
-                  </div>
-                </div>
-              )}
-            </>
+              </div>
+            </div>
+          ) : (
+            <div className="noVideo">
+              <div className="noVideoIcon">🎥</div>
+              <div className="noVideoText">No video available</div>
+              <div className="noVideoSubtext">
+                This trailer or video is not available at the moment
+              </div>
+            </div>
           )}
         </div>
-        {!isWatchParty && videoId && (
-          <div className="videoActions">
-            <button
-              className="watchPartyBtn"
-              onClick={() => setIsWatchParty(true)}
-            >
-              <FaUsers /> Start Watch Party
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -93,7 +93,7 @@ const uniqueById = (arr) => {
 export const computeInsightsInput = (
   favorites = [],
   watchLater = [],
-  watched = []
+  watched = [],
 ) => {
   const all = [...favorites, ...watchLater, ...watched];
   return {
@@ -108,11 +108,23 @@ export const computeInsightsInput = (
   };
 };
 
+export const getCachedInsights = (
+  favorites = [],
+  watchLater = [],
+  watched = [],
+  mediaType = "movie",
+) => {
+  const input = computeInsightsInput(favorites, watchLater, watched);
+  const stableKey = hashInput({ ...input, mediaType });
+  const cache = readCache();
+  return cache[stableKey] || null;
+};
+
 export const getAIInsightsWithRecommendations = async (
   favorites,
   watchLater,
   watched,
-  { mediaType = "movie" } = {}
+  { mediaType = "movie" } = {},
 ) => {
   const input = computeInsightsInput(favorites, watchLater, watched);
   const stableKey = hashInput({ ...input, mediaType });
@@ -129,7 +141,7 @@ export const getAIInsightsWithRecommendations = async (
     const params = buildDiscoverParams(
       insights.suggestedKeywords,
       insights.topGenres,
-      mediaType
+      mediaType,
     );
     const endpoint = mediaType === "tv" ? "/discover/tv" : "/discover/movie";
     const data = await fetchDataFromApi(endpoint, params);
@@ -146,7 +158,7 @@ export const getAIInsightsWithRecommendations = async (
   }
 
   const ownedIds = new Set(
-    [...favorites, ...watchLater, ...watched].map((m) => m.id)
+    [...favorites, ...watchLater, ...watched].map((m) => m.id),
   );
   const recommended = uniqueById(results)
     .filter((r) => !ownedIds.has(r.id))

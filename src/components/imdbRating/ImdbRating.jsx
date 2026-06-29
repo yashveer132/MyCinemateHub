@@ -9,6 +9,7 @@ const ImdbRating = ({
   showVotes = false,
   onDataLoaded,
   showTooltip = false,
+  onlyFromCache = false,
 }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,6 +20,40 @@ const ImdbRating = ({
     const fetchRating = async () => {
       if (!tmdbId) {
         setLoading(false);
+        if (onDataLoaded) {
+          onDataLoaded({ rating: null, votes: null });
+        }
+        return;
+      }
+
+      const cacheKey = `${mediaType}-${tmdbId}`;
+      try {
+        const saved = localStorage.getItem("imdb_ratings_cache");
+        if (saved) {
+          const cacheMap = new Map(JSON.parse(saved));
+          if (cacheMap.has(cacheKey)) {
+            const cachedData = cacheMap.get(cacheKey);
+            if (mounted) {
+              setData(cachedData);
+              setLoading(false);
+              if (onDataLoaded) {
+                onDataLoaded(cachedData);
+              }
+            }
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("[IMDB] Failed to read localStorage synchronously:", e);
+      }
+
+      if (onlyFromCache) {
+        if (mounted) {
+          setLoading(false);
+          if (onDataLoaded) {
+            onDataLoaded({ rating: null, votes: null });
+          }
+        }
         return;
       }
 
@@ -27,14 +62,18 @@ const ImdbRating = ({
         if (mounted) {
           setData(result);
           setLoading(false);
-          if (onDataLoaded && result.rating) {
+          if (onDataLoaded) {
             onDataLoaded(result);
           }
         }
       } catch (error) {
         if (mounted) {
-          setData({ rating: null, error: error.message });
+          const result = { rating: null, votes: null, error: error.message };
+          setData(result);
           setLoading(false);
+          if (onDataLoaded) {
+            onDataLoaded(result);
+          }
         }
       }
     };
@@ -44,29 +83,29 @@ const ImdbRating = ({
     return () => {
       mounted = false;
     };
-  }, [tmdbId, mediaType, onDataLoaded]);
+  }, [tmdbId, mediaType, onDataLoaded, onlyFromCache]);
 
   if (loading) {
-    return (
-      <div className="imdbRating loading">
-        <span className="ratingText">...</span>
-      </div>
-    );
+    return null;
+  }
+
+  if (!data?.rating || data.rating === "N/A") {
+    return null;
   }
 
   const tooltipContent =
     showTooltip && data ? (
       <div className="rating-tooltip">
         <div className="rating-type">IMDb Rating</div>
-        <div className="rating-value">{data.rating || "N/A"}</div>
+        <div className="rating-value">{data.rating}</div>
         {data.votes && <div className="vote-count">{data.votes} votes</div>}
       </div>
     ) : null;
 
   const ratingElement = (
     <div className="imdbRating">
-      <span className="ratingText">{data?.rating || "N/A"}</span>
-      {showVotes && data?.votes && (
+      <span className="ratingText">{data.rating}</span>
+      {showVotes && data.votes && (
         <span className="votesText">{data.votes}</span>
       )}
     </div>

@@ -128,6 +128,7 @@ const COLORS = [
 ];
 
 const StatisticsSection = ({ favorites, watched }) => {
+  const [showCharts, setShowCharts] = useState(false);
   const allItems = useMemo(() => [...watched], [watched]);
 
   const [runtimeData, setRuntimeData] = useState({});
@@ -169,7 +170,7 @@ const StatisticsSection = ({ favorites, watched }) => {
         } catch (error) {
           console.warn(
             `Failed to fetch runtime for ${item.title || item.name}:`,
-            error
+            error,
           );
         }
       }
@@ -207,14 +208,14 @@ const StatisticsSection = ({ favorites, watched }) => {
     const totalItems = allItems.length;
 
     const itemsWithReviews = allItems.filter(
-      (item) => item.review && item.review.rating > 0
+      (item) => item.review && item.review.rating > 0,
     );
     const totalReviews = itemsWithReviews.length;
     const reviewPercentage =
       totalItems > 0 ? ((totalReviews / totalItems) * 100).toFixed(1) : 0;
 
     const reviewsWithText = itemsWithReviews.filter(
-      (item) => item.review.reviewText && item.review.reviewText.trim()
+      (item) => item.review.reviewText && item.review.reviewText.trim(),
     ).length;
 
     const avgUserRating =
@@ -222,7 +223,7 @@ const StatisticsSection = ({ favorites, watched }) => {
         ? (
             itemsWithReviews.reduce(
               (sum, item) => sum + item.review.rating,
-              0
+              0,
             ) / itemsWithReviews.length
           ).toFixed(1)
         : 0;
@@ -241,7 +242,7 @@ const StatisticsSection = ({ favorites, watched }) => {
       ([rating, count]) => ({
         rating: `${rating} ★`,
         count,
-      })
+      }),
     );
 
     const genreCount = {};
@@ -272,8 +273,8 @@ const StatisticsSection = ({ favorites, watched }) => {
       const year = item.release_date
         ? new Date(item.release_date).getFullYear()
         : item.first_air_date
-        ? new Date(item.first_air_date).getFullYear()
-        : null;
+          ? new Date(item.first_air_date).getFullYear()
+          : null;
       if (year && year >= 1900 && year <= new Date().getFullYear() + 5) {
         yearCount[year] = (yearCount[year] || 0) + 1;
       }
@@ -307,7 +308,7 @@ const StatisticsSection = ({ favorites, watched }) => {
       if (item.watchedAt) {
         const watchedDate = new Date(item.watchedAt);
         const monthKey = `${watchedDate.getFullYear()}-${String(
-          watchedDate.getMonth() + 1
+          watchedDate.getMonth() + 1,
         ).padStart(2, "0")}`;
         const yearKey = watchedDate.getFullYear();
 
@@ -323,7 +324,7 @@ const StatisticsSection = ({ favorites, watched }) => {
         const [year, monthNum] = month.split("-");
         const monthName = new Date(
           parseInt(year),
-          parseInt(monthNum) - 1
+          parseInt(monthNum) - 1,
         ).toLocaleString("default", { month: "short" });
         return { month: `${monthName} ${year}`, count };
       });
@@ -373,7 +374,7 @@ const StatisticsSection = ({ favorites, watched }) => {
       }
     });
     const mostWatchedGenre = Object.entries(watchedGenreCount).sort(
-      ([, a], [, b]) => b - a
+      ([, a], [, b]) => b - a,
     )[0];
 
     const watchTimeByGenre = {};
@@ -404,7 +405,7 @@ const StatisticsSection = ({ favorites, watched }) => {
             const d = new Date(date);
             d.setHours(0, 0, 0, 0);
             return d.getTime();
-          })
+          }),
         ),
       ].sort((a, b) => b - a);
 
@@ -414,7 +415,7 @@ const StatisticsSection = ({ favorites, watched }) => {
       for (let i = 0; i < uniqueWatchDays.length; i++) {
         const watchDay = new Date(uniqueWatchDays[i]);
         const daysDiff = Math.floor(
-          (checkDate - watchDay) / (1000 * 60 * 60 * 24)
+          (checkDate - watchDay) / (1000 * 60 * 60 * 24),
         );
 
         if (daysDiff === 0) {
@@ -434,7 +435,7 @@ const StatisticsSection = ({ favorites, watched }) => {
     const mostPopular = allItems.reduce(
       (max, item) =>
         (item.popularity || 0) > (max.popularity || 0) ? item : max,
-      allItems[0]
+      allItems[0],
     );
 
     const topRated =
@@ -442,7 +443,7 @@ const StatisticsSection = ({ favorites, watched }) => {
         ? ratedItems.reduce(
             (max, item) =>
               (item.vote_average || 0) > (max.vote_average || 0) ? item : max,
-            ratedItems[0]
+            ratedItems[0],
           )
         : null;
 
@@ -561,7 +562,7 @@ const StatisticsSection = ({ favorites, watched }) => {
               }
             >
               {truncateText(
-                stats.mostPopular?.title || stats.mostPopular?.name || "N/A"
+                stats.mostPopular?.title || stats.mostPopular?.name || "N/A",
               )}
             </div>
             <div className="statLabel">Most Popular</div>
@@ -576,7 +577,7 @@ const StatisticsSection = ({ favorites, watched }) => {
               title={stats.topRated?.title || stats.topRated?.name || "N/A"}
             >
               {truncateText(
-                stats.topRated?.title || stats.topRated?.name || "N/A"
+                stats.topRated?.title || stats.topRated?.name || "N/A",
               )}
             </div>
             <div className="statLabel">Top Rated</div>
@@ -585,7 +586,7 @@ const StatisticsSection = ({ favorites, watched }) => {
             <div
               className={`statValue ${
                 isLongText(
-                  stats.oldestWatched?.title || stats.oldestWatched?.name
+                  stats.oldestWatched?.title || stats.oldestWatched?.name,
                 )
                   ? "longText"
                   : ""
@@ -595,7 +596,9 @@ const StatisticsSection = ({ favorites, watched }) => {
               }
             >
               {truncateText(
-                stats.oldestWatched?.title || stats.oldestWatched?.name || "N/A"
+                stats.oldestWatched?.title ||
+                  stats.oldestWatched?.name ||
+                  "N/A",
               )}
             </div>
             <div className="statLabel">First Watched</div>
@@ -604,7 +607,7 @@ const StatisticsSection = ({ favorites, watched }) => {
             <div
               className={`statValue ${
                 isLongText(
-                  stats.latestReleased?.title || stats.latestReleased?.name
+                  stats.latestReleased?.title || stats.latestReleased?.name,
                 )
                   ? "longText"
                   : ""
@@ -618,7 +621,7 @@ const StatisticsSection = ({ favorites, watched }) => {
               {truncateText(
                 stats.latestReleased?.title ||
                   stats.latestReleased?.name ||
-                  "N/A"
+                  "N/A",
               )}
             </div>
             <div className="statLabel">Latest Release</div>
@@ -667,117 +670,129 @@ const StatisticsSection = ({ favorites, watched }) => {
           </>
         )}
 
-        <div className="chartsGrid">
-          {stats.genreData.length > 0 && (
-            <div className="chartCard">
-              <h3>Genre Distribution</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={stats.genreData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
-                    }
-                  >
-                    {stats.genreData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<CustomTooltip />} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          {stats.yearData.length > 0 && (
-            <div className="chartCard">
-              <h3>Release Year Distribution</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats.yearData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="year" />
-                  <YAxis />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="count" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          {stats.monthData.length > 0 && (
-            <div className="chartCard">
-              <h3>Monthly Watching Activity</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats.monthData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="count" fill="#82ca9d" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          {stats.totalReviews > 0 && stats.ratingDistData.length > 0 && (
-            <div className="chartCard">
-              <h3>Your Rating Distribution</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats.ratingDistData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="rating" />
-                  <YAxis />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="count" fill="#FFD700" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          {stats.yearWatchData.length > 0 && (
-            <div className="chartCard">
-              <h3>Yearly Watching Activity</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats.yearWatchData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="year" />
-                  <YAxis />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="count" fill="#ffc658" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          {stats.watchTimeGenreData.length > 0 && (
-            <div className="chartCard">
-              <h3>Watch Time by Genre</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats.watchTimeGenreData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis
-                    label={{
-                      value: "Minutes",
-                      angle: -90,
-                      position: "insideLeft",
-                    }}
-                  />
-                  <Tooltip content={<WatchTimeTooltip />} />
-                  <Bar dataKey="value" fill="#ff7c7c" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
+        <div className="toggleChartsWrapper">
+          <button
+            type="button"
+            className="toggleChartsBtn"
+            onClick={() => setShowCharts(!showCharts)}
+          >
+            {showCharts ? "Hide Detailed Charts ▲" : "Show Detailed Charts ▼"}
+          </button>
         </div>
+
+        {showCharts && (
+          <div className="chartsGrid">
+            {stats.genreData.length > 0 && (
+              <div className="chartCard">
+                <h3>Genre Distribution</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={stats.genreData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({ name, percent }) =>
+                        `${name} ${(percent * 100).toFixed(0)}%`
+                      }
+                    >
+                      {stats.genreData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {stats.yearData.length > 0 && (
+              <div className="chartCard">
+                <h3>Release Year Distribution</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={stats.yearData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="year" />
+                    <YAxis />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="count" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {stats.monthData.length > 0 && (
+              <div className="chartCard">
+                <h3>Monthly Watching Activity</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={stats.monthData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="count" fill="#82ca9d" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {stats.totalReviews > 0 && stats.ratingDistData.length > 0 && (
+              <div className="chartCard">
+                <h3>Your Rating Distribution</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={stats.ratingDistData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="rating" />
+                    <YAxis />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="count" fill="#FFD700" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {stats.yearWatchData.length > 0 && (
+              <div className="chartCard">
+                <h3>Yearly Watching Activity</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={stats.yearWatchData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="year" />
+                    <YAxis />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="count" fill="#ffc658" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {stats.watchTimeGenreData.length > 0 && (
+              <div className="chartCard">
+                <h3>Watch Time by Genre</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={stats.watchTimeGenreData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis
+                      label={{
+                        value: "Minutes",
+                        angle: -90,
+                        position: "insideLeft",
+                      }}
+                    />
+                    <Tooltip content={<WatchTimeTooltip />} />
+                    <Bar dataKey="value" fill="#ff7c7c" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+        )}
       </ContentWrapper>
     </div>
   );

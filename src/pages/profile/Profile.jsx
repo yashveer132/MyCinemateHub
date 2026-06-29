@@ -19,6 +19,7 @@ import WatchedCarousel from "../../components/watchedCarousel/WatchedCarousel";
 import {
   getAIInsightsWithRecommendations,
   clearAIInsightsCache,
+  getCachedInsights,
 } from "../../utils/aiInsights";
 import StatisticsSection from "./StatisticsSection";
 
@@ -40,13 +41,15 @@ const Profile = () => {
 
   const allItems = useMemo(
     () => [...favorites, ...watchLater, ...watched],
-    [favorites, watchLater, watched]
+    [favorites, watchLater, watched],
   );
 
   React.useEffect(() => {
-    clearAIInsightsCache();
-    setAiData(null);
-  }, []);
+    const cached = getCachedInsights(favorites, watchLater, watched, "movie");
+    if (cached) {
+      setAiData(cached);
+    }
+  }, [favorites, watchLater, watched]);
 
   const scrollToSection = (ref) => {
     if (ref.current) {
@@ -64,7 +67,7 @@ const Profile = () => {
     try {
       if (allItems.length === 0) {
         setAiError(
-          "Add items to Favorites, Watch Later, or Watched to generate insights."
+          "Add items to Favorites, Watch Later, or Watched to generate insights.",
         );
         setTimeout(() => scrollToSection(aiRef), 50);
         return;
@@ -73,7 +76,7 @@ const Profile = () => {
         favorites,
         watchLater,
         watched,
-        { mediaType: "movie" }
+        { mediaType: "movie" },
       );
       if (!res) throw new Error("Failed to generate insights");
       setAiData(res);
@@ -184,64 +187,11 @@ const Profile = () => {
               <span className="statNumber">{watchLater.length}</span>
               <span className="statLabel">Watch Later</span>
             </div>
-            <div
-              className="statItem aiStat"
-              onClick={() => scrollToSection(aiRef)}
-            >
-              <span className="statNumber">
-                <FaRobot />
-              </span>
-              <span className="statLabel">AI Insights</span>
-            </div>
           </div>
         </div>
       </ContentWrapper>
 
       <StatisticsSection favorites={favorites} watched={watched} />
-
-      <div ref={watchedRef}>
-        <ProfileSection
-          title="Watched"
-          data={watched}
-          icon={<FaCheck />}
-          showWatchedDate={true}
-          isWatchedSection={true}
-          emptyStateConfig={{
-            icon: <FaCheck />,
-            title: "No Watched Items",
-            description:
-              "Keep track of what you've watched by marking items as complete. Build your viewing history and discover patterns in your taste!",
-          }}
-        />
-      </div>
-
-      <div ref={favoritesRef}>
-        <ProfileSection
-          title="My Favorites"
-          data={favorites}
-          icon={<FaHeart />}
-          emptyStateConfig={{
-            icon: <FaHeart />,
-            title: "No Favorites Yet",
-            description:
-              "Start building your collection by adding movies and TV shows to your favorites. Click the heart icon on any movie card to get started!",
-          }}
-        />
-      </div>
-
-      <div ref={watchLaterRef}>
-        <ProfileSection
-          title="Watch Later"
-          data={watchLater}
-          icon={<FaBookmark />}
-          emptyStateConfig={{
-            icon: <FaBookmark />,
-            title: "Watch Later List is Empty",
-            description:
-              "Save movies and TV shows you want to watch later. Never forget about that interesting title you discovered!",
-          }}
-        />
-      </div>
 
       <div ref={aiRef} className="profileSection aiInsightsSection">
         <ContentWrapper>
@@ -272,7 +222,7 @@ const Profile = () => {
                 </>
               )}
             </button>
-            {aiData && (
+            {aiData && !aiLoading && (
               <label className="toggleKeywords">
                 <input
                   type="checkbox"
@@ -285,7 +235,20 @@ const Profile = () => {
             {aiError && <div className="aiError">{aiError}</div>}
           </div>
 
-          {aiData ? (
+          {aiLoading ? (
+            <div className="aiInsightsLoading">
+              <div className="aiBrainIcon">🤖</div>
+              <h3>Analyzing your watch history...</h3>
+              <p>
+                Gemini is scanning your favorites and watched movies to
+                synthesize your taste profile.
+              </p>
+              <div className="pulseLoader">
+                <div className="double-bounce1"></div>
+                <div className="double-bounce2"></div>
+              </div>
+            </div>
+          ) : aiData ? (
             <div className="aiInsightsContent">
               <div className="insightsSummary">
                 <h3>Your Taste Overview</h3>
@@ -411,6 +374,50 @@ const Profile = () => {
             </div>
           )}
         </ContentWrapper>
+      </div>
+
+      <div ref={watchedRef}>
+        <ProfileSection
+          title="Watched"
+          data={watched}
+          icon={<FaCheck />}
+          showWatchedDate={true}
+          isWatchedSection={true}
+          emptyStateConfig={{
+            icon: <FaCheck />,
+            title: "No Watched Items",
+            description:
+              "Keep track of what you've watched by marking items as complete. Build your viewing history and discover patterns in your taste!",
+          }}
+        />
+      </div>
+
+      <div ref={favoritesRef}>
+        <ProfileSection
+          title="My Favorites"
+          data={favorites}
+          icon={<FaHeart />}
+          emptyStateConfig={{
+            icon: <FaHeart />,
+            title: "No Favorites Yet",
+            description:
+              "Start building your collection by adding movies and TV shows to your favorites. Click the heart icon on any movie card to get started!",
+          }}
+        />
+      </div>
+
+      <div ref={watchLaterRef}>
+        <ProfileSection
+          title="Watch Later"
+          data={watchLater}
+          icon={<FaBookmark />}
+          emptyStateConfig={{
+            icon: <FaBookmark />,
+            title: "Watch Later List is Empty",
+            description:
+              "Save movies and TV shows you want to watch later. Never forget about that interesting title you discovered!",
+          }}
+        />
       </div>
     </div>
   );

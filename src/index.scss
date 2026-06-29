@@ -31,6 +31,31 @@ body {
 }
 
 ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--black);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+
+  &:hover {
+    background: var(--pink);
+  }
+}
+
+.carouselItems::-webkit-scrollbar,
+.castItems::-webkit-scrollbar,
+.videos::-webkit-scrollbar,
+.providers::-webkit-scrollbar,
+.timelineItems::-webkit-scrollbar,
+.songsSection::-webkit-scrollbar,
+.awardsList::-webkit-scrollbar,
+.quotesList::-webkit-scrollbar {
   display: none;
 }
 

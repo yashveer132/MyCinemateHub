@@ -634,9 +634,98 @@
   }
 }
 
+.toggleChartsWrapper {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 30px 0;
+
+  .toggleChartsBtn {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 10px 24px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.05);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
 .aiInsightsSection {
   position: relative;
+  margin-bottom: 50px;
   z-index: 1;
+
+  .aiInsightsLoading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    margin: 20px;
+    animation: fadeInUp 0.4s ease-out;
+
+    .aiBrainIcon {
+      font-size: 54px;
+      margin-bottom: 16px;
+      animation: float 2s ease-in-out infinite;
+    }
+
+    h3 {
+      color: #fff;
+      font-size: 20px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    p {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 14px;
+      max-width: 420px;
+      margin: 0 auto 24px auto;
+      line-height: 1.5;
+    }
+
+    .pulseLoader {
+      width: 40px;
+      height: 40px;
+      position: relative;
+
+      .double-bounce1,
+      .double-bounce2 {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: var(--pink);
+        opacity: 0.6;
+        position: absolute;
+        top: 0;
+        left: 0;
+        animation: bounce 2s infinite ease-in-out;
+      }
+
+      .double-bounce2 {
+        animation-delay: -1s;
+      }
+    }
+  }
+
   .aiInsightsToolbar {
     display: flex;
     flex-direction: column;
@@ -663,7 +752,9 @@
       align-items: center;
       gap: 10px;
       cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
       box-shadow: 0 8px 20px rgba(107, 140, 255, 0.3);
       &:disabled {
         opacity: 0.6;
@@ -708,6 +799,7 @@
     gap: 36px;
     position: relative;
     z-index: 1;
+    animation: fadeInUp 0.5s ease-out;
 
     .insightsSummary {
       background: rgba(255, 255, 255, 0.06);
@@ -723,6 +815,7 @@
         margin: 0 auto 16px auto;
         max-width: 780px;
         color: rgba(255, 255, 255, 0.85);
+        line-height: 1.6;
       }
       .tasteBadges {
         display: flex;
@@ -730,34 +823,40 @@
         justify-content: center;
         gap: 10px;
         .badge {
-          color: #fff;
-          padding: 6px 10px;
-          border-radius: 999px;
+          color: rgba(255, 255, 255, 0.95);
+          padding: 6px 12px;
+          border-radius: 6px;
           font-size: 12px;
-          background: linear-gradient(135deg, #ff7aa8, #ffb86b);
-          box-shadow: 0 4px 12px rgba(255, 120, 168, 0.3);
+          font-weight: 500;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          box-shadow: none;
+
           &.subtle {
-            background: linear-gradient(135deg, #6b8cff, #9b6bff);
-            box-shadow: 0 4px 12px rgba(107, 140, 255, 0.3);
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
           }
         }
       }
       .topGenres {
-        margin-top: 12px;
+        margin-top: 16px;
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
         justify-content: center;
         gap: 8px;
         .label {
-          color: #fff;
-          font-weight: 600;
+          color: rgba(255, 255, 255, 0.7);
+          font-weight: 500;
+          font-size: 13px;
         }
         .genre {
-          padding: 6px 10px;
-          border-radius: 999px;
-          color: #fff;
-          background: linear-gradient(135deg, #4ecdc4, #6b8cff);
-          box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+          padding: 4px 10px;
+          border-radius: 6px;
+          color: white;
+          background-color: var(--pink);
+          font-size: 12px;
+          box-shadow: none;
         }
       }
     }
@@ -777,9 +876,10 @@
         text-align: center;
       }
       .creatorLabel {
-        color: #fff;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 14px;
         font-weight: 600;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
       }
       .creatorChips {
         display: flex;
@@ -787,11 +887,20 @@
         gap: 10px;
         justify-content: center;
         .chip {
-          color: #fff;
-          padding: 6px 10px;
-          border-radius: 999px;
-          background: linear-gradient(135deg, #9b6bff, #6bd9ff);
-          box-shadow: 0 4px 12px rgba(155, 107, 255, 0.3);
+          color: rgba(255, 255, 255, 0.9);
+          padding: 5px 12px;
+          border-radius: 20px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          box-shadow: none;
+          font-size: 13px;
+          font-weight: 500;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+          }
         }
       }
     }
@@ -837,16 +946,26 @@
       gap: 12px;
       flex-wrap: wrap;
       .label {
-        color: #fff;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 14px;
         font-weight: 600;
         margin-right: 6px;
       }
       .chip {
-        padding: 6px 10px;
-        border-radius: 999px;
-        color: #fff;
-        background: linear-gradient(135deg, #ffcf6b, #ff7aa8);
-        box-shadow: 0 4px 12px rgba(255, 207, 107, 0.3);
+        padding: 5px 12px;
+        border-radius: 20px;
+        color: rgba(255, 255, 255, 0.9);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: none;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.3);
+        }
       }
     }
 
@@ -854,7 +973,7 @@
       .carousel .carouselTitle {
         color: #fff;
         text-align: center;
-        font-size: 28px;
+        font-size: 24px;
       }
       .moviesGrid {
         margin-top: 14px;

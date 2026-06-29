@@ -11,8 +11,6 @@ import Person from "./pages/person/Person";
 import Explore from "./pages/explore/Explore";
 import SearchResult from "./pages/searchResult/SearchResult";
 import PageNotFound from "./pages/404/PageNotFound";
-import WatchParty from "./components/watchParty/WatchParty";
-import WatchPartyLoader from "./components/watchParty/WatchPartyLoader";
 import EpisodeDetails from "./pages/details/episodes/EpisodeDetails";
 import SearchPeople from "./pages/searchPeople/SearchPeople";
 import AIPlaylists from "./pages/aiPlaylists/AIPlaylists";
@@ -77,7 +75,6 @@ function App() {
         <Route path="/searchPeople" element={<SearchPeople />} />
         <Route path="/searchPeople/:query" element={<SearchPeople />} />
         <Route path="/explore/:mediaType" element={<Explore />} />
-        <Route path="/watch/:roomId" element={<WatchPartyLoader />} />
         <Route path="/ai-playlists" element={<AIPlaylists />} />
         <Route path="/top-movies" element={<TopMovies />} />
         <Route path="/top-shows" element={<TopShows />} />

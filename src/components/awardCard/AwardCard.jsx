@@ -44,9 +44,6 @@ const AwardCard = ({
   const navigate = useNavigate();
   const [showActions, setShowActions] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [showAwards, setShowAwards] = useState(false);
-  const [awardsData, setAwardsData] = useState(null);
-  const [isLoadingAwards, setIsLoadingAwards] = useState(false);
 
   const posterUrl = data.poster_path
     ? url.poster + data.poster_path
@@ -119,21 +116,12 @@ const AwardCard = ({
     dispatch(moveToWatchLater(movieData));
   };
 
-  const handleMouseEnter = async () => {
+  const handleMouseEnter = () => {
     setShowActions(true);
-    setShowAwards(true);
-
-    if (!awardsData && !isLoadingAwards) {
-      setIsLoadingAwards(true);
-      const awards = await fetchAwardsData(data);
-      setAwardsData(awards);
-      setIsLoadingAwards(false);
-    }
   };
 
   const handleMouseLeave = () => {
     setShowActions(false);
-    setShowAwards(false);
   };
 
   return (
@@ -188,7 +176,7 @@ const AwardCard = ({
               onClick={(e) =>
                 handleActionClick(
                   e,
-                  isWatched ? moveToWatchLaterAction : toggleWatched
+                  isWatched ? moveToWatchLaterAction : toggleWatched,
                 )
               }
               title={isWatched ? "Move to Watch Later" : "Mark as Watched"}
@@ -196,70 +184,6 @@ const AwardCard = ({
               {isWatched ? <FaUndo /> : <FaCheck />}
             </button>
           </div>
-
-          {showAwards && (
-            <div className="awardsOverlay">
-              {isLoadingAwards && (
-                <div className="awardsLoading">
-                  <div className="spinner"></div>
-                  <span>Loading awards...</span>
-                </div>
-              )}
-
-              {!isLoadingAwards &&
-                awardsData &&
-                ((awardsData.awards && awardsData.awards.length > 0) || awardsData.summary) && (
-                  <div className="awardsContent">
-                    <div className="awardsHeader">
-                      <FaTrophy className="trophyIcon" />
-                      <h3>Awards</h3>
-                    </div>
-                    
-                    {awardsData.awards && awardsData.awards.length > 0 && (
-                      <div className="awardsList">
-                        {awardsData.awards.slice(0, 4).map((award) => (
-                          <div key={award.id} className="awardItem">
-                            <div className="awardIcon">🏆</div>
-                            <div className="awardDetails">
-                              <div className="awardName">{award.award}</div>
-                              <div className="awardCategory">
-                                {award.category} {award.year && `(${award.year})`}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        {awardsData.awards.length > 4 && (
-                          <div className="moreAwards">
-                            +{awardsData.awards.length - 4} more awards
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    
-                    {awardsData.summary && (
-                      <div className="awardsSummary">
-                        {awardsData.source === 'omdb' ? (
-                          <div className="omdbAwards">
-                            <strong>IMDb Awards:</strong> {awardsData.summary}
-                          </div>
-                        ) : (
-                          awardsData.summary
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-              {!isLoadingAwards &&
-                (!awardsData ||
-                  ((!awardsData.awards || awardsData.awards.length === 0) && !awardsData.summary)) && (
-                  <div className="noAwards">
-                    <FaTrophy className="noAwardsIcon" />
-                    <span>No major awards won</span>
-                  </div>
-                )}
-            </div>
-          )}
 
           {!fromSearch && (
             <React.Fragment>
@@ -285,7 +209,7 @@ const AwardCard = ({
             {showWatchedDate && data.watchedAt
               ? `Watched ${dayjs(data.watchedAt).format("MMM D, YYYY")}`
               : dayjs(data.release_date || data.first_air_date).format(
-                  "MMM D, YYYY"
+                  "MMM D, YYYY",
                 )}
           </span>
         </div>

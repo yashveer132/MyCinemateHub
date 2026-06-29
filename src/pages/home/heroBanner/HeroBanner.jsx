@@ -14,18 +14,39 @@ const HeroBanner = () => {
 
   const { url } = useSelector((state) => state.home);
   const navigate = useNavigate();
-  const { data: movieData, loading: movieLoading } =
-    useFetch("/movie/upcoming");
-  const { data: tvData, loading: tvLoading } = useFetch("/tv/on_the_air");
 
-  const loading = movieLoading || tvLoading;
+  const { data: upcomingData, loading: upcomingLoading } =
+    useFetch("/movie/upcoming");
+  const { data: trendingPage1, loading: trendingLoading1 } = useFetch(
+    "/trending/all/week?page=1",
+  );
+  const { data: trendingPage2, loading: trendingLoading2 } = useFetch(
+    "/trending/all/week?page=2",
+  );
+
+  const loading = upcomingLoading || trendingLoading1 || trendingLoading2;
+
   const combinedData = useMemo(() => {
-    return movieData && tvData
-      ? {
-          results: [...(movieData.results || []), ...(tvData.results || [])],
-        }
-      : null;
-  }, [movieData, tvData]);
+    if (!upcomingData && !trendingPage1 && !trendingPage2) return null;
+
+    const rawList = [
+      ...(upcomingData?.results || []),
+      ...(trendingPage1?.results || []),
+      ...(trendingPage2?.results || []),
+    ];
+
+    const seenIds = new Set();
+    const uniqueResults = [];
+
+    rawList.forEach((item) => {
+      if (item && item.id && item.backdrop_path && !seenIds.has(item.id)) {
+        seenIds.add(item.id);
+        uniqueResults.push(item);
+      }
+    });
+
+    return uniqueResults.length > 0 ? { results: uniqueResults } : null;
+  }, [upcomingData, trendingPage1, trendingPage2]);
 
   useEffect(() => {
     recentIndicesRef.current = [];
@@ -35,16 +56,18 @@ const HeroBanner = () => {
       if (totalItems === 0) return;
 
       let randomIndex;
+      let attempts = 0;
       do {
         randomIndex = Math.floor(Math.random() * totalItems);
-      } while (recentIndicesRef.current.includes(randomIndex));
+        attempts++;
+      } while (recentIndicesRef.current.includes(randomIndex) && attempts < 20);
 
       const item = combinedData.results[randomIndex];
       const bg = item?.backdrop_path;
       setBackground(bg ? url.backdrop + bg : "");
 
       recentIndicesRef.current.push(randomIndex);
-      if (recentIndicesRef.current.length > 20) {
+      if (recentIndicesRef.current.length > 30) {
         recentIndicesRef.current.shift();
       }
     };
@@ -53,7 +76,7 @@ const HeroBanner = () => {
 
     const interval = setInterval(() => {
       changeBg();
-    }, 3000);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, [combinedData, url.backdrop]);

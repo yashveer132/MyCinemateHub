@@ -16,9 +16,9 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.25);
-    backdrop-filter: blur(3.5px);
-    -webkit-backdrop-filter: blur(3.5px);
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     opacity: 0;
     transition: opacity 400ms;
   }
@@ -35,10 +35,9 @@
       width: 100%;
       max-width: 900px;
       aspect-ratio: 16/9;
-      background: rgba(0, 0, 0, 0.9);
+      background: transparent;
       border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      overflow: visible;
       transform: scale(0.2);
       transition: transform 250ms;
 
@@ -49,20 +48,80 @@
 
       .closeBtn {
         position: absolute;
-        top: 15px;
-        right: 15px;
+        top: -45px;
+        right: 0;
         color: white;
         cursor: pointer;
         z-index: 10;
-        background: rgba(0, 0, 0, 0.5);
-        padding: 8px 16px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 6px 16px;
         border-radius: 20px;
-        border: none;
-        font-size: 14px;
+        font-size: 13px;
+        font-weight: 500;
         transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
 
         &:hover {
           background: var(--pink);
+          border-color: var(--pink);
+          transform: translateY(-2px);
+        }
+      }
+
+      .ambilightWrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: visible;
+
+        .ambilightGlow {
+          position: absolute;
+          top: -20px;
+          left: -20px;
+          right: -20px;
+          bottom: -20px;
+          background-size: cover;
+          background-position: center;
+          filter: blur(60px) brightness(1.3) saturate(1.5);
+          opacity: 0.75;
+          z-index: 0;
+          pointer-events: none;
+          border-radius: 12px;
+          animation: glowPulse 8s ease-in-out infinite alternate;
+        }
+
+        .videoPlayerContainer {
+          position: relative;
+          z-index: 1;
+          width: 100%;
+          height: 100%;
+          border-radius: 12px;
+          overflow: hidden;
+          background: #000;
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+      }
+
+      @keyframes glowPulse {
+        0% {
+          transform: scale(1.01);
+          opacity: 0.6;
+          filter: blur(50px) brightness(1.2) saturate(1.2);
+        }
+        50% {
+          transform: scale(1.05);
+          opacity: 0.85;
+          filter: blur(80px) brightness(1.6) saturate(1.6);
+        }
+        100% {
+          transform: scale(1.01);
+          opacity: 0.6;
+          filter: blur(50px) brightness(1.2) saturate(1.2);
         }
       }
 
@@ -76,6 +135,7 @@
         padding: 40px;
         text-align: center;
         background: rgba(0, 0, 0, 0.9);
+        border-radius: 12px;
 
         .noVideoIcon {
           font-size: 80px;
@@ -95,37 +155,6 @@
           color: rgba(255, 255, 255, 0.7);
           line-height: 1.5;
           max-width: 400px;
-        }
-      }
-    }
-
-    .videoActions {
-      margin-top: 20px;
-      display: flex;
-      justify-content: center;
-      width: 100%;
-
-      .watchPartyBtn {
-        background: var(--gradient);
-        border: none;
-        padding: 12px 24px;
-        border-radius: 20px;
-        color: white;
-        font-size: 16px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-
-        &:hover {
-          transform: scale(1.05);
-          box-shadow: 0 6px 20px rgba(218, 47, 104, 0.3);
-        }
-
-        svg {
-          font-size: 18px;
         }
       }
     }
@@ -151,23 +180,10 @@
         width: 100%;
 
         .closeBtn {
-          top: 10px;
-          right: 10px;
-          padding: 6px 12px;
+          top: -35px;
+          right: 0;
+          padding: 4px 12px;
           font-size: 12px;
-        }
-      }
-
-      .videoActions {
-        margin-top: 15px;
-
-        .watchPartyBtn {
-          padding: 10px 20px;
-          font-size: 14px;
-
-          svg {
-            font-size: 16px;
-          }
         }
       }
     }
@@ -178,19 +194,6 @@
   .videoPopup {
     .videoContainer {
       max-width: 100%;
-
-      .videoActions {
-        margin-top: 12px;
-
-        .watchPartyBtn {
-          padding: 8px 16px;
-          font-size: 13px;
-
-          svg {
-            font-size: 14px;
-          }
-        }
-      }
     }
   }
 }

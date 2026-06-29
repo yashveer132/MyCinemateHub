@@ -30,7 +30,7 @@ const extractQuotesFromHtml = (htmlContent) => {
 
   const elements = doc.querySelectorAll("h2, h3, h4, li");
 
-  const noiseHeaders = new Set([
+  const noiseHeaders = [
     "cast",
     "dialogue",
     "about",
@@ -43,7 +43,18 @@ const extractQuotesFromHtml = (htmlContent) => {
     "reception",
     "slogan",
     "taglines",
-  ]);
+    "critic",
+    "review",
+  ];
+
+  const isCharacterNoise = (char) => {
+    const lower = char.toLowerCase();
+    return (
+      lower === "skip" ||
+      noiseHeaders.some((noise) => lower === noise || lower.includes(noise)) ||
+      lower.includes("unknown")
+    );
+  };
 
   elements.forEach((el) => {
     const tagName = el.tagName.toLowerCase();
@@ -53,13 +64,22 @@ const extractQuotesFromHtml = (htmlContent) => {
       const cleanHeadline = headline.replace(/\[[^\]]*\]/g, "").trim();
       const lowerHeadline = cleanHeadline.toLowerCase();
 
-      if (cleanHeadline && !noiseHeaders.has(lowerHeadline)) {
-        currentCharacter = cleanHeadline;
+      if (cleanHeadline) {
+        const isNoise = noiseHeaders.some(
+          (noise) => lowerHeadline === noise || lowerHeadline.includes(noise),
+        );
+        if (isNoise) {
+          currentCharacter = "Skip";
+        } else {
+          currentCharacter = cleanHeadline;
+        }
       }
       return;
     }
 
     if (tagName === "li") {
+      if (currentCharacter === "Skip") return;
+
       const text = el.textContent || el.innerText || "";
 
       if (
@@ -109,11 +129,7 @@ const extractQuotesFromHtml = (htmlContent) => {
         quoteText.length >= minLength &&
         quoteText.length <= maxLength &&
         !seenQuotes.has(normalizedSignature) &&
-        character !== "Cast" &&
-        character !== "About" &&
-        character !== "External links" &&
-        character !== "References" &&
-        character !== "Unknown"
+        !isCharacterNoise(character)
       ) {
         seenQuotes.add(normalizedSignature);
         quotes.push({
@@ -138,8 +154,8 @@ export const fetchQuotesFromWikiquote = async (
 
   const searchQuery =
     mediaType === "tv"
-      ? `${title} ${year} television series`
-      : `${title} ${year} film`;
+      ? `intitle:"${title}" television series`
+      : `intitle:"${title}" film`;
 
   console.log(`[WIKIQUOTE] Searching for: "${searchQuery}"`);
 
@@ -162,12 +178,20 @@ export const fetchQuotesFromWikiquote = async (
       return [];
     }
 
-    const verifiedTitle = wikipediaResults[0].title;
+    const bestWikiResult =
+      wikipediaResults.find(
+        (res) =>
+          !res.title.startsWith("List of") &&
+          !res.title.toLowerCase().includes("list of") &&
+          !res.title.toLowerCase().includes("season"),
+      ) || wikipediaResults[0];
+
+    const verifiedTitle = bestWikiResult.title;
     console.log(
       `[WIKIQUOTE] Verified title from Wikipedia: "${verifiedTitle}"`,
     );
 
-    const wikiquoteSearchUrl = `https://en.wikiquote.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(verifiedTitle)}&format=json&origin=*`;
+    const wikiquoteSearchUrl = `https://en.wikiquote.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent('intitle:"' + verifiedTitle + '"')}&format=json&origin=*`;
     const wqSearchRes = await axios.get(wikiquoteSearchUrl, {
       headers,
       timeout: 5000,
@@ -181,7 +205,32 @@ export const fetchQuotesFromWikiquote = async (
       return [];
     }
 
-    const wqPageTitle = wqResults[0].title;
+    const cleanStr = (str) =>
+      str
+        .toLowerCase()
+        .replace(/\s*\([^)]*\)/g, "")
+        .replace(/[^a-z0-9]/g, "")
+        .trim();
+
+    const cleanSearchTitle = cleanStr(title);
+
+    const bestWqResult = wqResults.find((res) => {
+      const cleanWqTitle = cleanStr(res.title);
+      return (
+        cleanWqTitle === cleanSearchTitle ||
+        cleanWqTitle.includes(cleanSearchTitle) ||
+        cleanSearchTitle.includes(cleanWqTitle)
+      );
+    });
+
+    if (!bestWqResult) {
+      console.log(
+        `[WIKIQUOTE] No relevant Wikiquote page matching movie/show "${title}" found (Top result was: "${wqResults[0].title}")`,
+      );
+      return [];
+    }
+
+    const wqPageTitle = bestWqResult.title;
     console.log(`[WIKIQUOTE] Found Wikiquote page: "${wqPageTitle}"`);
 
     const parseUrl = `https://en.wikiquote.org/w/api.php?action=parse&page=${encodeURIComponent(wqPageTitle)}&prop=text&format=json&origin=*`;
