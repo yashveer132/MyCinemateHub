@@ -36,9 +36,13 @@ const AwardsSection = ({ movieDetails, mediaType }) => {
       if (movieDetails && movieDetails.id) {
         setLoading(true);
         try {
+          const releaseDate =
+            movieDetails.release_date || movieDetails.first_air_date;
           const initialData = await fetchAwardsData({
             id: movieDetails.id,
             media_type: mediaType,
+            title: movieDetails.title || movieDetails.name,
+            year: releaseDate ? new Date(releaseDate).getFullYear() : null,
           });
 
           if (!isMounted) return;
@@ -125,10 +129,7 @@ const AwardsSection = ({ movieDetails, mediaType }) => {
           {mediaType === "tv" ? "🏆 TV Awards" : "🏆 Movie Awards"}
         </div>
         {!loading ? (
-          awardsData &&
-          ((awardsList && awardsList.length > 0) ||
-            (awardsData.summary &&
-              awardsData.summary !== "No award information available")) ? (
+          awardsData && awardsList && awardsList.length > 0 ? (
             <div className="awardsContent">
               {awardsData.summary && (
                 <div className="awardsSummary">

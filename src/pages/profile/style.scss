@@ -11,11 +11,13 @@
     align-items: center;
     margin-bottom: 70px;
     gap: 30px;
+    text-align: center;
 
     @include md {
       flex-direction: row;
       justify-content: space-between;
       align-items: center;
+      text-align: left;
     }
 
     .profileInfo {
@@ -222,6 +224,7 @@
 
       .movieCard {
         width: calc(50% - 10px);
+        margin-inline: 0;
 
         @include sm {
           width: calc(33.333% - 14px);

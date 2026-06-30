@@ -1,9 +1,13 @@
 @import "../../mixins.scss";
 
 .additionalRatings {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
+  display: contents;
+
+  @include md {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
 
   .ratingsSection {
     display: flex;
@@ -13,6 +17,8 @@
     .circleRating {
       width: 50px;
       height: 50px;
+      aspect-ratio: 1 / 1;
+      flex-shrink: 0;
       background-color: blue;
 
       @include md {

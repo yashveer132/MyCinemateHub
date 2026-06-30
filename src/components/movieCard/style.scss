@@ -1,11 +1,13 @@
 @import "../../mixins.scss";
 .movieCard {
-  width: calc(50% - 5px);
+  width: calc(50% - 8px);
+  margin-inline: 4px;
   margin-bottom: 25px;
   cursor: pointer;
   flex-shrink: 0;
   @include md {
     width: calc(25% - 15px);
+    margin-inline: 0;
   }
   @include lg {
     width: calc(20% - 16px);
@@ -30,7 +32,7 @@
       position: absolute;
       top: 10px;
       left: 10px;
-      z-index: 2;
+      z-index: 1;
       align-items: flex-start;
 
       .reviewBadge {
@@ -90,7 +92,7 @@
       opacity: 0;
       transform: translateY(-10px);
       transition: all 0.3s ease;
-      z-index: 2;
+      z-index: 1;
 
       &.show {
         opacity: 1;
@@ -100,6 +102,7 @@
       @media only screen and (max-width: 767px) {
         opacity: 1;
         transform: translateY(0);
+        gap: 10px;
       }
 
       .actionBtn {

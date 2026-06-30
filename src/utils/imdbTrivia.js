@@ -179,7 +179,6 @@ export const fetchTriviaFromWikipedia = async (
       ? `intitle:"${title}" television series`
       : `intitle:"${title}" film`;
 
-  console.log(`[WIKIPEDIA TRIVIA] Searching Wikipedia for: "${searchQuery}"`);
 
   const headers = {
     "User-Agent": "CinemateApp/1.0 (contact: support@cinemate.com) Mozilla/5.0",
@@ -191,7 +190,6 @@ export const fetchTriviaFromWikipedia = async (
     const searchResults = searchRes.data?.query?.search || [];
 
     if (searchResults.length === 0) {
-      console.log(`[WIKIPEDIA TRIVIA] No page found for query: ${searchQuery}`);
       return [];
     }
 
@@ -204,14 +202,12 @@ export const fetchTriviaFromWikipedia = async (
       ) || searchResults[0];
 
     const pageTitle = bestResult.title;
-    console.log(`[WIKIPEDIA TRIVIA] Found page: "${pageTitle}"`);
 
     const parseUrl = `https://en.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(pageTitle)}&prop=text&format=json&origin=*`;
     const parseRes = await axios.get(parseUrl, { headers, timeout: 5000 });
     const htmlContent = parseRes.data?.parse?.text?.["*"] || "";
 
     if (!htmlContent) {
-      console.log("[WIKIPEDIA TRIVIA] Empty page content returned.");
       return [];
     }
 
@@ -285,9 +281,6 @@ export const fetchTriviaFromWikipedia = async (
 
     triviaItems.sort((a, b) => b.score - a.score);
 
-    console.log(
-      `[WIKIPEDIA TRIVIA] Successfully extracted & ranked ${triviaItems.length} trivia items for "${pageTitle}"`,
-    );
     return triviaItems;
   } catch (error) {
     console.error("[WIKIPEDIA TRIVIA] Error fetching trivia:", error.message);

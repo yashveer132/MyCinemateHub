@@ -45,18 +45,24 @@ const extractQuotesFromHtml = (htmlContent) => {
     "taglines",
     "critic",
     "review",
+    "contents",
   ];
 
   const isCharacterNoise = (char) => {
     const lower = char.toLowerCase();
     return (
       lower === "skip" ||
+      lower === "contents" ||
+      /^\d+/.test(lower) ||
       noiseHeaders.some((noise) => lower === noise || lower.includes(noise)) ||
       lower.includes("unknown")
     );
   };
 
   elements.forEach((el) => {
+    if (el.closest(".toc") || el.closest("#toc") || el.closest(".toclimit"))
+      return;
+
     const tagName = el.tagName.toLowerCase();
 
     if (tagName === "h2" || tagName === "h3" || tagName === "h4") {
@@ -68,7 +74,7 @@ const extractQuotesFromHtml = (htmlContent) => {
         const isNoise = noiseHeaders.some(
           (noise) => lowerHeadline === noise || lowerHeadline.includes(noise),
         );
-        if (isNoise) {
+        if (isNoise || isCharacterNoise(cleanHeadline)) {
           currentCharacter = "Skip";
         } else {
           currentCharacter = cleanHeadline;
@@ -81,6 +87,18 @@ const extractQuotesFromHtml = (htmlContent) => {
       if (currentCharacter === "Skip") return;
 
       const text = el.textContent || el.innerText || "";
+
+      const lowerText = text.toLowerCase().trim();
+      if (
+        lowerText.startsWith("interview ") ||
+        lowerText.startsWith("cited ") ||
+        lowerText.startsWith("review ") ||
+        lowerText.includes("external links") ||
+        lowerText.includes("contents") ||
+        /^\d+/.test(lowerText)
+      ) {
+        return;
+      }
 
       if (
         text.includes(" - ") ||
@@ -157,7 +175,6 @@ export const fetchQuotesFromWikiquote = async (
       ? `intitle:"${title}" television series`
       : `intitle:"${title}" film`;
 
-  console.log(`[WIKIQUOTE] Searching for: "${searchQuery}"`);
 
   const headers = {
     "User-Agent": "CinemateApp/1.0 (contact: support@cinemate.com) Mozilla/5.0",
@@ -172,9 +189,7 @@ export const fetchQuotesFromWikiquote = async (
     const wikipediaResults = wikiSearchRes.data?.query?.search || [];
 
     if (wikipediaResults.length === 0) {
-      console.log(
-        `[WIKIQUOTE] No article page found on Wikipedia for: "${searchQuery}"`,
-      );
+     
       return [];
     }
 
@@ -187,9 +202,6 @@ export const fetchQuotesFromWikiquote = async (
       ) || wikipediaResults[0];
 
     const verifiedTitle = bestWikiResult.title;
-    console.log(
-      `[WIKIQUOTE] Verified title from Wikipedia: "${verifiedTitle}"`,
-    );
 
     const wikiquoteSearchUrl = `https://en.wikiquote.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent('intitle:"' + verifiedTitle + '"')}&format=json&origin=*`;
     const wqSearchRes = await axios.get(wikiquoteSearchUrl, {
@@ -199,9 +211,6 @@ export const fetchQuotesFromWikiquote = async (
     const wqResults = wqSearchRes.data?.query?.search || [];
 
     if (wqResults.length === 0) {
-      console.log(
-        `[WIKIQUOTE] No Wikiquote page matching verified title: "${verifiedTitle}"`,
-      );
       return [];
     }
 
@@ -224,30 +233,22 @@ export const fetchQuotesFromWikiquote = async (
     });
 
     if (!bestWqResult) {
-      console.log(
-        `[WIKIQUOTE] No relevant Wikiquote page matching movie/show "${title}" found (Top result was: "${wqResults[0].title}")`,
-      );
       return [];
     }
 
     const wqPageTitle = bestWqResult.title;
-    console.log(`[WIKIQUOTE] Found Wikiquote page: "${wqPageTitle}"`);
 
     const parseUrl = `https://en.wikiquote.org/w/api.php?action=parse&page=${encodeURIComponent(wqPageTitle)}&prop=text&format=json&origin=*`;
     const parseRes = await axios.get(parseUrl, { headers, timeout: 5000 });
     const htmlContent = parseRes.data?.parse?.text?.["*"] || "";
 
     if (!htmlContent) {
-      console.log(
-        `[WIKIQUOTE] Empty page content returned for: "${wqPageTitle}"`,
-      );
+     
       return [];
     }
 
     const extractedQuotes = extractQuotesFromHtml(htmlContent);
-    console.log(
-      `[WIKIQUOTE] Successfully extracted ${extractedQuotes.length} quotes for "${wqPageTitle}"`,
-    );
+   
 
     return extractedQuotes;
   } catch (error) {

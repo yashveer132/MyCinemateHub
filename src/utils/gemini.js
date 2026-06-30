@@ -253,45 +253,16 @@ const generateTrivia = async (movieTitle, movieOverview) => {
     ],
   });
 
-  const prompt = `
-    Generate 5-8 interesting trivia facts, fun facts, and easter eggs about the movie/TV show "${movieTitle}".
-    Movie overview: "${movieOverview}"
-    
-    Include:
-    - Behind-the-scenes trivia
-    - Hidden details and easter eggs (references to other movies, hidden messages, cameos)
-    - Production facts
-    - Fun facts about cast or crew
-    - Visual easter eggs and hidden details in scenes
-    
-    Return ONLY a JSON array with this exact structure, no additional text:
-    [
-      {
-        "id": "unique_id_1",
-        "text": "The trivia fact text here",
-        "spoiler": false,
-        "type": "trivia"
-      },
-      {
-        "id": "unique_id_2", 
-        "text": "An easter egg or hidden detail",
-        "spoiler": false,
-        "type": "easter_egg"
-      },
-      {
-        "id": "unique_id_3", 
-        "text": "Another interesting fun fact",
-        "spoiler": false,
-        "type": "fun_fact"
-      }
-    ]
-    
-    Make sure the facts are accurate, interesting, and not spoilers.
-    Use "trivia", "fun_fact", or "easter_egg" for the type.
-    Generate at least 5 items.
-    Generate unique IDs for each fact.
-    Return only the JSON array, nothing else.
-  `;
+  const prompt = `Generate 5-8 interesting behind-the-scenes trivia/facts about "${movieTitle}" (Overview: "${movieOverview}").
+  CRITICAL: Do NOT hallucinate. Only include 100% real, verified behind-the-scenes facts. If you do not have verified real trivia for this title, return an empty array [].
+  Return ONLY a JSON array of objects:
+  [
+    {
+      "id": "t1",
+      "text": "Factual trivia text",
+      "type": "filming" // must be one of: development, casting, music, legacy, filming
+    }
+  ]`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -350,30 +321,15 @@ const generateMemorableQuotes = async (
 
   const genreNames = genres.map((g) => g.name).join(", ");
 
-  const prompt = `
-Generate 5-8 memorable and iconic quotes from the movie "${movieTitle}".
-Consider the movie's overview: "${movieOverview}"
-Genres: ${genreNames}
-
-For each quote, provide:
-1. The exact quote text
-2. The character who said it (if known/applicable)
-3. Brief context about when/why it's memorable
-4. Why it's significant to the movie's themes or plot
-
-Format the response as a JSON array of objects with this structure:
-[
-  {
-    "quote": "Exact quote text here",
-    "character": "Character name or 'Unknown'",
-    "context": "Brief explanation of the scene and significance",
-    "significance": "Why this quote is important to the movie"
-  }
-]
-
-Ensure quotes are authentic and actually memorable from the movie. If you're not certain about specific quotes, generate plausible but contextually appropriate ones based on the movie's themes and overview. Focus on quotes that capture the essence of the movie's message, character development, or key plot moments.
-
-Response must be valid JSON array only.`;
+  const prompt = `Generate 5-8 memorable, iconic dialogue quotes from "${movieTitle}" (Overview: "${movieOverview}", Genres: ${genreNames}).
+  CRITICAL: Do NOT invent or paraphrase. Only include 100% real, accurate dialogue spoken in this title. If you do not have verified quotes, return [].
+  Return ONLY a JSON array of objects:
+  [
+    {
+      "quote": "Exact dialogue quote",
+      "character": "Character Name"
+    }
+  ]`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -414,7 +370,6 @@ Response must be valid JSON array only.`;
     return null;
   }
 };
-
 const generateAwards = async (
   title,
   overview,
@@ -540,34 +495,55 @@ const generateActorTimeline = async (actorName, biography, credits) => {
     ],
   });
 
-  const movies = (credits?.cast || [])
-    .filter((item) => item.media_type === "movie")
-    .slice(0, 20);
-  const tvShows = (credits?.cast || [])
-    .filter((item) => item.media_type === "tv")
+  const sortedCast = [...(credits?.cast || [])].sort(
+    (a, b) => (b.popularity || 0) - (a.popularity || 0),
+  );
+
+  const popularItems = sortedCast.slice(0, 25);
+
+  const recentItems = [...(credits?.cast || [])]
+    .filter((item) => item.release_date || item.first_air_date)
+    .sort((a, b) => {
+      const dateA = new Date(a.release_date || a.first_air_date);
+      const dateB = new Date(b.release_date || b.first_air_date);
+      return dateB - dateA;
+    })
     .slice(0, 10);
+
+  const combinedCredits = [];
+  const seenIds = new Set();
+  [...popularItems, ...recentItems].forEach((item) => {
+    const key = `${item.media_type || "movie"}_${item.id}`;
+    if (!seenIds.has(key)) {
+      seenIds.add(key);
+      combinedCredits.push(item);
+    }
+  });
+
   const creditsSummary = {
-    movies: movies.map((m) => ({
-      title: m.title,
-      year: m.release_date ? new Date(m.release_date).getFullYear() : null,
-      character: m.character,
-      popularity: m.popularity,
-      id: m.id,
-    })),
-    tvShows: tvShows.map((t) => ({
-      title: t.name,
-      year: t.first_air_date ? new Date(t.first_air_date).getFullYear() : null,
-      character: t.character,
-      popularity: t.popularity,
-      id: t.id,
+    credits: combinedCredits.map((c) => ({
+      title: c.title || c.name,
+      media_type: c.media_type || "movie",
+      year:
+        c.release_date || c.first_air_date
+          ? new Date(c.release_date || c.first_air_date).getFullYear()
+          : null,
+      character: c.character,
+      popularity: c.popularity,
+      id: c.id,
     })),
   };
 
   const prompt = `
-Generate a comprehensive career timeline for the actor "${actorName}".
+Generate a comprehensive, detailed career timeline for the actor "${actorName}".
 Use the provided biography and credits to create 15-20 key milestones.
 Include a mix of positive and negative moments, achievements, peaks, lows, and significant career events like debut roles, major breakthroughs, awards, genre shifts, collaborations, box office successes/failures, critical acclaim, controversies, comebacks, and recent works.
-Ensure to include milestones from the most recent years available in the credits, prioritizing the latest developments up to 2025 if data is available.
+Ensure to include milestones from the most recent years available in the credits, prioritizing the latest developments up to 2025/2026 if data is available.
+
+CRITICAL INSTRUCTIONS FOR 100% DATA ACCURACY:
+1. ONLY reference releases and years that are explicitly listed in the Credits Summary. Do NOT hallucinate release years or movie associations.
+2. For "movie" or "tv" types, you MUST provide the link as "/movie/{id}" or "/tv/{id}" using the EXACT "id" and "media_type" from the Credits Summary.
+3. Every milestone year MUST match the year of the movie/tv show in the credits or biography exactly.
 
 Biography: "${biography || "No biography available"}"
 Credits Summary: ${JSON.stringify(creditsSummary)}

@@ -71,6 +71,32 @@ const fetchFromOmdb = async (params) => {
   };
 };
 
+const normalizeTitle = (title) => {
+  if (!title) return "";
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+const titlesMatch = (omdbTitle, expectedTitle) => {
+  if (!omdbTitle || !expectedTitle) return true;
+  const norm1 = normalizeTitle(omdbTitle);
+  const norm2 = normalizeTitle(expectedTitle);
+  if (!norm1 || !norm2) return true;
+
+  if (norm1 === norm2) return true;
+  if (norm1.includes(norm2) || norm2.includes(norm1)) return true;
+
+  const words1 = norm1.split(" ");
+  const words2 = norm2.split(" ");
+  const commonWords = words1.filter((w) => words2.includes(w));
+  const overlapRatio =
+    commonWords.length / Math.max(words1.length, words2.length);
+  return overlapRatio >= 0.5;
+};
+
 const extractApiKey = (token) => {
   if (!token || token === "undefined") return null;
   try {
@@ -125,7 +151,6 @@ export const clearImdbRatingsCache = () => {
   try {
     localStorage.removeItem("imdb_ratings_cache");
   } catch (e) {}
-  console.log("[IMDB] Cache cleared");
 };
 
 export const fetchDataFromApi = async (url, params) => {
@@ -400,7 +425,6 @@ export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
     const cacheKey = `${mediaType}-${tmdbId}`;
     if (imdbRatingsCache.has(cacheKey)) {
       const cachedData = imdbRatingsCache.get(cacheKey);
-      console.log(`[IMDB] Using cached data for ${mediaType} ${tmdbId}`);
       return cachedData;
     }
 
@@ -409,9 +433,6 @@ export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
     );
 
     if (!externalIds?.imdb_id) {
-      console.log(
-        `[IMDB] No IMDB ID found for ${mediaType} ${tmdbId}, trying title search`,
-      );
 
       const movieDetails = await fetchDataFromApi(`/${mediaType}/${tmdbId}`);
       if (movieDetails && (movieDetails.title || movieDetails.name)) {
@@ -434,7 +455,6 @@ export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
             fallbackResponse.data.imdbRating &&
             fallbackResponse.data.imdbRating !== "N/A"
           ) {
-            console.log(`[IMDB] Found rating via title search for ${title}`);
 
             const additionalRatings = {};
             if (
@@ -459,14 +479,8 @@ export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
             setCacheItem(cacheKey, result);
             return result;
           } else {
-            console.log(`[IMDB] Title search returned N/A for ${title}`);
           }
         } else {
-          console.log(
-            `[IMDB] Title search failed for ${title}: ${
-              fallbackResponse.data?.Error || "Unknown error"
-            }`,
-          );
         }
       }
 
@@ -505,12 +519,8 @@ export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
         setCacheItem(cacheKey, result);
         return result;
       } else {
-        console.log(`[IMDB] Rating not available for ${externalIds.imdb_id}`);
       }
     } else {
-      console.log(
-        `[IMDB] OMDb API error: ${response.data?.Error || "Unknown error"}`,
-      );
     }
 
     const result = {
@@ -530,7 +540,12 @@ export const fetchImdbRating = async (tmdbId, mediaType = "movie") => {
   }
 };
 
-export const fetchAwardsFromOMDb = async (tmdbId, mediaType = "movie") => {
+export const fetchAwardsFromOMDb = async (
+  tmdbId,
+  mediaType = "movie",
+  expectedTitle = null,
+  expectedYear = null,
+) => {
   try {
     const externalIds = await fetchDataFromApi(
       `/${mediaType}/${tmdbId}/external_ids`,
@@ -567,6 +582,23 @@ export const fetchAwardsFromOMDb = async (tmdbId, mediaType = "movie") => {
           fallbackResponse.data.Response === "True"
         ) {
           omdbData = fallbackResponse.data;
+        }
+      }
+    }
+
+    if (omdbData && expectedTitle) {
+      if (!titlesMatch(omdbData.Title, expectedTitle)) {
+        console.warn(
+          `[AWARDS] Title mismatch: OMDb returned "${omdbData.Title}" but expected "${expectedTitle}". Discarding awards.`,
+        );
+        omdbData = null;
+      } else if (expectedYear && omdbData.Year) {
+        const omdbYear = parseInt(omdbData.Year);
+        if (!isNaN(omdbYear) && Math.abs(omdbYear - expectedYear) > 1) {
+          console.warn(
+            `[AWARDS] Year mismatch: OMDb returned ${omdbYear} but expected ${expectedYear}. Discarding awards.`,
+          );
+          omdbData = null;
         }
       }
     }

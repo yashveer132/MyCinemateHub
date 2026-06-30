@@ -92,7 +92,6 @@ export const clearQuotesCache = () => {
       }
     }
     keysToRemove.forEach((key) => localStorage.removeItem(key));
-    console.log("[QUOTES CACHE] Persistent cache cleared successfully");
   } catch (e) {
     console.error("[QUOTES CACHE] Failed to clear persistent cache:", e);
   }

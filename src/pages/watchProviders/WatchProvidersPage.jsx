@@ -86,14 +86,6 @@ const WatchProvidersPage = () => {
     if (!selectedProvider) return;
 
     setLoading(true);
-    console.log(
-      "Fetching content for provider:",
-      selectedProvider,
-      "region:",
-      selectedRegion,
-      "mediaType:",
-      mediaType
-    );
     try {
       const today = dayjs().format("YYYY-MM-DD");
       const params = {
@@ -118,16 +110,13 @@ const WatchProvidersPage = () => {
         params.with_status = "0|2|3";
       }
 
-      console.log("API params:", params);
       const response = await fetchDataFromApi(`/discover/${mediaType}`, params);
-      console.log("API response:", response);
       const results = (response?.results || []).map((item) => ({
         ...item,
         media_type: mediaType,
       }));
 
       setData(results);
-      console.log("Set data:", results.length, "items");
     } catch (error) {
       console.error("Error fetching content:", error);
       setData([]);

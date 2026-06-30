@@ -8,6 +8,7 @@ import "./style.scss";
 
 import ContentWrapper from "../../../components/contentWrapper/ContentWrapper";
 import { fetchTriviaFromWikipedia } from "../../../utils/imdbTrivia";
+import { generateTrivia } from "../../../utils/gemini";
 import {
   getTriviaFromCache,
   saveTriviaToCache,
@@ -54,18 +55,27 @@ const TriviaSection = ({ movieDetails, mediaType }) => {
             return;
           }
 
-          const scrapedTrivia = await fetchTriviaFromWikipedia(
+          let finalTrivia = [];
+          const aiRes = await generateTrivia(
             title,
-            releaseYear,
-            mediaType,
+            movieDetails.overview || "",
           );
+          if (aiRes && aiRes.results && aiRes.results.length > 0) {
+            finalTrivia = aiRes.results;
+          } else {
+            finalTrivia = await fetchTriviaFromWikipedia(
+              title,
+              releaseYear,
+              mediaType,
+            );
+          }
 
           if (isMounted) {
-            setTriviaData({ results: scrapedTrivia });
+            setTriviaData({ results: finalTrivia });
             setShowTrivia(true);
 
-            if (scrapedTrivia && scrapedTrivia.length > 0) {
-              saveTriviaToCache(movieDetails.id, scrapedTrivia);
+            if (finalTrivia && finalTrivia.length > 0) {
+              saveTriviaToCache(movieDetails.id, finalTrivia);
             }
           }
         } catch (error) {
@@ -265,12 +275,11 @@ const TriviaSection = ({ movieDetails, mediaType }) => {
                 )
               )
             ) : (
-              <div className="triviaGrid">
-                {[...Array(4)].map((_, index) => (
-                  <div key={index} className="triviaItem">
-                    {skeleton()}
-                  </div>
-                ))}
+              <div className="triviaLoading">
+                <div className="spinner"></div>
+                <div className="loadingText">
+                  Retrieving behind-the-scenes trivia...
+                </div>
               </div>
             )}
           </>

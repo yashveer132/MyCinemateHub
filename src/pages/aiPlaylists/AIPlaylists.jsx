@@ -403,20 +403,6 @@ const AIPlaylists = () => {
               📂 Saved ({savedPlaylists.length})
             </button>
           </div>
-          <div className="chips">
-            {SUGGESTIONS.map((s) => (
-              <button
-                key={s}
-                className="chip"
-                onClick={() => {
-                  setQuery(s);
-                  runSearch(s);
-                }}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
 
           {saveDialog.show && (
             <div className="save-dialog-overlay">

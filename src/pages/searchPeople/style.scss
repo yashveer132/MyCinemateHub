@@ -2,19 +2,25 @@
 
 .searchPeoplePage {
   min-height: 700px;
-  padding-top: 100px;
+  padding-top: 80px;
   contain: layout style;
 
+  @include md {
+    padding-top: 100px;
+  }
+
   .pageTitle {
-    font-size: 32px;
+    font-size: 24px;
     color: white;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     text-align: center;
     font-weight: 700;
+    padding: 0 15px;
 
     @include md {
       font-size: 36px;
       margin-bottom: 35px;
+      padding: 0;
     }
   }
 
@@ -548,12 +554,16 @@
     text-align: center;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 12px;
-    padding: 40px;
+    padding: 25px 15px;
     margin: 20px auto;
     max-width: 500px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
+
+    @include md {
+      padding: 40px;
+    }
 
     .noResultsIcon {
       font-size: 48px;

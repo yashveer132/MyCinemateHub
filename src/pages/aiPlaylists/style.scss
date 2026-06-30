@@ -2,23 +2,41 @@
 
 .aiPlaylistsPage {
   color: #fff;
-  padding-top: 100px;
+  padding-top: 80px;
+
+  @include md {
+    padding-top: 100px;
+  }
 
   .pageHeader {
     text-align: center;
     margin-bottom: 30px;
 
     .pageTitle {
-      font-size: 28px;
+      font-size: 22px;
       color: white;
       font-weight: 700;
-      margin-bottom: 20px;
+      margin-bottom: 14px;
+      padding: 0 10px;
+
+      @include md {
+        font-size: 28px;
+        margin-bottom: 20px;
+        padding: 0;
+      }
     }
 
     .pageSub {
       color: var(--black-light);
       margin: 0 auto 18px;
       max-width: 720px;
+      padding: 0 10px;
+      font-size: 14px;
+
+      @include md {
+        font-size: 16px;
+        padding: 0;
+      }
     }
 
     .searchBar {
@@ -27,20 +45,35 @@
       max-width: 720px;
       margin: 0 auto;
       align-items: center;
+      padding: 0 10px;
+      flex-direction: column;
+
+      @include md {
+        flex-direction: row;
+        padding: 0;
+      }
 
       input {
-        flex: 1;
-        height: 50px;
+        width: 100%;
+        height: 46px;
         border-radius: 30px;
         background: #fff;
         border: 0;
         color: #000;
         padding: 0 16px;
         outline: none;
+        font-size: 14px;
+
+        @include md {
+          flex: 1;
+          height: 50px;
+          font-size: 16px;
+        }
       }
 
       button {
-        height: 50px;
+        width: 100%;
+        height: 46px;
         padding: 0 20px;
         border-radius: 30px;
         background: var(--gradient);
@@ -52,6 +85,13 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
+        font-size: 14px;
+
+        @include md {
+          width: auto;
+          height: 50px;
+          font-size: 16px;
+        }
 
         &:disabled {
           opacity: 0.5;
@@ -170,15 +210,26 @@
 
       .saved-playlists-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 20px;
+        grid-template-columns: 1fr;
+        gap: 15px;
+
+        @include sm {
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 20px;
+        }
 
         .saved-playlist-card {
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 12px;
-          padding: 24px;
-          transition: background 0.2s ease, border 0.2s ease;
+          padding: 18px;
+
+          @include md {
+            padding: 24px;
+          }
+          transition:
+            background 0.2s ease,
+            border 0.2s ease;
 
           &:hover {
             background: rgba(255, 255, 255, 0.08);
@@ -268,7 +319,9 @@
         color: #e2e8f0;
         cursor: pointer;
         font-size: 14px;
-        transition: background 0.2s ease, border 0.2s ease;
+        transition:
+          background 0.2s ease,
+          border 0.2s ease;
 
         &:hover {
           background: rgba(255, 255, 255, 0.1);
@@ -285,12 +338,22 @@
   }
 
   .carouselSection {
-    margin-top: 40px;
+    margin-top: 30px;
+
+    @include md {
+      margin-top: 40px;
+    }
 
     .carouselTitle {
-      font-size: 24px;
+      font-size: 18px;
       color: white;
       font-weight: 700;
+      padding: 0 10px;
+
+      @include md {
+        font-size: 24px;
+        padding: 0;
+      }
     }
   }
 

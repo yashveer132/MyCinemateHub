@@ -8,6 +8,7 @@ import "./style.scss";
 
 import ContentWrapper from "../../../components/contentWrapper/ContentWrapper";
 import { fetchQuotesFromWikiquote } from "../../../utils/wikiquote";
+import { generateMemorableQuotes } from "../../../utils/gemini";
 import {
   getQuotesFromCache,
   saveQuotesToCache,
@@ -51,18 +52,28 @@ const MemorableQuotesSection = ({ movieDetails, mediaType }) => {
             ? new Date(releaseDate).getFullYear()
             : new Date().getFullYear();
 
-          const fetchedQuotes = await fetchQuotesFromWikiquote(
+          let finalQuotes = [];
+          const aiRes = await generateMemorableQuotes(
             title,
-            releaseYear,
-            mediaType || "movie",
+            movieDetails.overview || "",
+            movieDetails.genres || [],
           );
+          if (aiRes && aiRes.results && aiRes.results.length > 0) {
+            finalQuotes = aiRes.results.slice(0, 10);
+          } else {
+            const fetchedQuotes = await fetchQuotesFromWikiquote(
+              title,
+              releaseYear,
+              mediaType || "movie",
+            );
+            finalQuotes = fetchedQuotes.slice(0, 10);
+          }
 
           if (isMounted) {
-            const top10Quotes = fetchedQuotes.slice(0, 10);
-            setQuotes(top10Quotes);
+            setQuotes(finalQuotes);
 
-            if (top10Quotes.length > 0) {
-              saveQuotesToCache(movieDetails.id, top10Quotes);
+            if (finalQuotes.length > 0) {
+              saveQuotesToCache(movieDetails.id, finalQuotes);
             }
           }
         } catch (error) {

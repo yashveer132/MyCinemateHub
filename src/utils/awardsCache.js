@@ -105,7 +105,12 @@ export const fetchAwardsData = async (data) => {
 
   try {
     const [omdbAwards, manualAwards] = await Promise.all([
-      fetchAwardsFromOMDb(data.id, data.media_type || "movie"),
+      fetchAwardsFromOMDb(
+        data.id,
+        data.media_type || "movie",
+        data.title || null,
+        data.year || null,
+      ),
       getAwardsById(data.id),
     ]);
 
@@ -147,9 +152,6 @@ export const fetchWikidataBackground = async (
   try {
     if (!imdbId) return initialData;
 
-    console.log(
-      `[WIKIDATA] Fetching background awards details for IMDb ID: ${imdbId}`,
-    );
     const wikidataAwards = await fetchAwardsFromWikidata(imdbId);
 
     if (!wikidataAwards || wikidataAwards.length === 0) {
@@ -213,7 +215,6 @@ export const clearAwardsCache = () => {
       }
     }
     keysToRemove.forEach((key) => localStorage.removeItem(key));
-    console.log("[AWARDS CACHE] Persistent cache cleared successfully");
   } catch (e) {
     console.error("[AWARDS CACHE] Failed to clear persistent cache:", e);
   }

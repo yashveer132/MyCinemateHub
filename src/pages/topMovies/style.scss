@@ -2,8 +2,12 @@
 
 .topMoviesPage {
   min-height: 700px;
-  padding-top: 100px;
+  padding-top: 80px;
   background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+
+  @include md {
+    padding-top: 100px;
+  }
 
   .resultNotFound {
     display: flex;
@@ -74,20 +78,23 @@
   }
 
   .pageTitle {
-    font-size: 28px;
-    line-height: 34px;
+    font-size: 22px;
+    line-height: 28px;
     color: #ffffff;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     font-weight: 700;
     text-align: center;
     background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcf7f);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    padding: 0 10px;
 
     @include md {
       font-size: 34px;
       line-height: 40px;
+      margin-bottom: 20px;
+      padding: 0;
     }
   }
 
@@ -294,7 +301,7 @@
   .content {
     display: flex;
     flex-flow: row wrap;
-    gap: 25px;
+    gap: 15px;
     margin-bottom: 50px;
 
     @include md {
@@ -302,7 +309,8 @@
     }
 
     .movieCard {
-      width: calc(50% - 12.5px);
+      width: calc(50% - 7.5px);
+      margin-inline: 0;
       flex-shrink: 0;
       transition: all 0.3s ease;
 

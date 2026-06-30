@@ -92,24 +92,49 @@ export const searchSoundtrackAlbums = async (
       })
       .filter((album) => {
         if (album.overlapScore < 0.6) {
-          console.log(
-            `[SOUNDTRACK REJECT] Low overlap score (${album.overlapScore.toFixed(2)}) for: "${album.title}"`,
-          );
           return false;
         }
 
         if (targetYear && album.releaseYear) {
           const yearDiff = Math.abs(album.releaseYear - targetYear);
           if (yearDiff > 2) {
-            console.log(
-              `[SOUNDTRACK REJECT] Year mismatch (diff: ${yearDiff} yrs) for: "${album.title}" (${album.releaseYear} vs Movie: ${targetYear})`,
-            );
             return false;
           }
         }
 
         return true;
       });
+
+    formattedAlbums.sort((a, b) => {
+      if (b.overlapScore !== a.overlapScore) {
+        return b.overlapScore - a.overlapScore;
+      }
+
+      if (targetYear) {
+        const aYearDiff = a.releaseYear
+          ? Math.abs(a.releaseYear - targetYear)
+          : 99;
+        const bYearDiff = b.releaseYear
+          ? Math.abs(b.releaseYear - targetYear)
+          : 99;
+        if (aYearDiff !== bYearDiff) {
+          return aYearDiff - bYearDiff;
+        }
+      }
+
+      const getPriorityScore = (album) => {
+        const title = album.title.toLowerCase();
+        let score = 0;
+        if (title.includes("original motion picture soundtrack")) score += 10;
+        else if (title.includes("motion picture soundtrack")) score += 8;
+        else if (title.includes("original soundtrack")) score += 6;
+        else if (title.includes("soundtrack")) score += 4;
+        else if (title.includes("score")) score += 2;
+        return score;
+      };
+
+      return getPriorityScore(b) - getPriorityScore(a);
+    });
 
     const seenTitles = new Set();
     return formattedAlbums.filter((album) => {

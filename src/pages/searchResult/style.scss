@@ -54,8 +54,16 @@
       gap: 20px;
     }
     .movieCard {
+      width: calc(50% - 5px);
+      margin-inline: 0;
       .posterBlock {
         margin-bottom: 20px;
+      }
+      @include md {
+        width: calc(25% - 15px);
+      }
+      @include lg {
+        width: calc(20% - 16px);
       }
     }
   }

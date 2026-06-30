@@ -1,5 +1,8 @@
+@import "../../mixins.scss";
+
 .personCardV2 {
   display: flex;
+  flex-direction: column;
   gap: 12px;
   padding: 12px;
   border-radius: 8px;
@@ -11,6 +14,10 @@
   backface-visibility: hidden;
   transform: translateZ(0);
   contain: layout style paint;
+
+  @include sm {
+    flex-direction: row;
+  }
 }
 
 .personCardV2:focus,
@@ -20,13 +27,20 @@
 }
 
 .personCardV2 .thumb {
-  width: 96px;
-  height: 132px;
+  width: 100%;
+  aspect-ratio: 1 / 1.25;
+  height: auto;
   overflow: hidden;
   border-radius: 6px;
   flex-shrink: 0;
   position: relative;
   background: rgba(255, 255, 255, 0.05);
+
+  @include sm {
+    width: 96px;
+    height: 132px;
+    aspect-ratio: auto;
+  }
 }
 
 .personCardV2 .thumb img {
@@ -40,7 +54,11 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-height: 132px;
+  min-height: auto;
+
+  @include sm {
+    min-height: 132px;
+  }
 }
 
 .personCardV2 .name {

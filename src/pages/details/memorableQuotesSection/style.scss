@@ -25,39 +25,67 @@
   .quotesCarouselWrapper {
     position: relative;
     width: 100%;
-    padding: 0 40px;
+    padding: 0 5px;
+
+    @include md {
+      padding: 0 40px;
+    }
 
     .arrow {
-      font-size: 36px;
-      color: #ff2a74; 
+      font-size: 16px;
+      color: #ff2a74;
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
       cursor: pointer;
-      z-index: 20; 
+      z-index: 20;
       transition: all 0.3s ease;
-      display: none; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 50%;
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 42, 116, 0.3);
 
       @include md {
-        display: block;
+        font-size: 36px;
+        width: auto;
+        height: auto;
+        background: none;
+        border-radius: 0;
+        backdrop-filter: none;
+        border: none;
       }
 
       &:hover {
         transform: translateY(-50%) scale(1.2);
         filter: drop-shadow(0 0 12px rgba(255, 42, 116, 0.8));
         color: #ff0055;
+        background: rgba(0, 0, 0, 0.85);
+        @include md {
+          background: none;
+        }
       }
 
       &.disabled {
-        display: none !important; 
+        display: none !important;
       }
 
       &.carouselLeftNav {
-        left: 0;
+        left: -2px;
+        @include md {
+          left: 0;
+        }
       }
 
       &.carouselRighttNav {
-        right: 0;
+        right: -2px;
+        @include md {
+          right: 0;
+        }
       }
     }
   }

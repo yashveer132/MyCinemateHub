@@ -176,11 +176,51 @@ const CareerTimeline = ({ actorName, biography, credits }) => {
   useEffect(() => {
     if (!actorName || !credits) return;
 
-    setLoading(true);
-    const result = generateDeterministicTimeline(actorName, credits);
-    setTimeline(result);
-    setLoading(false);
-  }, [actorName, credits]);
+    let isMounted = true;
+    const loadTimeline = async () => {
+      const cacheKey = `timeline_${actorName}_${credits.cast?.length || 0}`;
+      const cached = localStorage.getItem(cacheKey);
+
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (isMounted) {
+          setTimeline(parsed);
+          return;
+        }
+      }
+
+      const fallbackResult = generateDeterministicTimeline(actorName, credits);
+      if (isMounted) {
+        setTimeline(fallbackResult);
+      }
+
+      try {
+        const { generateActorTimeline } = await import("../../utils/gemini");
+        const aiTimeline = await generateActorTimeline(
+          actorName,
+          biography,
+          credits,
+        );
+        if (
+          aiTimeline &&
+          aiTimeline.milestones &&
+          aiTimeline.milestones.length > 0
+        ) {
+          if (isMounted) {
+            setTimeline(aiTimeline);
+            localStorage.setItem(cacheKey, JSON.stringify(aiTimeline));
+          }
+        }
+      } catch (error) {
+        console.error("AI timeline background fetch failed:", error);
+      }
+    };
+
+    loadTimeline();
+    return () => {
+      isMounted = false;
+    };
+  }, [actorName, credits, biography]);
 
   const handleItemClick = (item) => {
     if (item.link) {

@@ -92,7 +92,6 @@ export const clearTriviaCache = () => {
       }
     }
     keysToRemove.forEach((key) => localStorage.removeItem(key));
-    console.log("[TRIVIA CACHE] Persistent cache cleared successfully");
   } catch (e) {
     console.error("[TRIVIA CACHE] Failed to clear persistent cache:", e);
   }

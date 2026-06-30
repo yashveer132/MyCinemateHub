@@ -19,7 +19,7 @@
     position: relative;
     width: 100%;
 
-    @media (max-width: 968px) {
+    @media (max-width: 768px) {
       grid-template-columns: 1fr;
       gap: 30px;
 

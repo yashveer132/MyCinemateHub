@@ -12,27 +12,51 @@
     text-align: center;
   }
   .arrow {
-    font-size: 30px;
+    display: none;
+    font-size: 20px;
     color: #da2f68;
     position: absolute;
     top: 44%;
     transform: translateY(-50%);
     cursor: pointer;
-    opacity: 0.7;
     z-index: 1;
-    display: none;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
+    opacity: 0.85;
+
     @include md {
-      display: block;
+      display: flex;
+      font-size: 30px;
+      width: auto;
+      height: auto;
+      background: none;
+      border-radius: 0;
+      backdrop-filter: none;
+      border: none;
+      opacity: 0.7;
     }
     &:hover {
       opacity: 1;
+      background: rgba(0, 0, 0, 0.8);
+      @include md {
+        background: none;
+      }
     }
   }
   .carouselLeftNav {
-    left: 30px;
+    left: 2px;
+    @include md {
+      left: 30px;
+    }
   }
   .carouselRighttNav {
-    right: 30px;
+    right: 2px;
+    @include md {
+      right: 30px;
+    }
   }
   .loadingSkeleton {
     display: flex;

@@ -18,7 +18,7 @@ const getRedditAccessToken = async () => {
           Authorization: `Basic ${auth}`,
           "Content-Type": "application/x-www-form-urlencoded",
         },
-      }
+      },
     );
 
     return response.data.access_token;
@@ -38,7 +38,7 @@ export const searchMovieSubreddits = async (query) => {
           type: "sr",
           limit: 10,
         },
-      }
+      },
     );
 
     return response.data.data.children
@@ -61,7 +61,7 @@ export const fetchSubredditPosts = async (
   subreddit,
   query = "",
   sort = "hot",
-  limit = 25
+  limit = 25,
 ) => {
   try {
     const token = await getRedditAccessToken();
@@ -158,7 +158,7 @@ const isReviewPost = (post) => {
   const combined = `${title} ${text}`;
 
   const hasReviewKeyword = reviewKeywords.some((keyword) =>
-    combined.includes(keyword)
+    combined.includes(keyword),
   );
 
   const hasMediaContext = [
@@ -205,20 +205,11 @@ export const searchRelatedPosts = async (title, mediaType = "movie") => {
     const cleanTitle = title.replace(/[^\w\s]/g, "").trim();
     const searchTerms = cleanTitle.split(" ").filter((word) => word.length > 2);
 
-    const exactTitleQuery = `"${cleanTitle}"`;
-    const partialQueries = searchTerms
-      .slice(0, 2)
-      .map((term) => `"${term}"`)
-      .join(" AND ");
+    const exactTitleQuery = `title:"${cleanTitle}"`;
     const mediaKeywords =
       mediaType === "movie" ? ["movie", "film"] : ["tv", "show", "series"];
 
-    const titleAndMediaQuery = `${exactTitleQuery} (${mediaKeywords.join(
-      " OR "
-    )})`;
-    const finalQuery = partialQueries
-      ? `${titleAndMediaQuery} OR (${exactTitleQuery} ${partialQueries})`
-      : titleAndMediaQuery;
+    const finalQuery = exactTitleQuery;
 
     const allPosts = [];
 
@@ -226,30 +217,15 @@ export const searchRelatedPosts = async (title, mediaType = "movie") => {
       mediaType === "movie"
         ? [
             "movies",
-            "MovieSuggestions",
             "TrueFilm",
+            "Letterboxd",
             "horror",
             "scifi",
-            "Letterboxd",
-            "moviescirclejerk",
-            "criterion",
-            "Itunes",
-            "netflix",
+            "MovieSuggestions",
           ]
-        : [
-            "television",
-            "tvshows",
-            "netflix",
-            "hbo",
-            "amazonprime",
-            "hulu",
-            "tv",
-            "Series",
-            "anime",
-            "breakingbad",
-          ];
+        : ["television", "tvshows", "netflix", "hbo", "Series"];
 
-    for (const subreddit of primarySubreddits.slice(0, 3)) {
+    for (const subreddit of primarySubreddits.slice(0, 4)) {
       try {
         const response = await axios.get(
           `${REDDIT_OAUTH_BASE}/r/${subreddit}/search`,
@@ -260,11 +236,11 @@ export const searchRelatedPosts = async (title, mediaType = "movie") => {
             params: {
               q: finalQuery,
               sort: "relevance",
-              limit: 15,
+              limit: 20,
               t: "all",
               restrict_sr: true,
             },
-          }
+          },
         );
 
         const posts = response.data.data.children
@@ -273,30 +249,26 @@ export const searchRelatedPosts = async (title, mediaType = "movie") => {
             const postText = post.data.selftext.toLowerCase();
             const fullContent = `${postTitle} ${postText}`;
 
-            const hasTitleMatch = searchTerms.some((term) =>
-              fullContent.includes(term.toLowerCase())
+            const hasTitleInPostTitle = postTitle.includes(
+              cleanTitle.toLowerCase(),
             );
+            if (!hasTitleInPostTitle) return false;
 
             const isReviewType = isReviewPost(post.data);
-            const mentionsTitle =
-              postTitle.includes(cleanTitle.toLowerCase()) ||
-              postText.includes(cleanTitle.toLowerCase());
-
             const hasMediaContext = mediaKeywords.some((keyword) =>
-              fullContent.includes(keyword)
+              fullContent.includes(keyword),
             );
 
-            const isTooGeneric =
-              postTitle.includes("recommend") &&
-              !postTitle.includes(cleanTitle.toLowerCase().split(" ")[0]);
+            const isMemeOrJunk =
+              postTitle.includes("circlejerk") ||
+              postTitle.includes("meme") ||
+              post.data.score < 5;
 
             return (
-              hasTitleMatch &&
-              (isReviewType || mentionsTitle) &&
+              (isReviewType || post.data.num_comments > 10) &&
               hasMediaContext &&
-              !isTooGeneric &&
-              post.data.score > 0 &&
-              post.data.num_comments >= 0
+              !isMemeOrJunk &&
+              post.data.selftext.length > 50 
             );
           })
           .map((post) => ({
@@ -318,7 +290,7 @@ export const searchRelatedPosts = async (title, mediaType = "movie") => {
             relevanceScore: calculateRelevanceScore(
               post.data,
               cleanTitle,
-              searchTerms
+              searchTerms,
             ),
           }));
 
@@ -421,7 +393,7 @@ export const getPostDetails = async (subreddit, postId) => {
           sort: "top",
           threaded: true,
         },
-      }
+      },
     );
 
     const postData = response.data[0].data.children[0].data;
