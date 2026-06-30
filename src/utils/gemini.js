@@ -45,6 +45,20 @@ const cleanJsonResponse = (text) => {
 };
 
 const correctSpelling = async (query) => {
+  if (!query) return query;
+  const trimmed = query.trim();
+  if (!trimmed) return query;
+
+  const cacheKey = `cinemate_spelling_${trimmed.toLowerCase()}`;
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      return cached;
+    }
+  } catch (e) {
+    console.warn("Error reading spelling cache:", e);
+  }
+
   if (!geminiAvailable || !genAI) {
     return query;
   }
@@ -56,10 +70,22 @@ const correctSpelling = async (query) => {
         category: "HARM_CATEGORY_HARASSMENT",
         threshold: "BLOCK_NONE",
       },
+      {
+        category: "HARM_CATEGORY_HATE_SPEECH",
+        threshold: "BLOCK_NONE",
+      },
+      {
+        category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+        threshold: "BLOCK_NONE",
+      },
+      {
+        category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+        threshold: "BLOCK_NONE",
+      },
     ],
   });
 
-  const prompt = `Correct any spelling mistakes in this movie/TV search query: "${query}". 
+  const prompt = `Correct any spelling mistakes in this movie/TV search query: "${trimmed}". 
   If there are no spelling mistakes, return the original query exactly as is.
   Return only the corrected query text, nothing else.`;
 
@@ -67,7 +93,13 @@ const correctSpelling = async (query) => {
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const corrected = response.text().trim();
-    return corrected || query;
+    const finalResult = corrected || trimmed;
+
+    try {
+      localStorage.setItem(cacheKey, finalResult);
+    } catch (e) {}
+
+    return finalResult;
   } catch (error) {
     console.error("AI Spelling correction error:", error);
     if (
@@ -317,6 +349,24 @@ const generateMemorableQuotes = async (
 
   const model = genAI.getGenerativeModel({
     model: "models/gemini-2.5-flash",
+    safetySettings: [
+      {
+        category: "HARM_CATEGORY_HARASSMENT",
+        threshold: "BLOCK_NONE",
+      },
+      {
+        category: "HARM_CATEGORY_HATE_SPEECH",
+        threshold: "BLOCK_NONE",
+      },
+      {
+        category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+        threshold: "BLOCK_NONE",
+      },
+      {
+        category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+        threshold: "BLOCK_NONE",
+      },
+    ],
   });
 
   const genreNames = genres.map((g) => g.name).join(", ");
@@ -360,115 +410,6 @@ const generateMemorableQuotes = async (
     };
   } catch (error) {
     console.error("Error generating memorable quotes:", error);
-    if (
-      error?.message?.includes("API key") ||
-      error?.status === 403 ||
-      error?.status === 400
-    ) {
-      geminiAvailable = false;
-    }
-    return null;
-  }
-};
-const generateAwards = async (
-  title,
-  overview,
-  genres = [],
-  omdbAwardsSummary = null,
-) => {
-  if (!geminiAvailable || !genAI) {
-    return null;
-  }
-
-  const model = genAI.getGenerativeModel({
-    model: "models/gemini-2.5-flash",
-    safetySettings: [
-      {
-        category: "HARM_CATEGORY_HARASSMENT",
-        threshold: "BLOCK_NONE",
-      },
-    ],
-  });
-
-  const genreNames = genres.map((g) => g.name).join(", ");
-
-  const prompt = `
-    Generate information about major awards WON by the movie/TV show "${title}".
-    Movie/TV overview: "${overview}"
-    Genres: ${genreNames}
-    ${
-      omdbAwardsSummary
-        ? `REAL AWARDS DATA FROM IMDb: "${omdbAwardsSummary}"`
-        : ""
-    }
-    
-    ${
-      omdbAwardsSummary
-        ? "IMPORTANT: Use the REAL AWARDS DATA above as your foundation. Generate detailed award information that matches and expands upon this verified data. Do not contradict the real awards summary."
-        : "IMPORTANT: Research and provide ACCURATE information about awards ACTUALLY WON by this movie/TV show. Only include verified wins from major awards like Oscars, Golden Globes, Emmys (for TV), BAFTAs, Cannes, etc. Do not invent awards or nominations."
-    }
-    
-    Return ONLY a JSON object with this exact structure, no additional text:
-    {
-      "awards": [
-        {
-          "id": "unique_id_1",
-          "award": "Academy Awards (Oscars)",
-          "category": "Best Picture",
-          "result": "Won",
-          "year": 2023,
-          "nominees": ["Movie Title"]
-        },
-        {
-          "id": "unique_id_2",
-          "award": "Golden Globes",
-          "category": "Best Director",
-          "result": "Won",
-          "year": 2023,
-          "nominees": ["Director Name"]
-        }
-      ],
-      "summary": "Brief summary of the movie's major award wins"
-    }
-    
-    ${
-      omdbAwardsSummary
-        ? "Generate unique IDs for each award entry. Return only the JSON object, nothing else."
-        : "If no major awards were won, return an empty awards array and appropriate summary. Make sure the information is accurate based on real knowledge. Generate unique IDs for each award entry. Return only the JSON object, nothing else."
-    }
-  `;
-
-  try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let text = response.text().trim();
-
-    const cleanedResponse = cleanJsonResponse(text);
-
-    let parsedResponse;
-    try {
-      parsedResponse = JSON.parse(cleanedResponse);
-    } catch (parseError) {
-      const jsonStart = text.indexOf("{");
-      const jsonEnd = text.lastIndexOf("}") + 1;
-      if (jsonStart !== -1 && jsonEnd > jsonStart) {
-        const jsonText = text.substring(jsonStart, jsonEnd);
-        parsedResponse = JSON.parse(jsonText);
-      } else {
-        throw parseError;
-      }
-    }
-
-    if (!parsedResponse || typeof parsedResponse !== "object") {
-      throw new Error("Invalid response structure");
-    }
-
-    return {
-      id: Date.now(),
-      ...parsedResponse,
-    };
-  } catch (error) {
-    console.error("Error generating awards:", error);
     if (
       error?.message?.includes("API key") ||
       error?.status === 403 ||
@@ -728,7 +669,6 @@ export {
   correctSpelling,
   generateTrivia,
   generateMemorableQuotes,
-  generateAwards,
   generateActorTimeline,
   generateUserInsights,
 };

@@ -15,28 +15,35 @@ const SearchResult = () => {
   const [data, setData] = useState(null);
   const [pageNum, setPageNum] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState("");
   const [correctedQuery, setCorrectedQuery] = useState("");
   const { query } = useParams();
 
   const fetchInitialData = async () => {
     setLoading(true);
+    setLoadingStep("spelling");
 
-    const corrected = query;
+    let corrected = query;
+    try {
+      corrected = await correctSpelling(query);
+    } catch (e) {
+      console.error("AI spelling correction failed:", e);
+    }
     setCorrectedQuery(corrected);
 
-    fetchDataFromApi(`/search/multi?query=${corrected}&page=${pageNum}`).then(
-      (res) => {
-        setData(res);
-        setPageNum((prev) => prev + 1);
-        setLoading(false);
-      }
-    );
+    setLoadingStep("searching");
+    fetchDataFromApi(`/search/multi?query=${corrected}&page=1`).then((res) => {
+      setData(res);
+      setPageNum(2);
+      setLoading(false);
+      setLoadingStep("");
+    });
   };
 
   const fetchNextPageData = () => {
     if (!correctedQuery) return;
     fetchDataFromApi(
-      `/search/multi?query=${correctedQuery}&page=${pageNum}`
+      `/search/multi?query=${correctedQuery}&page=${pageNum}`,
     ).then((res) => {
       if (data?.results) {
         setData({
@@ -58,7 +65,36 @@ const SearchResult = () => {
 
   return (
     <div className="searchResultsPage">
-      {loading && <Spinner initial={true} />}
+      {loading && (
+        <div className="searchLoadingScreen">
+          <div className="loadingContent">
+            <div className="spinnerWrapper">
+              <svg className="spinnerIcon" viewBox="0 0 50 50">
+                <circle
+                  className="path"
+                  cx="25"
+                  cy="25"
+                  r="20"
+                  fill="none"
+                  strokeWidth="5"
+                ></circle>
+              </svg>
+              <div className="pulseRing"></div>
+            </div>
+            <div className="loadingStatus">
+              <h3 className="loadingTitle">Cinemate AI</h3>
+              <p className="loadingMessage">
+                {loadingStep === "spelling"
+                  ? "Analyzing search query spelling..."
+                  : "Retrieving relevant matches from TMDB..."}
+              </p>
+              <div className="progressBar">
+                <div className={`progressFill ${loadingStep}`} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {!loading && (
         <ContentWrapper>
           {data?.results?.length > 0 ? (
@@ -68,6 +104,15 @@ const SearchResult = () => {
                   data?.total_results > 1 ? "results" : "result"
                 } of '${correctedQuery || query}'`}
               </div>
+              {correctedQuery &&
+                query &&
+                correctedQuery.toLowerCase() !== query.toLowerCase() && (
+                  <div className="spellingCorrectionInfo">
+                    Showing results for{" "}
+                    <span className="highlight">"{correctedQuery}"</span>{" "}
+                    instead of <span className="original">"{query}"</span>
+                  </div>
+                )}
               <InfiniteScroll
                 className="content"
                 dataLength={data?.results?.length || []}
